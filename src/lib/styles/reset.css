@@ -1,0 +1,25 @@
+/* 全要素の余白をリセット */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: noto sans jp, sans-serif;
+}
+
+/* 画像の初期設定 */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ボタンの初期設定 */
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* リストの初期設定 */
+ul, ol {
+  list-style: none;
+}

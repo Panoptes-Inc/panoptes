@@ -1,0 +1,14 @@
+@import './lib/styles/reset.css';
+
+body {
+  background-color: #F9F6F4;
+  cursor : url('/cursor/cursor.png'), default;
+  font-family: "Noto Sans JP", sans-serif;
+}
+
+a,button, [role="button"] {
+  cursor : url('/cursor/pointer.png'), pointer;
+}
+input[type="text"], input[type="search"], textarea {
+  cursor: url('/cursor/text.png') 8 14, text;
+}
