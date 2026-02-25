@@ -20,10 +20,10 @@
 
 {#if open}
 	<div class="overlay" role="presentation">
-		<button class="overlay-close" type="button" aria-label="閉じる" onclick={closeModal}></button>
+		<button class="overlay-close" type="button" aria-label="閉じる" onclickcapture={closeModal}></button>
 		<div class="modal" role="dialog" aria-modal="true" aria-label="サインアップモーダル" tabindex="-1">
-			<button class="close-button" type="button" aria-label="閉じる" onclick={closeModal}>
-				<img src="/icons/close.svg" alt="" />
+			<button class="close-button" type="button" aria-label="閉じる" onclickcapture={closeModal}>
+				<p>×</p>
 			</button>
 
 			<section class="brand-pane" aria-hidden="true">

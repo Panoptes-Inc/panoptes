@@ -8,7 +8,7 @@
 	}
 </script>
 
-<button class="analyze-button" type="button" onclick={openModal}>
+<button class="analyze-button" type="button" onclickcapture={openModal}>
 	<span class="analyze-text">事前登録を行う</span>
 </button>
 
@@ -28,7 +28,6 @@
 		background: transparent;
 		position: relative;
 		isolation: isolate;
-		cursor: pointer;
 		display: flex;
 		justify-content: center;
 		align-items: center;

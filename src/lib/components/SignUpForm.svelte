@@ -4,6 +4,8 @@
 	import { PUBLIC_TURNSTILE_SITE_KEY } from '$env/static/public';
 	import SignUpBtn from '$lib/components/SignUpBtn.svelte';
 	import { hasSupabaseConfig, supabase } from '$lib/supabaseClient';
+	import termsText from '$lib/components/利用規約.txt?raw';
+	import privacyPolicyText from '$lib/components/プライバシーポリシー.txt?raw';
 
 	type FormMode = 'signup' | 'login';
 	type WaitlistJoinCode = 'JOINED' | 'ALREADY' | 'FULL' | 'INVALID';
@@ -41,6 +43,8 @@
 	let confirmPassword = $state('');
 	let siteUrl = $state('');
 	let agreed = $state(false);
+	let showTerms = $state(false);
+	let showPrivacyPolicy = $state(false);
 	let showPassword = $state(false);
 	let showConfirm = $state(false);
 	let loading = $state(false);
@@ -255,7 +259,8 @@
 
 	function ensureSupabaseConfigured() {
 		if (!hasSupabaseConfig) {
-			errorMsg = 'Supabaseの環境変数が未設定です。PUBLIC_SUPABASE_URL / PUBLIC_SUPABASE_ANON_KEY を確認してください。';
+			errorMsg =
+				'Supabaseの環境変数が未設定か不正です。PUBLIC_SUPABASE_URL（http/https）と PUBLIC_SUPABASE_ANON_KEY を確認してください。';
 			return false;
 		}
 		return true;
@@ -283,11 +288,29 @@
 		resetNotices();
 		canResend = false;
 		lastEmailForResend = '';
+		showTerms = false;
+		showPrivacyPolicy = false;
 		clearCooldown();
 		password = '';
 		confirmPassword = '';
 		showPassword = false;
 		showConfirm = false;
+	}
+
+	function toggleTerms() {
+		const next = !showTerms;
+		showTerms = next;
+		if (next) {
+			showPrivacyPolicy = false;
+		}
+	}
+
+	function togglePrivacyPolicy() {
+		const next = !showPrivacyPolicy;
+		showPrivacyPolicy = next;
+		if (next) {
+			showTerms = false;
+		}
 	}
 
 	async function joinWaitlistWithCaptcha(normalizedEmail: string, websiteUrl: string | null) {
@@ -528,12 +551,15 @@
 
 		try {
 			const emailRedirectTo = getEmailRedirectTo();
+			const websiteUrl = normalizeOptional(siteUrl, 1024);
+			// Password hashing is handled by Supabase Auth; this app never writes plaintext passwords to custom tables.
 			const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
 				email: normalizedEmail,
 				password,
 				options: {
 					captchaToken: turnstileToken,
-					...(emailRedirectTo ? { emailRedirectTo } : {})
+					...(emailRedirectTo ? { emailRedirectTo } : {}),
+					...(websiteUrl ? { data: { website_url: websiteUrl } } : {})
 				}
 			});
 
@@ -564,7 +590,6 @@
 				return;
 			}
 
-			const websiteUrl = normalizeOptional(siteUrl, 1024);
 			const waitlistResult = await joinWaitlistWithCaptcha(normalizedEmail, websiteUrl);
 			resetTurnstile();
 
@@ -656,7 +681,7 @@
 		}
 
 		if (!agreed) {
-			errorMsg = '利用規約への同意が必要です。';
+			errorMsg = '利用規約とプライバシーポリシーへの同意が必要です。';
 			return;
 		}
 
@@ -669,7 +694,7 @@
 </script>
 
 <form class="signup-form" onsubmit={handleSubmit} aria-label={isLogin ? 'ログインフォーム' : 'サインアップフォーム'}>
-	<h2>{isLogin ? 'ログイン' : 'サインアップ'}</h2>
+	<h2>{isLogin ? 'ログイン' : '事前登録'}</h2>
 
 	<div class="field-wrap required">
 		<input
@@ -697,7 +722,7 @@
 			aria-label="パスワード表示切り替え"
 			onclick={() => (showPassword = !showPassword)}
 		>
-			<img src={showPassword ? '/icons/Eye.svg' : '/icons/close_eye.svg'} alt="" />
+			<img src={showPassword ? '/icons/PW_eye.svg' : '/icons/PW_eye_close.svg'} alt="" />
 		</button>
 	</div>
 
@@ -717,7 +742,7 @@
 				aria-label="確認用パスワード表示切り替え"
 				onclick={() => (showConfirm = !showConfirm)}
 			>
-				<img src={showConfirm ? '/icons/Eye.svg' : '/icons/close_eye.svg'} alt="" />
+				<img src={showConfirm ? '/icons/PW_eye.svg' : '/icons/PW_eye_close.svg'} alt="" />
 			</button>
 		</div>
 
@@ -736,13 +761,51 @@
 		</div>
 	{/if}
 
+	{#if !isLogin}
+		<section class="onboarding-legal" aria-label="登録前の確認事項">
+			<p class="onboarding-title">登録前に利用規約とプライバシーポリシーをご確認ください。</p>
+			<div class="legal-toggle-row">
+				<button
+					type="button"
+					class="legal-toggle"
+					aria-expanded={showTerms}
+					onclick={toggleTerms}
+				>
+					{showTerms ? '利用規約を閉じる' : '利用規約を読む'}
+				</button>
+				<button
+					type="button"
+					class="legal-toggle"
+					aria-expanded={showPrivacyPolicy}
+					onclick={togglePrivacyPolicy}
+				>
+					{showPrivacyPolicy ? 'プライバシーポリシーを閉じる' : 'プライバシーポリシーを読む'}
+				</button>
+			</div>
+
+			{#if showTerms}
+				<div class="legal-panel" role="region" aria-label="利用規約全文">
+					<h3>利用規約</h3>
+					<pre class="legal-text">{termsText}</pre>
+				</div>
+			{/if}
+
+			{#if showPrivacyPolicy}
+				<div class="legal-panel" role="region" aria-label="プライバシーポリシー全文">
+					<h3>プライバシーポリシー</h3>
+					<pre class="legal-text">{privacyPolicyText}</pre>
+				</div>
+			{/if}
+		</section>
+	{/if}
+
 	<div class="helper-row">
 		{#if isLogin}
 			<a class="forgot-link" href="/">パスワードをお忘れですか？</a>
 		{:else}
 			<label>
 				<input type="checkbox" bind:checked={agreed} disabled={loading} />
-				利用規約に同意する
+				利用規約とプライバシーポリシーに同意する
 			</label>
 		{/if}
 	</div>
@@ -811,8 +874,8 @@
 	.field-wrap.required::after {
 		content: '*';
 		position: absolute;
-		top: 50%;
-		right: 12px;
+		top:24%;
+		right: 16px;
 		transform: translateY(-50%);
 		font-size: 18px;
 		color: #ff7a18;
@@ -862,7 +925,6 @@
 	.toggle-eye img {
 		width: 18px;
 		height: 18px;
-		opacity: 0.7;
 	}
 
 	.turnstile-wrap {
@@ -871,10 +933,67 @@
 		margin-top: 2px;
 	}
 
+	.onboarding-legal {
+		display: grid;
+		gap: 8px;
+		padding: 10px 12px;
+		border-radius: 12px;
+		justify-content: center;
+	}
+
+	.onboarding-title {
+		display: flex;
+		justify-content: center;
+		margin: 0;
+		font-size: 12px;
+		line-height: 1.5;
+		color: #4e4a61;
+	}
+
+	.legal-toggle-row {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.legal-toggle {
+		border: 1px solid rgba(106, 92, 255, 0.32);
+		border-radius: 999px;
+		padding: 6px 11px;
+		font-size: 12px;
+		font-weight: 300;
+		background: rgba(106, 92, 255, 0.08);
+		color: #ffffff;
+	}
+
+	.legal-panel {
+		border: 1px solid rgba(117, 109, 146, 0.2);
+		border-radius: 10px;
+		padding: 10px;
+		background: rgba(255, 255, 255, 0.95);
+		max-height: 180px;
+		overflow: auto;
+	}
+
+	.legal-panel h3 {
+		margin: 0 0 8px;
+		font-size: 13px;
+		color: #2f2c3d;
+	}
+
+	.legal-text {
+		margin: 0;
+		white-space: pre-wrap;
+		font-size: 12px;
+		line-height: 1.6;
+		color: #38344b;
+	}
+
 	.helper-row {
 		display: flex;
 		align-items: center;
-		justify-content: flex-end;
+		justify-content: center;
 		margin-top: -2px;
 		font-size: 13px;
 		color: #5d5a6d;

@@ -1,9 +1,7 @@
 <div class="launch-data">
     <svg
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 1200 220"
-    width="100%"
-    height="auto"
+    viewBox="0 0 800 80"
     role="img"
     aria-label="MARCH 2026 — Launching Soon —"
     >
@@ -17,39 +15,26 @@
 
     <!-- 上：MARCH 2026 -->
     <text
-        x="600"
-        y="80"
         text-anchor="middle"
         fill="url(#gradText)"
-        font-size="64"
-        letter-spacing="6"
+        letter-spacing="2"
         opacity="1"
     >
-        MARCH 2026
+        <tspan x="50%" y="40%" dy="0" >MARCH 2026</tspan>
+        <tspan x="50%" y="40%" dy="2rem" > ーLaunching Soonー</tspan>
     </text>
 
     <!-- 下：— Launching Soon —（文字） -->
-    <g transform="translate(0, 0)" filter="url(#softGlow)">
-        <!-- 文字 -->
-        <text
-        x="600"
-        y="160"
-        text-anchor="middle"
-        fill="url(#gradText)"
-        font-size="56"
-        letter-spacing="4"
-        opacity="1"
-        >
-        ーLaunching Soonー
-        </text>
-    </g>
+
     </svg>
 </div>
 
 <style>
     .launch-data {
         font-family: noto-sans-jp, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
-        font-size: 128px;
         font-weight: 200;
+        width: 100%;
+        height: auto;
+        font-size: 24px;
     }
 </style>

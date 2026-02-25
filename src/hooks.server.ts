@@ -6,10 +6,10 @@ const contentSecurityPolicy = [
 	"base-uri 'self'",
 	"form-action 'self'",
 	"frame-ancestors 'none'",
-	"script-src 'self' https://challenges.cloudflare.com",
-	"style-src 'self' 'unsafe-inline'",
+	"script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
 	"img-src 'self' data: blob: https://challenges.cloudflare.com",
-	"font-src 'self' data:",
+	"font-src 'self' data: https://fonts.gstatic.com",
 	"connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
 	"frame-src 'self' https://challenges.cloudflare.com"
 ].join('; ');
