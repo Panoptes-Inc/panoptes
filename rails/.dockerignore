@@ -5,4 +5,3 @@ config/credentials/*.key
 log/*
 tmp/*
 storage/*
-test

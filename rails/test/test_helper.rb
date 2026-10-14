@@ -1,8 +1,8 @@
-ENV["RAILS_ENV"] ||= "test"
-ENV["SUPABASE_JWT_ISSUER"] ||= "https://test.supabase.co/auth/v1"
-ENV["SUPABASE_JWT_AUDIENCE"] ||= "authenticated"
-ENV["SUPABASE_JWKS_URL"] ||= "https://test.supabase.co/auth/v1/.well-known/jwks.json"
-ENV["SUPABASE_JWT_ALGORITHMS"] ||= "RS256"
+ENV["RAILS_ENV"] = "test"
+ENV["SUPABASE_JWT_ISSUER"] = "https://test.supabase.co/auth/v1"
+ENV["SUPABASE_JWT_AUDIENCE"] = "authenticated"
+ENV["SUPABASE_JWKS_URL"] = "https://test.supabase.co/auth/v1/.well-known/jwks.json"
+ENV["SUPABASE_JWT_ALGORITHMS"] = "RS256"
 require_relative "../config/environment"
 require "rails/test_help"
 
