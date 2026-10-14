@@ -36,7 +36,7 @@ Componentはpropsを受け取り、stateから表示を作り、interaction inte
 
 ```svelte
 <script lang="ts">
-  let { label, onSelect }: { label: string; onSelect: () => void } = $props();
+	let { label, onSelect }: { label: string; onSelect: () => void } = $props();
 </script>
 
 <button onclick={onSelect}>{label}</button>
@@ -134,29 +134,29 @@ Storeを使う理由は共有lifecycleと購読であり、canonical backend sta
 
 SvelteKitはSvelte componentを使い、routing、server load、request handler、form action、SSR、client navigation、build/runtime boundaryを構成するapplication frameworkである。
 
-| Concern | Svelte | SvelteKit |
-| --- | --- | --- |
-| UI component | yes | Svelte componentをrouteへ配置 |
-| Reactivity | runes、stores | load dataとcomponentへ接続 |
-| File-based routing | no | `src/routes` |
-| Server request lifecycle | no | hooks、server load、actions、`+server.ts` |
-| SSR / hydration / navigation | component単体では決めない | route単位でorchestrate |
-| Business backend | no | PanoptesではBFFまで。Railsを代替しない |
+| Concern                      | Svelte                    | SvelteKit                                 |
+| ---------------------------- | ------------------------- | ----------------------------------------- |
+| UI component                 | yes                       | Svelte componentをrouteへ配置             |
+| Reactivity                   | runes、stores             | load dataとcomponentへ接続                |
+| File-based routing           | no                        | `src/routes`                              |
+| Server request lifecycle     | no                        | hooks、server load、actions、`+server.ts` |
+| SSR / hydration / navigation | component単体では決めない | route単位でorchestrate                    |
+| Business backend             | no                        | PanoptesではBFFまで。Railsを代替しない    |
 
 したがって、`Svelte = Panoptes frontendのすべて`でも、`SvelteKit = Rails business backend`でもない。
 
 ## 4. SvelteKit file roles
 
-| File | General role | Panoptesでの境界 |
-| --- | --- | --- |
-| `+page.svelte` | URLに対応するroute component | thin Route Entry。Page Entry/Featureへcontextを渡す |
-| `+page.ts` | pageのuniversal `load` | initial SSRとclient navigationの双方で動きうる。secret禁止 |
-| `+page.server.ts` | server-only page `load` / form `actions` | cookie、session、secure validation、redirect等 |
-| `+layout.svelte` | nested routesを包むpersistent UI | root/app shell、Header、shared structure、children rendering |
-| `+layout.ts` | layoutのuniversal `load` | public/universal data。secretやserver-only SDKは禁止 |
-| `+layout.server.ts` | server-only layout `load` | verified auth/session/Organization contextの初期配布 |
-| `+server.ts` | HTTP endpoint handler | Auth callback/logoutまたはsame-origin BFF/API boundary |
-| `hooks.server.ts` | request全体のserver hook | session/auth解決、route policy、server-side deny/redirect |
+| File                | General role                             | Panoptesでの境界                                             |
+| ------------------- | ---------------------------------------- | ------------------------------------------------------------ |
+| `+page.svelte`      | URLに対応するroute component             | thin Route Entry。Page Entry/Featureへcontextを渡す          |
+| `+page.ts`          | pageのuniversal `load`                   | initial SSRとclient navigationの双方で動きうる。secret禁止   |
+| `+page.server.ts`   | server-only page `load` / form `actions` | cookie、session、secure validation、redirect等               |
+| `+layout.svelte`    | nested routesを包むpersistent UI         | root/app shell、Header、shared structure、children rendering |
+| `+layout.ts`        | layoutのuniversal `load`                 | public/universal data。secretやserver-only SDKは禁止         |
+| `+layout.server.ts` | server-only layout `load`                | verified auth/session/Organization contextの初期配布         |
+| `+server.ts`        | HTTP endpoint handler                    | Auth callback/logoutまたはsame-origin BFF/API boundary       |
+| `hooks.server.ts`   | request全体のserver hook                 | session/auth解決、route policy、server-side deny/redirect    |
 
 Panoptesの現Route treeには`+page.ts`や`+layout.ts`の代表実装はない。概念は理解するが、不要なuniversal loadを新設しない。
 
@@ -195,11 +195,11 @@ Current Organization actionはmembership不一致を403、成功を303 redirect�
 
 ### 5.1 Route roles
 
-| Route | Product role | SvelteKit entry | Composition owner |
-| --- | --- | --- | --- |
-| `/` | Public Product Marketing Home | `src/routes/+page.svelte` | `MarketingLandingPage` |
-| `/app` | App Home / Analysis Entry | `src/routes/app/+page.svelte` | shared `PanoptesShellEntryPage` / Feature Shell |
-| `/app/analysis` | Analysis-focused Workspace / Result Entry | `src/routes/app/analysis/+page.svelte` | same shared entry / Feature Shell |
+| Route           | Product role                              | SvelteKit entry                        | Composition owner                               |
+| --------------- | ----------------------------------------- | -------------------------------------- | ----------------------------------------------- |
+| `/`             | Public Product Marketing Home             | `src/routes/+page.svelte`              | `MarketingLandingPage`                          |
+| `/app`          | App Home / Analysis Entry                 | `src/routes/app/+page.svelte`          | shared `PanoptesShellEntryPage` / Feature Shell |
+| `/app/analysis` | Analysis-focused Workspace / Result Entry | `src/routes/app/analysis/+page.svelte` | same shared entry / Feature Shell               |
 
 `/app`と`/app/analysis`はProduct上のroleが異なるが、同じruntime compositionを共有する。Route fileを消して一つのURLにすることとは別問題である。
 
@@ -235,15 +235,15 @@ Root `/` routeはauthenticated dataを`MarketingLandingPage`へ渡す。Marketin
 
 ## 6. Server / Client boundary
 
-| Server側候補 | Client側候補 |
-| --- | --- |
-| cookie/session読取・設定 | click/input/modal/tab等のinteraction |
-| private environment / secret | transient/presentation state |
-| Supabase server client | typed responseのrendering |
-| initial verified auth context | semantic navigation |
-| route authorization / redirect | AbortSignalによるUI lifecycle cancellation |
-| BFF proxy / Rails token forwarding | callbackによるintent通知 |
-| server form action | local validationとaccessible feedback |
+| Server側候補                       | Client側候補                               |
+| ---------------------------------- | ------------------------------------------ |
+| cookie/session読取・設定           | click/input/modal/tab等のinteraction       |
+| private environment / secret       | transient/presentation state               |
+| Supabase server client             | typed responseのrendering                  |
+| initial verified auth context      | semantic navigation                        |
+| route authorization / redirect     | AbortSignalによるUI lifecycle cancellation |
+| BFF proxy / Rails token forwarding | callbackによるintent通知                   |
+| server form action                 | local validationとaccessible feedback      |
 
 ### なぜSecretをClientへ置かないか
 
@@ -279,12 +279,12 @@ PanoptesはSSRでinitial route/auth contextを受け、hydration後にclient int
 
 ## 8. State / Props / Callback model
 
-| State class | Example | Owner | Source of Truth boundary |
-| --- | --- | --- | --- |
-| Local / presentation | modal、tab、temporary input、password visibility | Component / UI owner | browser lifecycle内のみ |
-| Feature state | controller lifecycle、view-model、analysis UI projection | Feature | server responseをorchestrateするがcanonical ownerではない |
-| Shared frontend state | selected project、runtime projection、notification | approved store/controller | 複数consumer向けcache/projection |
-| Server/canonical business state | Project、AnalysisJob、Snapshot、Role、workflow | Rails + PostgreSQL | Frontendから直接確定しない |
+| State class                     | Example                                                  | Owner                     | Source of Truth boundary                                  |
+| ------------------------------- | -------------------------------------------------------- | ------------------------- | --------------------------------------------------------- |
+| Local / presentation            | modal、tab、temporary input、password visibility         | Component / UI owner      | browser lifecycle内のみ                                   |
+| Feature state                   | controller lifecycle、view-model、analysis UI projection | Feature                   | server responseをorchestrateするがcanonical ownerではない |
+| Shared frontend state           | selected project、runtime projection、notification       | approved store/controller | 複数consumer向けcache/projection                          |
+| Server/canonical business state | Project、AnalysisJob、Snapshot、Role、workflow           | Rails + PostgreSQL        | Frontendから直接確定しない                                |
 
 ### Props direction
 
@@ -311,42 +311,42 @@ Svelte component / Feature
   -> Rails API
 ```
 
-| SvelteKit BFF | Rails |
-| --- | --- |
-| Browser-facing same-origin boundary | Canonical business backend |
-| cookie/session確認 | JWT、membership、Role、resource authorization再検証 |
-| access token forwarding | business rule / workflow / transaction |
-| Rails URLとraw errorを隠す | canonical Project/Job/Snapshot state |
-| timeout/envelope/safe error shaping | persistent stateをPostgreSQLへcommit |
+| SvelteKit BFF                       | Rails                                               |
+| ----------------------------------- | --------------------------------------------------- |
+| Browser-facing same-origin boundary | Canonical business backend                          |
+| cookie/session確認                  | JWT、membership、Role、resource authorization再検証 |
+| access token forwarding             | business rule / workflow / transaction              |
+| Rails URLとraw errorを隠す          | canonical Project/Job/Snapshot state                |
+| timeout/envelope/safe error shaping | persistent stateをPostgreSQLへcommit                |
 
 Current BFFにはidentity/Organizationのread endpointがある。Production Analysis business endpointは未接続である。M02では境界だけを理解し、request/error/idempotencyの詳細はM07/M08/M09へ送る。
 
 ## 10. Directory mapping
 
-| Directory | Svelte/SvelteKit上の意味 | Current / Target |
-| --- | --- | --- |
-| `src/routes` | file-based Route Entry、Framework Layout、server load/action、BFF | `CURRENT` |
-| `src/lib/features/<feature>` | Feature、controller、mapping、feature-local component | `CURRENT`。target modelの中心 |
-| `src/lib/layouts` | reusable structural shell。SvelteKit `+layout`とは別 | `TARGET`。現在directory未作成 |
-| `src/lib/ui/components` | stable cross-feature presentation | `TARGET`。現在directory未作成 |
-| `src/lib/ui/primitives` | semantics-neutral primitive | `TARGET`。現在directory未作成 |
-| `src/lib/components/ComponentsBase` | legacy migration source / current canonicalが一部残る | `CURRENT LEGACY`。新規配置先にしない |
+| Directory                           | Svelte/SvelteKit上の意味                                          | Current / Target                     |
+| ----------------------------------- | ----------------------------------------------------------------- | ------------------------------------ |
+| `src/routes`                        | file-based Route Entry、Framework Layout、server load/action、BFF | `CURRENT`                            |
+| `src/lib/features/<feature>`        | Feature、controller、mapping、feature-local component             | `CURRENT`。target modelの中心        |
+| `src/lib/layouts`                   | reusable structural shell。SvelteKit `+layout`とは別              | `TARGET`。現在directory未作成        |
+| `src/lib/ui/components`             | stable cross-feature presentation                                 | `TARGET`。現在directory未作成        |
+| `src/lib/ui/primitives`             | semantics-neutral primitive                                       | `TARGET`。現在directory未作成        |
+| `src/lib/components/ComponentsBase` | legacy migration source / current canonicalが一部残る             | `CURRENT LEGACY`。新規配置先にしない |
 
 承認済みDirectory Structureはmigration targetであり、全fileが移動済みという意味ではない。M02で移動は行わない。
 
 ## 11. Representative code mapping
 
-| Representative | Role | 読むポイント |
-| --- | --- | --- |
-| `src/hooks.server.ts` | global server request boundary | auth解決、route policy、server deny/redirect、private cache |
-| `src/routes/+layout.server.ts` | root server load | `locals.auth`からverified initial contextを返す |
-| `src/routes/+layout.svelte` | root Framework Layout | global CSS/headと`children` snippet。Featureなし |
-| `src/routes/+page.svelte` | Marketing Route Entry | `MarketingLandingPage`へroute dataを渡す |
-| `src/routes/app/+layout.svelte` | App Framework Layout | persistent Header/shell、pathname-derived Top Hero、children |
-| `src/routes/app/+page.svelte` / `app/analysis/+page.svelte` | App Route Entries | 別URL roleから同じPage/Feature entryへOrganization contextを渡す |
-| `src/routes/organization/select/+page.server.ts` | server load + form action | membership検証、HTTP-only cookie、403/redirect |
-| `src/routes/api/panoptes/v1/organizations/[organization_id]/+server.ts` | BFF endpoint | browser requestをserver-only Rails clientへ接続 |
-| `src/lib/components/ComponentsBase/Panoptes/PanoptesShellPage.svelte` | Feature Orchestrator | `$props/$state/$derived/$effect`、controller lifecycle、callback wiring |
+| Representative                                                                                   | Role                                  | 読むポイント                                                                |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------- | --------------------------------------------------------------------------- |
+| `src/hooks.server.ts`                                                                            | global server request boundary        | auth解決、route policy、server deny/redirect、private cache                 |
+| `src/routes/+layout.server.ts`                                                                   | root server load                      | `locals.auth`からverified initial contextを返す                             |
+| `src/routes/+layout.svelte`                                                                      | root Framework Layout                 | global CSS/headと`children` snippet。Featureなし                            |
+| `src/routes/+page.svelte`                                                                        | Marketing Route Entry                 | `MarketingLandingPage`へroute dataを渡す                                    |
+| `src/routes/app/+layout.svelte`                                                                  | App Framework Layout                  | persistent Header/shell、pathname-derived Top Hero、children                |
+| `src/routes/app/+page.svelte` / `app/analysis/+page.svelte`                                      | App Route Entries                     | 別URL roleから同じPage/Feature entryへOrganization contextを渡す            |
+| `src/routes/organization/select/+page.server.ts`                                                 | server load + form action             | membership検証、HTTP-only cookie、403/redirect                              |
+| `src/routes/api/panoptes/v1/organizations/[organization_id]/+server.ts`                          | BFF endpoint                          | browser requestをserver-only Rails clientへ接続                             |
+| `src/lib/components/ComponentsBase/Panoptes/PanoptesShellPage.svelte`                            | Feature Orchestrator                  | `$props/$state/$derived/$effect`、controller lifecycle、callback wiring     |
 | `src/lib/features/panoptes-shell/components/PanoptesShellMainSurface.svelte` / Signup components | Presentation + local form composition | callback-only interaction、snippet、if、bindable field、accessible feedback |
 
 これらは代表例であり、全Svelte fileの適合宣言ではない。
@@ -480,18 +480,18 @@ Client-side navigationでもG/Hは省略しない。Navigationの表示体験が
 
 ## 15. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. Svelte fundamentals explained | `PASS` |
-| 2. Svelte 5 concepts explained | `PASS` |
+| Criterion                           | Result |
+| ----------------------------------- | ------ |
+| 1. Svelte fundamentals explained    | `PASS` |
+| 2. Svelte 5 concepts explained      | `PASS` |
 | 3. SvelteKit fundamentals explained | `PASS` |
-| 4. Route/Page/Layout explained | `PASS` |
+| 4. Route/Page/Layout explained      | `PASS` |
 | 5. server/client boundary explained | `PASS` |
-| 6. BFF relationship explained | `PASS` |
-| 7. rendering model explained | `PASS` |
-| 8. state/props/callback explained | `PASS` |
-| 9. repository mapping included | `PASS` |
-| 10. exercises + answers included | `PASS` |
+| 6. BFF relationship explained       | `PASS` |
+| 7. rendering model explained        | `PASS` |
+| 8. state/props/callback explained   | `PASS` |
+| 9. repository mapping included      | `PASS` |
+| 10. exercises + answers included    | `PASS` |
 
 M02 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M03`
@@ -510,4 +510,3 @@ Module status: `COMPLETE / READY_FOR_M03`
 - [Frontend Route Ownership](../../architecture/frontend-route-ownership.md)
 - [October Frontend Standardization Plan](../../architecture/frontend-standardization-plan.md)
 - [Frontend Inventory Summary](../../inventory/frontend-inventory-summary.md)
-

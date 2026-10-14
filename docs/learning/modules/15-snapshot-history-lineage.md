@@ -54,12 +54,12 @@ Canonical invariant:
 latest != current != strategy source != historical Snapshot
 ```
 
-| Concept | Meaning | Mutability / authority |
-| --- | --- | --- |
-| Latest | 時間的に最も新しく生成・受付されたresource | chronological fact。採用を意味しない |
-| Current | Productが現在採用・表示するserver-authorized pointer | mutable relationship。Rails authority |
-| Strategy Source | Formal Strategy generationが参照する承認済みsource | eligibility/promotion policyに従う |
-| Historical Snapshot | 過去時点のimmutable product record | contentをsilent overwriteしない |
+| Concept             | Meaning                                              | Mutability / authority                |
+| ------------------- | ---------------------------------------------------- | ------------------------------------- |
+| Latest              | 時間的に最も新しく生成・受付されたresource           | chronological fact。採用を意味しない  |
+| Current             | Productが現在採用・表示するserver-authorized pointer | mutable relationship。Rails authority |
+| Strategy Source     | Formal Strategy generationが参照する承認済みsource   | eligibility/promotion policyに従う    |
+| Historical Snapshot | 過去時点のimmutable product record                   | contentをsilent overwriteしない       |
 
 これらが同じSnapshotを指す場合はあるが、それはidentityが同じなのではなく、別の意味を持つpointerが偶然同じtargetを参照している状態である。
 
@@ -99,13 +99,13 @@ CURRENT mock/domainはSnapshot aggregate内の`strategyPlans.isSelected`や`phas
 
 ## 6. Result, Artifact, and Snapshot
 
-| Concept | Definition | Example | Canonical decision |
-| --- | --- | --- | --- |
-| Evidence | 外部対象から観測した原本fact | HTML、rendered DOM、Screenshot | Worker captures; Rails validates references |
-| Artifact | 保存可能なtechnical output | HTML object、Screenshot object、extracted JSON | Store persists; not Product history by itself |
-| Observation | Evidenceから構造化されたtyped interpretation | CTA presence、heading relation、visual prominence | Approved contract; Worker candidate/Rails validation |
-| Result | AnalysisJobから得たvalidated Product output | analysis sections、scores、limitations | Rails validates usability |
-| Snapshot | eligible Resultを固定したhistorical Product record | committed analysis snapshot | Rails creates/commits |
+| Concept     | Definition                                         | Example                                           | Canonical decision                                   |
+| ----------- | -------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------- |
+| Evidence    | 外部対象から観測した原本fact                       | HTML、rendered DOM、Screenshot                    | Worker captures; Rails validates references          |
+| Artifact    | 保存可能なtechnical output                         | HTML object、Screenshot object、extracted JSON    | Store persists; not Product history by itself        |
+| Observation | Evidenceから構造化されたtyped interpretation       | CTA presence、heading relation、visual prominence | Approved contract; Worker candidate/Rails validation |
+| Result      | AnalysisJobから得たvalidated Product output        | analysis sections、scores、limitations            | Rails validates usability                            |
+| Snapshot    | eligible Resultを固定したhistorical Product record | committed analysis snapshot                       | Rails creates/commits                                |
 
 `artifact exists != Result valid != Snapshot eligible`である。すべてのResultが自動的にSnapshotになるわけではなく、Snapshot eligibilityはJob outcomeとPD-04 policyに従う。
 
@@ -215,13 +215,13 @@ Exact Reuse Profile schemaやpolicy条件はDEFERREDである。
 
 PD-04 baseline:
 
-| AnalysisJob terminal outcome | Snapshot eligibility | Meaning |
-| --- | --- | --- |
-| `completed` | `CAN_CREATE` | validation後のFull Snapshot候補 |
-| `partially_completed` | `CONDITIONAL` | limitations付きS-B Limited Snapshot |
-| `failed` | `CANNOT_CREATE` baseline | valid Product Result不成立 |
-| `cancelled` | `CANNOT_CREATE` baseline | terminal reasonをpartialへsilent rewriteしない |
-| `timed_out` | `CANNOT_CREATE` baseline | intermediate artifactとFormal Snapshotを分離 |
+| AnalysisJob terminal outcome | Snapshot eligibility     | Meaning                                        |
+| ---------------------------- | ------------------------ | ---------------------------------------------- |
+| `completed`                  | `CAN_CREATE`             | validation後のFull Snapshot候補                |
+| `partially_completed`        | `CONDITIONAL`            | limitations付きS-B Limited Snapshot            |
+| `failed`                     | `CANNOT_CREATE` baseline | valid Product Result不成立                     |
+| `cancelled`                  | `CANNOT_CREATE` baseline | terminal reasonをpartialへsilent rewriteしない |
+| `timed_out`                  | `CANNOT_CREATE` baseline | intermediate artifactとFormal Snapshotを分離   |
 
 Limited Snapshotには少なくともlimitations、incomplete processing、partial provenanceが必要で、Full Snapshotと同じ意味で扱わない。
 
@@ -295,10 +295,10 @@ Compatibilityが不明またはhigh riskなら、simple numeric deltaだけを�
 
 ## 16. Audit vs Lineage
 
-| Concept | Question | Example |
-| --- | --- | --- |
-| Audit | 誰が、いつ、何をしたか | User AがT時点でreanalysisを要求した |
-| Lineage | 何から何が作られたか | Snapshot SはResult R、Job J、Evidence E、Formula v1から作られた |
+| Concept | Question               | Example                                                         |
+| ------- | ---------------------- | --------------------------------------------------------------- |
+| Audit   | 誰が、いつ、何をしたか | User AがT時点でreanalysisを要求した                             |
+| Lineage | 何から何が作られたか   | Snapshot SはResult R、Job J、Evidence E、Formula v1から作られた |
 
 Audit recordだけではoutput derivationを再現できず、lineageだけではactor/action authorizationを説明できない。両者は関連しても代替ではない。
 
@@ -310,50 +310,50 @@ Immutabilityは「永久保存」を意味しない。Retention/deletion policy�
 
 ## 18. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | Frontend typeに`analysisSnapshotId`、`versionLabel`、aggregate payloadがあり、Projectに`currentSnapshotId`、storeに`currentSnapshot`/`lastStableSnapshot`がある。selectorはactive reanalysis中にlast stable Snapshotを保持する。mockはcompleted時にSnapshotを生成しcurrent pointerを更新する。 |
-| CURRENT caveat | explicit historical route/restorationは未実装。mock/domainはSnapshot aggregate内のstrategy selection/taskを更新するため、Production immutability実装の証拠ではない。Frontend payloadにfull Evidence/Artifact/formula/model lineageはない。 |
-| TARGET | Rails/PostgreSQLがimmutable committed Snapshot、current pointer、authorization、lineage、Strategy Source eligibilityをcanonicalに保持する。PD-01 Model CとPD-04 Limited Snapshot/Evidence-only/new lineageを適用する。 |
-| DEFERRED | Rails schema/persistence、exact Result ID、explicit Snapshot URL/API、history UI、artifact linkage、full lineage graph、compatibility resolution、Strategy Source persistence、retention/deletion、reuse profile、migration from mutable mock aggregate。 |
+| Classification | Confirmed scope                                                                                                                                                                                                                                                                                |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT        | Frontend typeに`analysisSnapshotId`、`versionLabel`、aggregate payloadがあり、Projectに`currentSnapshotId`、storeに`currentSnapshot`/`lastStableSnapshot`がある。selectorはactive reanalysis中にlast stable Snapshotを保持する。mockはcompleted時にSnapshotを生成しcurrent pointerを更新する。 |
+| CURRENT caveat | explicit historical route/restorationは未実装。mock/domainはSnapshot aggregate内のstrategy selection/taskを更新するため、Production immutability実装の証拠ではない。Frontend payloadにfull Evidence/Artifact/formula/model lineageはない。                                                     |
+| TARGET         | Rails/PostgreSQLがimmutable committed Snapshot、current pointer、authorization、lineage、Strategy Source eligibilityをcanonicalに保持する。PD-01 Model CとPD-04 Limited Snapshot/Evidence-only/new lineageを適用する。                                                                         |
+| DEFERRED       | Rails schema/persistence、exact Result ID、explicit Snapshot URL/API、history UI、artifact linkage、full lineage graph、compatibility resolution、Strategy Source persistence、retention/deletion、reuse profile、migration from mutable mock aggregate。                                      |
 
 Approved Product DecisionはProduction persistence完成を意味しない。
 
 ## 19. Representative repository mapping
 
-| Representative source | Role | Current/history meaning | Lineage role | Status |
-| --- | --- | --- | --- | --- |
-| [Product Decision Register](../../product/product-decision-register.md) PD-01B | deep-link/current contract | Model C、explicit historical、no silent fallback | Job/Snapshot identity semantics | Approved; implementation deferred |
-| [Product Decision Register](../../product/product-decision-register.md) PD-04 | partial workflow | Limited Snapshot、current/source separation | new Job/new identity/reuse contract | Approved; implementation deferred |
-| [M12 AnalysisJob Lifecycle](./12-analysis-job-lifecycle.md) | Job/result eligibility | terminal outcomeとstable Snapshot | Job→Result/Snapshot owner | Approved learning contract |
-| [M14 Worker / Collection](./14-python-worker-chromium-collection.md) | Evidence/Artifact boundary | Product Snapshot以前のtechnical outputs | collection/provenance inputs | Approved learning contract |
-| [AnalysisJob State Machine](../../api/analysis-job-state-machine.md) | commit/transition design | committed/stable/workingを分離 | attempt/job/artifact validation | Target draft; PD-04 caveat |
-| [API v1 Contract](../../api/panoptes-api-v1.md) | Snapshot API semantics | committed/latest endpoint draft | Job `committed_snapshot_id` | Target draft; `latest` endpoint predates current contract clarification |
-| [OpenAPI draft](../../api/openapi-draft.yaml) | wire schema draft | Snapshot ID/version/committed_at/generic payload | AnalysisJob ID association | Target draft, incomplete lineage |
-| [Snapshot Component Map](../../architecture/snapshot-component-map.md) | Frontend render graph | aggregate payload→tabs/view models | no persistence lineage | CURRENT architecture mapping |
-| `src/lib/panoptes/types.ts` | frontend domain types | current Snapshot aggregate、Job IDs | limited IDs/versionLabel only | CURRENT frontend, partial |
-| `src/lib/panoptes/selectors/presentation.ts` / `domain/project-sync.ts` | stable display projection | current/lastStable rendering | no historical collection | CURRENT frontend |
-| `src/lib/panoptes/api/mock/runtime-ticker.ts` / `mock-backend.ts` | browser-local mock persistence | completed→Snapshot/current update | Job→mock Snapshot only | CURRENT mock; not canonical backend |
-| `src/lib/panoptes/domain/strategy-snapshot.ts` | client strategy/task projection | aggregate payloadをcopy-update | exposes immutability implementation gap | CURRENT presentation/mock behavior |
+| Representative source                                                          | Role                            | Current/history meaning                          | Lineage role                            | Status                                                                  |
+| ------------------------------------------------------------------------------ | ------------------------------- | ------------------------------------------------ | --------------------------------------- | ----------------------------------------------------------------------- |
+| [Product Decision Register](../../product/product-decision-register.md) PD-01B | deep-link/current contract      | Model C、explicit historical、no silent fallback | Job/Snapshot identity semantics         | Approved; implementation deferred                                       |
+| [Product Decision Register](../../product/product-decision-register.md) PD-04  | partial workflow                | Limited Snapshot、current/source separation      | new Job/new identity/reuse contract     | Approved; implementation deferred                                       |
+| [M12 AnalysisJob Lifecycle](./12-analysis-job-lifecycle.md)                    | Job/result eligibility          | terminal outcomeとstable Snapshot                | Job→Result/Snapshot owner               | Approved learning contract                                              |
+| [M14 Worker / Collection](./14-python-worker-chromium-collection.md)           | Evidence/Artifact boundary      | Product Snapshot以前のtechnical outputs          | collection/provenance inputs            | Approved learning contract                                              |
+| [AnalysisJob State Machine](../../api/analysis-job-state-machine.md)           | commit/transition design        | committed/stable/workingを分離                   | attempt/job/artifact validation         | Target draft; PD-04 caveat                                              |
+| [API v1 Contract](../../api/panoptes-api-v1.md)                                | Snapshot API semantics          | committed/latest endpoint draft                  | Job `committed_snapshot_id`             | Target draft; `latest` endpoint predates current contract clarification |
+| [OpenAPI draft](../../api/openapi-draft.yaml)                                  | wire schema draft               | Snapshot ID/version/committed_at/generic payload | AnalysisJob ID association              | Target draft, incomplete lineage                                        |
+| [Snapshot Component Map](../../architecture/snapshot-component-map.md)         | Frontend render graph           | aggregate payload→tabs/view models               | no persistence lineage                  | CURRENT architecture mapping                                            |
+| `src/lib/panoptes/types.ts`                                                    | frontend domain types           | current Snapshot aggregate、Job IDs              | limited IDs/versionLabel only           | CURRENT frontend, partial                                               |
+| `src/lib/panoptes/selectors/presentation.ts` / `domain/project-sync.ts`        | stable display projection       | current/lastStable rendering                     | no historical collection                | CURRENT frontend                                                        |
+| `src/lib/panoptes/api/mock/runtime-ticker.ts` / `mock-backend.ts`              | browser-local mock persistence  | completed→Snapshot/current update                | Job→mock Snapshot only                  | CURRENT mock; not canonical backend                                     |
+| `src/lib/panoptes/domain/strategy-snapshot.ts`                                 | client strategy/task projection | aggregate payloadをcopy-update                   | exposes immutability implementation gap | CURRENT presentation/mock behavior                                      |
 
 `GET .../analysis-snapshots/latest`というTarget draft endpoint名はchronological latestを表し得るが、PD-01/PD-04のserver-authorized currentやStrategy Sourceと同義ではない。後続contract実装時に意味を明示する必要がある。
 
 ## 20. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| Snapshot = Screenshot | Snapshotはhistorical Product record、ScreenshotはEvidence Artifact |
-| Snapshot = Current State | Snapshotはimmutable resource、Currentはmutable pointer |
-| Latest = Current | chronological newestとadopted pointerは別 |
-| Latest = Strategy Source | formal eligibility/promotionが必要 |
-| Result = Snapshot | Resultはvalidation output、Snapshot化にはeligibility/commitが必要 |
-| Artifact = Snapshot | technical objectとProduct historyは別 |
-| Historical Snapshotを上書きしてよい | new Job/new Snapshotで履歴を追加する |
-| Reanalysis = Snapshot update | new identitiesとlineageを作る |
-| Lineage = Audit Log | derivation relationとactor/action recordは別 |
-| Old Snapshotをcurrent logicで表示すればよい | generation-time semantics/compatibilityを守る |
-| Partial Snapshot = Full Snapshot | limitations付きLimited Snapshot |
-| URL ID = Authorization proof | Railsがresource ownershipを認可する |
+| Misunderstanding                            | Correction                                                         |
+| ------------------------------------------- | ------------------------------------------------------------------ |
+| Snapshot = Screenshot                       | Snapshotはhistorical Product record、ScreenshotはEvidence Artifact |
+| Snapshot = Current State                    | Snapshotはimmutable resource、Currentはmutable pointer             |
+| Latest = Current                            | chronological newestとadopted pointerは別                          |
+| Latest = Strategy Source                    | formal eligibility/promotionが必要                                 |
+| Result = Snapshot                           | Resultはvalidation output、Snapshot化にはeligibility/commitが必要  |
+| Artifact = Snapshot                         | technical objectとProduct historyは別                              |
+| Historical Snapshotを上書きしてよい         | new Job/new Snapshotで履歴を追加する                               |
+| Reanalysis = Snapshot update                | new identitiesとlineageを作る                                      |
+| Lineage = Audit Log                         | derivation relationとactor/action recordは別                       |
+| Old Snapshotをcurrent logicで表示すればよい | generation-time semantics/compatibilityを守る                      |
+| Partial Snapshot = Full Snapshot            | limitations付きLimited Snapshot                                    |
+| URL ID = Authorization proof                | Railsがresource ownershipを認可する                                |
 
 ## 21. Decision heuristic
 
@@ -460,18 +460,18 @@ Snapshotをimmutableにすると、当時のProduct Resultと意味を固定で�
 
 ## 24. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Snapshot fundamentals explained | `PASS` |
-| 2 | current/latest/history distinction explained | `PASS` |
-| 3 | Result/Artifact/Snapshot distinction explained | `PASS` |
-| 4 | Immutability explained | `PASS` |
-| 5 | Lineage explained | `PASS` |
-| 6 | Version/historical interpretation explained | `PASS` |
-| 7 | Partial Snapshot explained | `PASS` |
-| 8 | Strategy Source/deep-link explained | `PASS` |
-| 9 | Repository mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                      | Result |
+| --: | ---------------------------------------------- | ------ |
+|   1 | Snapshot fundamentals explained                | `PASS` |
+|   2 | current/latest/history distinction explained   | `PASS` |
+|   3 | Result/Artifact/Snapshot distinction explained | `PASS` |
+|   4 | Immutability explained                         | `PASS` |
+|   5 | Lineage explained                              | `PASS` |
+|   6 | Version/historical interpretation explained    | `PASS` |
+|   7 | Partial Snapshot explained                     | `PASS` |
+|   8 | Strategy Source/deep-link explained            | `PASS` |
+|   9 | Repository mapping + two diagrams included     | `PASS` |
+|  10 | Exercises + answers included                   | `PASS` |
 
 M15 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Production Snapshot persistence、history UI、lineage graph、compatibility engine、retention policyの完成判定ではない。
 

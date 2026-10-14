@@ -49,14 +49,14 @@ Mobile-firstは「Mobile Productを最優先にする」というProduct priorit
 
 ## 4. Breakpoint Contract
 
-| Name | Value | Intended semantic use |
-| --- | ---: | --- |
-| Base | `0–639px` | narrow viewportで成立するdefault composition |
-| `sm` | `640px` | compact spacing/control/grid enhancement |
-| `md` | `768px` | medium composition、form/modal、1→2 columns |
-| `lg` | `1024px` | navigation、sidebar、major region split |
-| `xl` | `1280px` | wide grid、dense analysis、desktop spacing |
-| `2xl` | `1536px` | wide analytics density only |
+| Name  |     Value | Intended semantic use                        |
+| ----- | --------: | -------------------------------------------- |
+| Base  | `0–639px` | narrow viewportで成立するdefault composition |
+| `sm`  |   `640px` | compact spacing/control/grid enhancement     |
+| `md`  |   `768px` | medium composition、form/modal、1→2 columns  |
+| `lg`  |  `1024px` | navigation、sidebar、major region split      |
+| `xl`  |  `1280px` | wide grid、dense analysis、desktop spacing   |
+| `2xl` |  `1536px` | wide analytics density only                  |
 
 Breakpointは「スマホ」「タブレット」「PC」というdevice categoryではない。Content/layoutが変化を必要とするthresholdである。
 
@@ -105,10 +105,10 @@ Childのintrinsic widthでrootを押し広げないよう、`100%`、`minmax(0, 
 
 MarketingとAppはresponsive目的が違う。
 
-| Surface | Primary responsive concerns |
-| --- | --- |
-| Marketing | story/section flow、Hero composition、CTA visibility、marketing navigation |
-| App | workspace density、persistent context、navigation、tool panels、analysis surface |
+| Surface   | Primary responsive concerns                                                      |
+| --------- | -------------------------------------------------------------------------------- |
+| Marketing | story/section flow、Hero composition、CTA visibility、marketing navigation       |
+| App       | workspace density、persistent context、navigation、tool panels、analysis surface |
 
 Marketing HeaderはPage Entry側、App HeaderはApp Layout側が所有する。Exact UIはrepositoryと承認済みownershipを優先する。
 
@@ -140,11 +140,11 @@ Componentが所有するもの:
 
 ## 11. Responsibility comparison
 
-| Owner | Question | Example |
-| --- | --- | --- |
-| Layout | Route family全体のframeをどう保つか | sidebar collapse、global gutter |
-| Page | この画面で何をどの順に見せるか | Hero/section reorder、summary-first |
-| Component | 自分の内部をどう読める状態にするか | card stack、tab scroll、label wrap |
+| Owner     | Question                            | Example                             |
+| --------- | ----------------------------------- | ----------------------------------- |
+| Layout    | Route family全体のframeをどう保つか | sidebar collapse、global gutter     |
+| Page      | この画面で何をどの順に見せるか      | Hero/section reorder、summary-first |
+| Component | 自分の内部をどう読める状態にするか  | card stack、tab scroll、label wrap  |
 
 Responsive utilityは実装手段であり、ownershipの根拠ではない。
 
@@ -161,15 +161,15 @@ Loading、Error、Partial、Result limitation等のstateは、狭いviewportで�
 
 ## 13. Adaptation choices
 
-| Choice | Use when | Constraint |
-| --- | --- | --- |
-| Wrap | inline itemが自然に改行できる | label/action relationを壊さない |
-| Stack | parallel columnsがminimum readable widthを下回る | logical/DOM orderを維持 |
-| Collapse | secondary detailを任意に開ける | accessible trigger/state/nameを持つ |
-| Reorder | summary-firstで理解が改善する | visual orderとfocus/reading orderを乖離させない |
-| Local scroll | table/chart/tabsの関係を保つ | container単位、reachable、cueあり |
-| Truncate | full valueへ別手段で到達できる | primary message/error/actionには使わない |
-| Hide | decorativeまたは完全にredundant | 唯一の情報/navigation/actionを隠さない |
+| Choice       | Use when                                         | Constraint                                      |
+| ------------ | ------------------------------------------------ | ----------------------------------------------- |
+| Wrap         | inline itemが自然に改行できる                    | label/action relationを壊さない                 |
+| Stack        | parallel columnsがminimum readable widthを下回る | logical/DOM orderを維持                         |
+| Collapse     | secondary detailを任意に開ける                   | accessible trigger/state/nameを持つ             |
+| Reorder      | summary-firstで理解が改善する                    | visual orderとfocus/reading orderを乖離させない |
+| Local scroll | table/chart/tabsの関係を保つ                     | container単位、reachable、cueあり               |
+| Truncate     | full valueへ別手段で到達できる                   | primary message/error/actionには使わない        |
+| Hide         | decorativeまたは完全にredundant                  | 唯一の情報/navigation/actionを隠さない          |
 
 Hideは最後の選択肢であり、「入りきらないから消す」では不十分である。
 
@@ -294,14 +294,14 @@ Ellipsisやline clampは、full valueを別手段で取得できるrepeated labe
 
 ## 21. Acceptance Viewports
 
-| Label | Viewport | Purpose |
-| --- | --- | --- |
-| Narrow mobile | `320 × 568` | minimum width、overflow、critical action |
-| Standard mobile | `390 × 844` | primary mobile composition |
-| Tablet portrait | `768 × 1024` | medium composition、portrait behavior |
-| Laptop / tablet landscape | `1024 × 768` | major split、landscape behavior |
-| Desktop | `1440 × 900` | standard desktop composition |
-| Wide desktop | `1920 × 1080` | max-width、density、wide behavior |
+| Label                     | Viewport      | Purpose                                  |
+| ------------------------- | ------------- | ---------------------------------------- |
+| Narrow mobile             | `320 × 568`   | minimum width、overflow、critical action |
+| Standard mobile           | `390 × 844`   | primary mobile composition               |
+| Tablet portrait           | `768 × 1024`  | medium composition、portrait behavior    |
+| Laptop / tablet landscape | `1024 × 768`  | major split、landscape behavior          |
+| Desktop                   | `1440 × 900`  | standard desktop composition             |
+| Wide desktop              | `1920 × 1080` | max-width、density、wide behavior        |
 
 これらはsupported device一覧ではなく、representative validation pointsである。
 
@@ -380,12 +380,12 @@ Detail / Evidence Disclosure
 
 ## 27. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | desktop-firstを含む既存media query、固定type/size、responsive grid、local style、Header link非表示、Layout padding変更等がある。 |
+| Classification | Confirmed scope                                                                                                                                             |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT        | desktop-firstを含む既存media query、固定type/size、responsive grid、local style、Header link非表示、Layout padding変更等がある。                            |
 | CURRENT caveat | `560 / 720 / 900 / 980 / 1180 / 1280 / 1600px`等の既存thresholdはmigration evidenceでありCanonical Contractではない。全UIのresponsive合否は確認していない。 |
-| TARGET | Mobile-first、Canonical Breakpoint、Layout/Page/Component boundary、Content Priority、local overflow、6 Acceptance Viewportsを適用する。 |
-| DEFERRED | 全Source migration、media query整理、全Component remediation、browser/manual validation、screenshot/visual regression、accessibility実測。 |
+| TARGET         | Mobile-first、Canonical Breakpoint、Layout/Page/Component boundary、Content Priority、local overflow、6 Acceptance Viewportsを適用する。                    |
+| DEFERRED       | 全Source migration、media query整理、全Component remediation、browser/manual validation、screenshot/visual regression、accessibility実測。                  |
 
 Standard承認はCURRENT implementationの全面準拠を意味しない。
 
@@ -393,37 +393,37 @@ Standard承認はCURRENT implementationの全面準拠を意味しない。
 
 全UI/media query監査ではなく、FS-07で限定確認済みの11 examplesを教材上で再利用した。
 
-| Source | Current behavior | Responsive owner / target adaptation | Migration status |
-| --- | --- | --- | --- |
-| `PanoptesSiteHeader.svelte` | 1280/980px、nowrap、一部link非表示 | Page-owned Marketing nav、代替導線必須 | `xl/lg`比較移行候補 |
-| `LandingHeroPrimaryVisual.svelte` | 固定240/40/24px type、local queryなし | Page owns Hero flow、Token/fluid scale候補 | visual baseline required |
-| `LandingHeroSecondaryVisual.svelte` | Primary同様の固定type | Page owns adaptation | redesign禁止、段階確認 |
-| `src/routes/app/+layout.svelte` | max-width 1680px、720px padding変更 | Layout owns shell/gutter | `md`移行時にvisual比較 |
-| `PanoptesShellMainSurface.svelte` | grid、14px gap、min-height 720px | Feature region/internal composition | heightはwidthと別評価 |
-| `PanoptesTabNav.svelte` | nowrap、button min-width 92px | Component owns wrap/scroll/compact option | reachability review |
-| `CompetitorAnalysisCompanyCard.svelte` | fixed 180×240px、truncation | Component minimum size/full text access | exception/adaptation review |
-| `CompetitorAnalysisCardGrid.svelte` | 1600/1280/900/560pxで5→1列 | Composite/Feature grid、content fit | container-aware candidate |
-| `SelfAnalysisDualRingGauge.svelte` | 200px ring、46px score | Chart Component minimum size/summary | do not over-shrink |
-| `StrategyAnalysisRoadmapPhaseCard.svelte` | 1180pxでsummary wrap | Component-local adaptation | `xl/lg`比較移行候補 |
-| `SignUpFields.svelte` | full-width 48px controls、fixed icon/padding | Component/Base mobile form | parent overflow確認 |
+| Source                                    | Current behavior                             | Responsive owner / target adaptation       | Migration status            |
+| ----------------------------------------- | -------------------------------------------- | ------------------------------------------ | --------------------------- |
+| `PanoptesSiteHeader.svelte`               | 1280/980px、nowrap、一部link非表示           | Page-owned Marketing nav、代替導線必須     | `xl/lg`比較移行候補         |
+| `LandingHeroPrimaryVisual.svelte`         | 固定240/40/24px type、local queryなし        | Page owns Hero flow、Token/fluid scale候補 | visual baseline required    |
+| `LandingHeroSecondaryVisual.svelte`       | Primary同様の固定type                        | Page owns adaptation                       | redesign禁止、段階確認      |
+| `src/routes/app/+layout.svelte`           | max-width 1680px、720px padding変更          | Layout owns shell/gutter                   | `md`移行時にvisual比較      |
+| `PanoptesShellMainSurface.svelte`         | grid、14px gap、min-height 720px             | Feature region/internal composition        | heightはwidthと別評価       |
+| `PanoptesTabNav.svelte`                   | nowrap、button min-width 92px                | Component owns wrap/scroll/compact option  | reachability review         |
+| `CompetitorAnalysisCompanyCard.svelte`    | fixed 180×240px、truncation                  | Component minimum size/full text access    | exception/adaptation review |
+| `CompetitorAnalysisCardGrid.svelte`       | 1600/1280/900/560pxで5→1列                   | Composite/Feature grid、content fit        | container-aware candidate   |
+| `SelfAnalysisDualRingGauge.svelte`        | 200px ring、46px score                       | Chart Component minimum size/summary       | do not over-shrink          |
+| `StrategyAnalysisRoadmapPhaseCard.svelte` | 1180pxでsummary wrap                         | Component-local adaptation                 | `xl/lg`比較移行候補         |
+| `SignUpFields.svelte`                     | full-width 48px controls、fixed icon/padding | Component/Base mobile form                 | parent overflow確認         |
 
 このsampleはBreakpoint乱立、fixed dense UI、Header reachability、Hero scale、Tab overflowのmigration課題を示す。全UIの問題件数やvisual合否ではない。
 
 ## 29. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| Responsive = smartphone対応 | 利用可能領域へのstructure adaptation全般 |
-| Breakpoint = device名 | layout adaptation threshold |
-| Mobile-first = Mobile Product最優先 | narrow baseからCSS/layoutを拡張する方式 |
-| `md:`を書けば完了 | ownership、content、overflow、実測が必要 |
-| `hidden` = responsive design | priorityと代替導線が必要 |
-| Root overflowはhiddenで隠す | 原因となるlayout bugを修正する |
-| ComponentがPage layoutを決める | Layout/Page/Component ownerを分離 |
-| Wide designを縮小すればよい | structure/content priorityをadaptする |
-| Chartは小さくすればよい | minimum readable sizeと代替表現を守る |
-| Acceptance Viewport = device一覧 | representative validation points |
-| Visual reorderだけでよい | DOM/focus/reading orderを確認する |
+| Misunderstanding                    | Correction                               |
+| ----------------------------------- | ---------------------------------------- |
+| Responsive = smartphone対応         | 利用可能領域へのstructure adaptation全般 |
+| Breakpoint = device名               | layout adaptation threshold              |
+| Mobile-first = Mobile Product最優先 | narrow baseからCSS/layoutを拡張する方式  |
+| `md:`を書けば完了                   | ownership、content、overflow、実測が必要 |
+| `hidden` = responsive design        | priorityと代替導線が必要                 |
+| Root overflowはhiddenで隠す         | 原因となるlayout bugを修正する           |
+| ComponentがPage layoutを決める      | Layout/Page/Component ownerを分離        |
+| Wide designを縮小すればよい         | structure/content priorityをadaptする    |
+| Chartは小さくすればよい             | minimum readable sizeと代替表現を守る    |
+| Acceptance Viewport = device一覧    | representative validation points         |
+| Visual reorderだけでよい            | DOM/focus/reading orderを確認する        |
 
 ## 30. Decision heuristic
 
@@ -534,18 +534,18 @@ Device名はwindow size、orientation、sidebar、foldable、将来deviceの実�
 
 ## 33. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Responsive fundamentals explained | `PASS` |
-| 2 | Mobile-first explained | `PASS` |
-| 3 | Breakpoint contract explained | `PASS` |
-| 4 | Layout/Page/Component boundary explained | `PASS` |
-| 5 | Content priority explained | `PASS` |
-| 6 | Dense UI adaptation explained | `PASS` |
-| 7 | Navigation/Typography/Spacing explained | `PASS` |
-| 8 | Overflow/Acceptance Viewport explained | `PASS` |
-| 9 | Repository mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                  | Result |
+| --: | ------------------------------------------ | ------ |
+|   1 | Responsive fundamentals explained          | `PASS` |
+|   2 | Mobile-first explained                     | `PASS` |
+|   3 | Breakpoint contract explained              | `PASS` |
+|   4 | Layout/Page/Component boundary explained   | `PASS` |
+|   5 | Content priority explained                 | `PASS` |
+|   6 | Dense UI adaptation explained              | `PASS` |
+|   7 | Navigation/Typography/Spacing explained    | `PASS` |
+|   8 | Overflow/Acceptance Viewport explained     | `PASS` |
+|   9 | Repository mapping + two diagrams included | `PASS` |
+|  10 | Exercises + answers included               | `PASS` |
 
 M21 authoring result: `10 / 10 PASS`。教材完成はResponsive Source migration、browser実測、visual regression、accessibility verificationの完成を意味しない。
 

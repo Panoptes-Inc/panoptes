@@ -35,15 +35,15 @@ Analysisを1回実行したという事実はUsage候補であり、それだけ
 
 ## 3. Commercial state separation
 
-| Concept | Core question | Example candidate |
-| --- | --- | --- |
-| Plan | どの商用Offer/Tierか | feature set、quota、price model |
-| Subscription | CustomerがどのPlanをどの契約状態で利用するか | active/trial/cancelled等 |
-| Entitlement | 現在何を利用してよいか | feature access、analysis allowance |
-| Usage | Productをどの単位で利用したか | eligible Analysis execution |
-| Charge | Rule適用後に何を請求対象とするか | metered/periodic charge |
-| Invoice | 請求内容をまとめたCommercial record | billing period内のline items |
-| Payment | 金銭移動の状態 | paid/failed/pending等 |
+| Concept      | Core question                                | Example candidate                  |
+| ------------ | -------------------------------------------- | ---------------------------------- |
+| Plan         | どの商用Offer/Tierか                         | feature set、quota、price model    |
+| Subscription | CustomerがどのPlanをどの契約状態で利用するか | active/trial/cancelled等           |
+| Entitlement  | 現在何を利用してよいか                       | feature access、analysis allowance |
+| Usage        | Productをどの単位で利用したか                | eligible Analysis execution        |
+| Charge       | Rule適用後に何を請求対象とするか             | metered/periodic charge            |
+| Invoice      | 請求内容をまとめたCommercial record          | billing period内のline items       |
+| Payment      | 金銭移動の状態                               | paid/failed/pending等              |
 
 Exact Plan、state enum、price、billing intervalは承認済みProduct Contractを超えて決めない。
 
@@ -125,11 +125,11 @@ PD-04はPlan-specific Usage Policyとusable-result baselineのlogical direction�
 
 ## 9. Technical Cost vs Customer Usage vs Charge
 
-| Layer | Meaning | Owner candidate |
-| --- | --- | --- |
-| Technical execution/cost | Worker attempt、LLM token、CPU、Storage等の原価事実 | Worker/Infrastructure telemetry |
-| Customer Usage | Product Contract上の利用単位 | Rails Business Domain |
-| Charge | Plan/price/billing rule適用後の請求結果 | Rails commercial rule + Provider processing |
+| Layer                    | Meaning                                             | Owner candidate                             |
+| ------------------------ | --------------------------------------------------- | ------------------------------------------- |
+| Technical execution/cost | Worker attempt、LLM token、CPU、Storage等の原価事実 | Worker/Infrastructure telemetry             |
+| Customer Usage           | Product Contract上の利用単位                        | Rails Business Domain                       |
+| Charge                   | Plan/price/billing rule適用後の請求結果             | Rails commercial rule + Provider processing |
 
 Example:
 
@@ -359,12 +359,12 @@ Business-critical enforcementにはRails/DB transaction、atomic reservation/dec
 
 Technical Job outcomeからCustomer Usage/Chargeを自動決定しない。
 
-| Outcome | Product meaning | Commercial decision |
-| --- | --- | --- |
-| completed | usable validated result候補 | approved Usage policyを適用 |
-| partially_completed | limitations付きresult | policy未確定部分を発明しない |
-| failed | valid Product Result不成立 | charge/usage policyは別判断 |
-| cancelled/timed_out | distinct terminal reason | technical attemptsとCommercial treatmentを分離 |
+| Outcome             | Product meaning             | Commercial decision                            |
+| ------------------- | --------------------------- | ---------------------------------------------- |
+| completed           | usable validated result候補 | approved Usage policyを適用                    |
+| partially_completed | limitations付きresult       | policy未確定部分を発明しない                   |
+| failed              | valid Product Result不成立  | charge/usage policyは別判断                    |
+| cancelled/timed_out | distinct terminal reason    | technical attemptsとCommercial treatmentを分離 |
 
 PD-04はusable-result baselineとPlan-specific Usage directionを承認したが、exact threshold/price/unitはDeferredである。Snapshot creationもHistorical Product RecordでありBilling Eventと同一ではない。
 
@@ -524,20 +524,20 @@ Exact Alert thresholdは決めない。Payment/Commercial dataをLog/Metric labe
 
 ## 34. Representative repository mapping
 
-| Representative | Domain role | Source of truth / mapping | Status |
-| --- | --- | --- | --- |
-| `docs/product/product-decision-register.md` | PD-04 Usage decision | Product decision record | Logical `CURRENT`; implementation Deferred |
-| `src/lib/panoptes/types.ts` | `PanoptesUsageState` display/client type | Frontend contract, not Billing authority | `CURRENT` |
-| `src/lib/panoptes/api/mock-backend.ts` | mock Usage response | Development fixture | `CURRENT` mock only |
-| `src/lib/panoptes/api/mock/snapshot-factory.ts` | seeded token usage display data | Fixture generation | `CURRENT` mock only |
-| `src/lib/panoptes/api/unavailable-canonical-business-client.ts` | canonical Usage unavailable behavior | Frontend failure boundary | `CURRENT`; real provider absent |
-| `src/routes/plan/+page.svelte` | Marketing route alias | No Pricing/Plan authority | `CURRENT` |
-| `rails/app/models/organization.rb` | Product Organization identity | Rails/PostgreSQL | `CURRENT` identity basis |
-| `rails/app/models/organization_membership.rb` | Organization Role/Authorization | Rails/PostgreSQL | `CURRENT`; not Entitlement |
-| `rails/config/routes.rb` | Implemented Rails API surface | Rails routes | `CURRENT`; Billing/Webhook absent |
-| `docs/api/openapi-draft.yaml` | Business API contract draft | API contract | `CURRENT/TARGET`; Billing surface absent |
-| `package.json` | Frontend/runtime dependencies | Dependency manifest | `CURRENT`; Stripe/CRM SDK absent |
-| `docs/learning/modules/13-async-job-queue-retry-idempotency.md` | Retry/Idempotency principles | Architecture learning contract | Input to `TARGET` Commercial flow |
+| Representative                                                  | Domain role                              | Source of truth / mapping                | Status                                     |
+| --------------------------------------------------------------- | ---------------------------------------- | ---------------------------------------- | ------------------------------------------ |
+| `docs/product/product-decision-register.md`                     | PD-04 Usage decision                     | Product decision record                  | Logical `CURRENT`; implementation Deferred |
+| `src/lib/panoptes/types.ts`                                     | `PanoptesUsageState` display/client type | Frontend contract, not Billing authority | `CURRENT`                                  |
+| `src/lib/panoptes/api/mock-backend.ts`                          | mock Usage response                      | Development fixture                      | `CURRENT` mock only                        |
+| `src/lib/panoptes/api/mock/snapshot-factory.ts`                 | seeded token usage display data          | Fixture generation                       | `CURRENT` mock only                        |
+| `src/lib/panoptes/api/unavailable-canonical-business-client.ts` | canonical Usage unavailable behavior     | Frontend failure boundary                | `CURRENT`; real provider absent            |
+| `src/routes/plan/+page.svelte`                                  | Marketing route alias                    | No Pricing/Plan authority                | `CURRENT`                                  |
+| `rails/app/models/organization.rb`                              | Product Organization identity            | Rails/PostgreSQL                         | `CURRENT` identity basis                   |
+| `rails/app/models/organization_membership.rb`                   | Organization Role/Authorization          | Rails/PostgreSQL                         | `CURRENT`; not Entitlement                 |
+| `rails/config/routes.rb`                                        | Implemented Rails API surface            | Rails routes                             | `CURRENT`; Billing/Webhook absent          |
+| `docs/api/openapi-draft.yaml`                                   | Business API contract draft              | API contract                             | `CURRENT/TARGET`; Billing surface absent   |
+| `package.json`                                                  | Frontend/runtime dependencies            | Dependency manifest                      | `CURRENT`; Stripe/CRM SDK absent           |
+| `docs/learning/modules/13-async-job-queue-retry-idempotency.md` | Retry/Idempotency principles             | Architecture learning contract           | Input to `TARGET` Commercial flow          |
 
 ## 35. Worked example: Organization starts Analysis
 
@@ -690,18 +690,18 @@ Usage、Charge、Entitlement、Provider stateはownerと意味が異なる。分
 
 ## 40. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Billing fundamentals explained | `PASS` |
-| 2 | Plan/Subscription/Entitlement distinction explained | `PASS` |
-| 3 | Usage/Charge/Technical Cost distinction explained | `PASS` |
-| 4 | Provider boundary explained | `PASS` |
-| 5 | Webhook security/idempotency explained | `PASS` |
-| 6 | Reconciliation/eventual consistency explained | `PASS` |
-| 7 | CRM boundary explained | `PASS` |
-| 8 | Audit/Security/Testing/Monitoring connection explained | `PASS` |
-| 9 | Repository mapping + diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                              | Result |
+| --: | ------------------------------------------------------ | ------ |
+|   1 | Billing fundamentals explained                         | `PASS` |
+|   2 | Plan/Subscription/Entitlement distinction explained    | `PASS` |
+|   3 | Usage/Charge/Technical Cost distinction explained      | `PASS` |
+|   4 | Provider boundary explained                            | `PASS` |
+|   5 | Webhook security/idempotency explained                 | `PASS` |
+|   6 | Reconciliation/eventual consistency explained          | `PASS` |
+|   7 | CRM boundary explained                                 | `PASS` |
+|   8 | Audit/Security/Testing/Monitoring connection explained | `PASS` |
+|   9 | Repository mapping + diagrams included                 | `PASS` |
+|  10 | Exercises + answers included                           | `PASS` |
 
 M27 authoring result: `10 / 10 PASS`。教材完成はStripe/CRM導入、Pricing/Charge/Quota policy、Billing schema、Webhook/Checkout implementation、Commercial production readinessの完了を意味しない。
 
@@ -726,4 +726,3 @@ M28ではlatency、throughput、capacity、bottleneck、cache、DB/query、Front
 - [M26 Infrastructure / Cloud Boundary](./26-infrastructure-cloud-boundary.md)
 - [Product Decision Register](../../product/product-decision-register.md)
 - [Panoptes Technical Bootcamp](../panoptes-technical-bootcamp.md)
-

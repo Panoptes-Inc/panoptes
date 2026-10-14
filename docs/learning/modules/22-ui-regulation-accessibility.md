@@ -68,16 +68,16 @@ Reuse判断:
 
 ## 5. Visual and interaction model
 
-| State / control | Meaning | Required behavior |
-| --- | --- | --- |
-| Link | 別location/resourceへのnavigation | native `a`をdefault、destinationを持つ |
-| Button | current contextでのaction | native `button`をdefault、keyboard activation |
-| Hover | pointer向け補助feedback | 唯一の意味/操作手掛かりにしない |
-| Focus | keyboard/current interaction target | visible indicatorを保つ |
-| Active / pressed | 押下中等の一時state | selected/currentと混同しない |
-| Selected / current | 持続的選択/現在地 | patternに応じたprogrammatic state |
-| Disabled | 操作不能 | native semantics、visual indication、必要なら理由 |
-| Loading | 処理進行中 | 二重実行防止、progress/label、必要ならannouncement |
+| State / control    | Meaning                             | Required behavior                                  |
+| ------------------ | ----------------------------------- | -------------------------------------------------- |
+| Link               | 別location/resourceへのnavigation   | native `a`をdefault、destinationを持つ             |
+| Button             | current contextでのaction           | native `button`をdefault、keyboard activation      |
+| Hover              | pointer向け補助feedback             | 唯一の意味/操作手掛かりにしない                    |
+| Focus              | keyboard/current interaction target | visible indicatorを保つ                            |
+| Active / pressed   | 押下中等の一時state                 | selected/currentと混同しない                       |
+| Selected / current | 持続的選択/現在地                   | patternに応じたprogrammatic state                  |
+| Disabled           | 操作不能                            | native semantics、visual indication、必要なら理由  |
+| Loading            | 処理進行中                          | 二重実行防止、progress/label、必要ならannouncement |
 
 Visual stateとprogrammatic stateは両方必要である。
 
@@ -121,20 +121,20 @@ UIのLoadingはrequest/action presentation stateであり、M12のAnalysisJob li
 
 ## 9. State representation
 
-| Canonical UI state | Meaning | Representation principle |
-| --- | --- | --- |
-| Loading | request/job/action進行中 | progress、重複防止、既存内容を無理由に消さない |
-| Empty / no data | 正常取得したが対象0件 | 対象と次の可能行動、Error toneなし |
-| No current analysis | entityはあるがcurrent resultなし | start/create/select actionをContractに従い提示 |
-| Success | 明示action成功 | resultと次state/action |
-| Warning | 継続可能だが注意が必要 | impactと必要action |
-| Failed / Error | operation/result成立せず | scope、recovery、safe message |
-| Unavailable | resource/serviceを利用できない | unavailable reasonとretry/alternative |
-| Forbidden | access denied | Empty/Not Foundへ無断変換しない |
-| Disabled | action不能 | semantic stateと理由 |
-| Partial | 一部結果のみ成立 | available/unavailable、coverage、limitation |
-| Limited | Product contract上の制約付き結果 | scope、allowed use、next action |
-| Unsupported historical | 古いrecordを完全表示できない | explicit historical limitation、silent current fallback禁止 |
+| Canonical UI state     | Meaning                          | Representation principle                                    |
+| ---------------------- | -------------------------------- | ----------------------------------------------------------- |
+| Loading                | request/job/action進行中         | progress、重複防止、既存内容を無理由に消さない              |
+| Empty / no data        | 正常取得したが対象0件            | 対象と次の可能行動、Error toneなし                          |
+| No current analysis    | entityはあるがcurrent resultなし | start/create/select actionをContractに従い提示              |
+| Success                | 明示action成功                   | resultと次state/action                                      |
+| Warning                | 継続可能だが注意が必要           | impactと必要action                                          |
+| Failed / Error         | operation/result成立せず         | scope、recovery、safe message                               |
+| Unavailable            | resource/serviceを利用できない   | unavailable reasonとretry/alternative                       |
+| Forbidden              | access denied                    | Empty/Not Foundへ無断変換しない                             |
+| Disabled               | action不能                       | semantic stateと理由                                        |
+| Partial                | 一部結果のみ成立                 | available/unavailable、coverage、limitation                 |
+| Limited                | Product contract上の制約付き結果 | scope、allowed use、next action                             |
+| Unsupported historical | 古いrecordを完全表示できない     | explicit historical limitation、silent current fallback禁止 |
 
 これらをGeneric Emptyへ統合しない。
 
@@ -271,12 +271,12 @@ Frontend valid != Server validation unnecessary
 
 ## 19. Feedback and notification
 
-| Channel | Use | Persistence / action |
-| --- | --- | --- |
-| Inline | field/section/specific content | context内に保持、修正/retryを近接 |
-| Toast | non-blocking success/info | short-lived可、critical detail/唯一のrecoveryを置かない |
-| Banner / Page state | persistent warning、partial、unavailable、page-wide issue | condition解消まで残しimpact/actionを示す |
-| Blocking dialog | continuation不能、重大decision、destructive confirmation | focus management、primary/secondary action、dismiss policy |
+| Channel             | Use                                                       | Persistence / action                                       |
+| ------------------- | --------------------------------------------------------- | ---------------------------------------------------------- |
+| Inline              | field/section/specific content                            | context内に保持、修正/retryを近接                          |
+| Toast               | non-blocking success/info                                 | short-lived可、critical detail/唯一のrecoveryを置かない    |
+| Banner / Page state | persistent warning、partial、unavailable、page-wide issue | condition解消まで残しimpact/actionを示す                   |
+| Blocking dialog     | continuation不能、重大decision、destructive confirmation  | focus management、primary/secondary action、dismiss policy |
 
 Urgency、persistence、recoverability、required actionでchannelを選ぶ。全ErrorをToastや同じred bannerにしない。
 
@@ -310,13 +310,13 @@ Local scrollはkeyboard/touchで到達でき、overflow cueとvisible focusを�
 
 ## 22. Component responsibility
 
-| Category | Accessibility responsibility |
-| --- | --- |
-| Primitive | minimal stable native/accessible contract |
-| UI / Presentation | rendering、name/label、keyboard/focus、presentation interaction |
-| Composite | accessible child composition、reading/focus order |
-| Feature | use-case orchestration、Product state mapping、loading/error/action coordination |
-| Layout / Page | landmarks、major reading order、navigation、responsive content priority |
+| Category          | Accessibility responsibility                                                     |
+| ----------------- | -------------------------------------------------------------------------------- |
+| Primitive         | minimal stable native/accessible contract                                        |
+| UI / Presentation | rendering、name/label、keyboard/focus、presentation interaction                  |
+| Composite         | accessible child composition、reading/focus order                                |
+| Feature           | use-case orchestration、Product state mapping、loading/error/action coordination |
+| Layout / Page     | landmarks、major reading order、navigation、responsive content priority          |
 
 Accessibilityを「後から別layerが追加するもの」にしない。各ownerが自分のcontract内で担う。
 
@@ -428,51 +428,51 @@ Source pattern exists   != Runtime behavior verified
 
 ## 28. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | Sourceにはnative links/buttons/inputs、labels、`aria-*`、focus style、Toast、Tabs、state UI、SVG labels等の良いpatternとgapが混在する。 |
-| CURRENT caveat | Source reviewだけでkeyboard、screen reader、contrast、target size、reduced motion、Responsive viewportの実動作は証明できない。全UIのRegulation適合宣言はない。 |
-| TARGET | UI Regulation v1をnew/touched UIへ適用し、Canonical reuse、state representation、Accessibility baseline、Responsive/Token compliance、review evidenceを揃える。 |
-| DEFERRED | Full accessibility audit、screen reader/keyboard/browser testing、contrast/target measurement、visual regression、全Component remediation、exception closure。 |
+| Classification | Confirmed scope                                                                                                                                                 |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT        | Sourceにはnative links/buttons/inputs、labels、`aria-*`、focus style、Toast、Tabs、state UI、SVG labels等の良いpatternとgapが混在する。                         |
+| CURRENT caveat | Source reviewだけでkeyboard、screen reader、contrast、target size、reduced motion、Responsive viewportの実動作は証明できない。全UIのRegulation適合宣言はない。  |
+| TARGET         | UI Regulation v1をnew/touched UIへ適用し、Canonical reuse、state representation、Accessibility baseline、Responsive/Token compliance、review evidenceを揃える。 |
+| DEFERRED       | Full accessibility audit、screen reader/keyboard/browser testing、contrast/target measurement、visual regression、全Component remediation、exception closure。  |
 
 ## 29. Representative repository mapping
 
 全UI監査ではなく、FS-08で限定確認済みの12 examplesを教材上で再利用した。
 
-| Source | Confirmed semantic/interaction strength | Accessibility concern / Target | Status |
-| --- | --- | --- | --- |
-| `PanoptesSiteHeader.svelte` | semantic nav/link/button、`aria-expanded`、focus-visible | compact時の代替navigation未証明 | CURRENT partial |
-| `LandingHeroPrimaryVisual.svelte` | SVG title/descriptionとlabel association | fixed scale、motion/reduced-motion、contrast未検証 | verify later |
-| `SignUpFields.svelte` | associated labels、`aria-invalid/describedby`、native inputs | hidden label方針、contrast/target実測 | CURRENT good pattern + gap |
-| `SignUpBtn.svelte` | native button/disabled | loading announcement、disabled reasonはForm統合 | owner coordination |
-| `SignUpFeedback.svelte` | field error IDs、`role=alert/status` | announcement重複、focus strategy実測 | browser verification |
-| `PanoptesToastStack.svelte` | `aria-live=polite`、level区別 | close control name、Error urgency/persistence | remediation candidate |
-| `PanoptesTabNav.svelte` | nav label、native buttons | activeがvisual classのみ、selected/current state不足 | remediation candidate |
-| `CompetitorAnalysisCompanyCard.svelte` | contextual labels、actions、`aria-pressed` | truncated full-value access、target/contrast | verify later |
-| `CompetitorAnalysisRadarChart.svelte` | SVG accessible label | graphic role/title/description、numeric alternative、contrast | verify/remediate |
-| `PanoptesAnalysisSurface.svelte` | empty/failed/loadingを分離 | unavailable/partial/limited/historical接続 | Target state expansion |
-| `StrategyAnalysisRoadmapPhaseCard.svelte` | native button、`aria-pressed` | dense keyboard/target/contrast | verify later |
-| `SelfAnalysisDualRingGauge.svelte` | scoreをaccessible labelへ含む | graphic role、detail alternative、color-only risk | verify/remediate |
+| Source                                    | Confirmed semantic/interaction strength                      | Accessibility concern / Target                                | Status                     |
+| ----------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------- | -------------------------- |
+| `PanoptesSiteHeader.svelte`               | semantic nav/link/button、`aria-expanded`、focus-visible     | compact時の代替navigation未証明                               | CURRENT partial            |
+| `LandingHeroPrimaryVisual.svelte`         | SVG title/descriptionとlabel association                     | fixed scale、motion/reduced-motion、contrast未検証            | verify later               |
+| `SignUpFields.svelte`                     | associated labels、`aria-invalid/describedby`、native inputs | hidden label方針、contrast/target実測                         | CURRENT good pattern + gap |
+| `SignUpBtn.svelte`                        | native button/disabled                                       | loading announcement、disabled reasonはForm統合               | owner coordination         |
+| `SignUpFeedback.svelte`                   | field error IDs、`role=alert/status`                         | announcement重複、focus strategy実測                          | browser verification       |
+| `PanoptesToastStack.svelte`               | `aria-live=polite`、level区別                                | close control name、Error urgency/persistence                 | remediation candidate      |
+| `PanoptesTabNav.svelte`                   | nav label、native buttons                                    | activeがvisual classのみ、selected/current state不足          | remediation candidate      |
+| `CompetitorAnalysisCompanyCard.svelte`    | contextual labels、actions、`aria-pressed`                   | truncated full-value access、target/contrast                  | verify later               |
+| `CompetitorAnalysisRadarChart.svelte`     | SVG accessible label                                         | graphic role/title/description、numeric alternative、contrast | verify/remediate           |
+| `PanoptesAnalysisSurface.svelte`          | empty/failed/loadingを分離                                   | unavailable/partial/limited/historical接続                    | Target state expansion     |
+| `StrategyAnalysisRoadmapPhaseCard.svelte` | native button、`aria-pressed`                                | dense keyboard/target/contrast                                | verify later               |
+| `SelfAnalysisDualRingGauge.svelte`        | scoreをaccessible labelへ含む                                | graphic role、detail alternative、color-only risk             | verify/remediate           |
 
 これはSource上のpattern/gap確認であり、runtime accessibility conformanceではない。
 
 ## 30. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| 見た目が同じ = 同じComponent | meaning/interaction/lifecycle/ownerで判断 |
-| ButtonとLinkはappearanceで選ぶ | action/navigationのpurposeで選ぶ |
-| Opacity = disabled | native/programmatic stateが必要 |
-| Hoverがあればaccessible | keyboard/touch/focusが必要 |
-| Placeholder = Label | associated labelが必要 |
-| Focus ringを消すと綺麗 | keyboard current targetを失う |
-| Colorだけでstateを示せる | text/icon/structure等を併用 |
-| ToastですべてのErrorを出す | persistence/scope/actionでchannelを選ぶ |
-| Empty = Error | normal zero resultとfailureは別 |
-| Partial = Full | limitations/coverageを明示 |
-| Responsiveでhideすればよい | priorityと代替導線が必要 |
-| Token/Tailwind = accessibility | semantics、behavior、実測が別途必要 |
-| Documentation = Verification | Runtime conformanceは未証明 |
+| Misunderstanding               | Correction                                |
+| ------------------------------ | ----------------------------------------- |
+| 見た目が同じ = 同じComponent   | meaning/interaction/lifecycle/ownerで判断 |
+| ButtonとLinkはappearanceで選ぶ | action/navigationのpurposeで選ぶ          |
+| Opacity = disabled             | native/programmatic stateが必要           |
+| Hoverがあればaccessible        | keyboard/touch/focusが必要                |
+| Placeholder = Label            | associated labelが必要                    |
+| Focus ringを消すと綺麗         | keyboard current targetを失う             |
+| Colorだけでstateを示せる       | text/icon/structure等を併用               |
+| ToastですべてのErrorを出す     | persistence/scope/actionでchannelを選ぶ   |
+| Empty = Error                  | normal zero resultとfailureは別           |
+| Partial = Full                 | limitations/coverageを明示                |
+| Responsiveでhideすればよい     | priorityと代替導線が必要                  |
+| Token/Tailwind = accessibility | semantics、behavior、実測が別途必要       |
+| Documentation = Verification   | Runtime conformanceは未証明               |
 
 ## 31. Decision heuristic
 
@@ -588,18 +588,18 @@ Semantic element、keyboard behavior、name/stateはComponentの構造とinterac
 
 ## 34. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | UI Regulation purpose explained | `PASS` |
-| 2 | Visual/interaction consistency explained | `PASS` |
-| 3 | State representation explained | `PASS` |
-| 4 | Accessibility fundamentals explained | `PASS` |
-| 5 | Semantic/keyboard/focus explained | `PASS` |
-| 6 | Form/feedback rules explained | `PASS` |
-| 7 | Empty/Error/Partial distinction explained | `PASS` |
-| 8 | Responsive/Token/Component connection explained | `PASS` |
-| 9 | Repository mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                       | Result |
+| --: | ----------------------------------------------- | ------ |
+|   1 | UI Regulation purpose explained                 | `PASS` |
+|   2 | Visual/interaction consistency explained        | `PASS` |
+|   3 | State representation explained                  | `PASS` |
+|   4 | Accessibility fundamentals explained            | `PASS` |
+|   5 | Semantic/keyboard/focus explained               | `PASS` |
+|   6 | Form/feedback rules explained                   | `PASS` |
+|   7 | Empty/Error/Partial distinction explained       | `PASS` |
+|   8 | Responsive/Token/Component connection explained | `PASS` |
+|   9 | Repository mapping + two diagrams included      | `PASS` |
+|  10 | Exercises + answers included                    | `PASS` |
 
 M22 authoring result: `10 / 10 PASS`。教材完成はAccessibility conformance、browser/keyboard/screen reader実測、contrast/target audit、UI remediationの完成を意味しない。
 

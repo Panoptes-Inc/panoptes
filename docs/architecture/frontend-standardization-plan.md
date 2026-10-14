@@ -19,27 +19,27 @@ Next Phase: `Panoptes Technical Bootcamp`
 
 [Frontend Inventory Parent](../inventory/frontend-inventory-summary.md)のPD-62 Closure時点を参照し、本Phaseでは再集計しない。
 
-| Metric | Closure baseline |
-| --- | ---: |
-| `src/lib/components/**/*.svelte` | 107 |
-| `src/lib/features/**/*.svelte` | 17 |
-| reusable Svelte | 124 |
-| route Svelte | 12 |
-| total Svelte | 136 |
-| unresolved local imports | 0 |
-| import cycles | 0 |
+| Metric                           | Closure baseline |
+| -------------------------------- | ---------------: |
+| `src/lib/components/**/*.svelte` |              107 |
+| `src/lib/features/**/*.svelte`   |               17 |
+| reusable Svelte                  |              124 |
+| route Svelte                     |               12 |
+| total Svelte                     |              136 |
+| unresolved local imports         |                0 |
+| import cycles                    |                0 |
 
 Baselineは比較基準であり、Octoberの完了目標件数ではない。分類や配置変更で件数が変わる場合は、対象Phaseで理由と検証結果を記録する。
 
 ## 3. Inputs
 
-| Input | Authority in this program |
-| --- | --- |
-| [Frontend Inventory Parent](../inventory/frontend-inventory-summary.md) | Closure baseline、Active/Deferred分類、Technical Debt、既存Handoff |
-| [Frontend Structure Policy](./frontend-structure-policy.md) | 現行責務、依存方向、migration原則 |
-| [Product Decision Register](../product/product-decision-register.md) | Product semantics、承認済み境界、PD-03 preservation |
-| [Development Log](../DEVELOPMENT_LOG.md) | Phase履歴と確認済みquality baseline |
-| [PD-62 Approval Record](../audit/120-aug-sep-frontend-inventory-parent-explicit-product-owner-approval-record.md) | Inventory Closure Contract、October/Bootcamp handoff |
+| Input                                                                                                             | Authority in this program                                          |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [Frontend Inventory Parent](../inventory/frontend-inventory-summary.md)                                           | Closure baseline、Active/Deferred分類、Technical Debt、既存Handoff |
+| [Frontend Structure Policy](./frontend-structure-policy.md)                                                       | 現行責務、依存方向、migration原則                                  |
+| [Product Decision Register](../product/product-decision-register.md)                                              | Product semantics、承認済み境界、PD-03 preservation                |
+| [Development Log](../DEVELOPMENT_LOG.md)                                                                          | Phase履歴と確認済みquality baseline                                |
+| [PD-62 Approval Record](../audit/120-aug-sep-frontend-inventory-parent-explicit-product-owner-approval-record.md) | Inventory Closure Contract、October/Bootcamp handoff               |
 
 Input間で矛盾が見つかった場合は、実装で補完せず、該当ownerとSource of Truthを特定してParentへ記録する。
 
@@ -60,17 +60,17 @@ Input間で矛盾が見つかった場合は、実装で補完せず、該当own
 
 ## 5. Workstream plan
 
-| Phase | Workstream | Scope / goal | Required input | Definition of Done |
-| --- | --- | --- | --- | --- |
-| FS-02 | Component Taxonomy | Layout、Feature、UI、Composite、Primitive、Route-level、Domain-specific reusableの分類基準と例外を決める | Structure Policy、Inventory taxonomy | 用語、判定基準、責務、代表例、例外、review ruleが承認済み |
-| FS-03 | Feature / UI / Layout Boundary | ownership、state、business logic、composition、import directionを標準化する | FS-02、Structure Policy | 各boundaryのowns/must-not-own、state/API/import規則、例外processが承認済み |
-| FS-04 | Directory Structure | 確定taxonomyとboundaryを配置・命名・public entryへ写像する | FS-02、FS-03 | target policy、段階移行、canonical import、rename/alias規則が承認済み |
-| FS-05 | Design Token | color、typography、spacing、radius、shadow、breakpoint、sizingの基盤を決める | FS-02〜04、既存visual evidence | token taxonomy、naming、ownership、値のSource、適用・例外・versioningが承認済み |
-| FS-06 | Tailwind | Token利用、utility convention、arbitrary value、styling ownership、migration ruleを決める | FS-05 | standard/config方針、Token接続、境界、段階migration、例外が承認済み |
-| FS-07 | Responsive | breakpoint、mobile-first/desktop behavior、layout adaptation、component責務、content priorityを決める | FS-03、FS-05、必要なvisual baseline | policy、viewport acceptance、owner、検証方法、例外が承認済み |
-| FS-08 | UI Regulation | visual consistency、interaction、state representation、accessibility、component usage、exception processをまとめる | FS-02〜07、Product contracts | minimum regulation、review checklist、例外・更新processが承認済み |
-| FS-09 | October Parent Closure Review | 7成果物、migration/deferred、検証、Bootcamp handoffを評価する | FS-02〜08、本Parent | Closure Criteriaを評価し、blockerと承認候補を記録済み |
-| FS-10 | Explicit Product Owner Approval Record | Product Owner承認を記録しParentを正式Closeする | FS-09、明示Approval Evidence | final status、criteria、deferred、Bootcamp handoffを承認記録へ同期済み |
+| Phase | Workstream                             | Scope / goal                                                                                                       | Required input                       | Definition of Done                                                              |
+| ----- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------- |
+| FS-02 | Component Taxonomy                     | Layout、Feature、UI、Composite、Primitive、Route-level、Domain-specific reusableの分類基準と例外を決める           | Structure Policy、Inventory taxonomy | 用語、判定基準、責務、代表例、例外、review ruleが承認済み                       |
+| FS-03 | Feature / UI / Layout Boundary         | ownership、state、business logic、composition、import directionを標準化する                                        | FS-02、Structure Policy              | 各boundaryのowns/must-not-own、state/API/import規則、例外processが承認済み      |
+| FS-04 | Directory Structure                    | 確定taxonomyとboundaryを配置・命名・public entryへ写像する                                                         | FS-02、FS-03                         | target policy、段階移行、canonical import、rename/alias規則が承認済み           |
+| FS-05 | Design Token                           | color、typography、spacing、radius、shadow、breakpoint、sizingの基盤を決める                                       | FS-02〜04、既存visual evidence       | token taxonomy、naming、ownership、値のSource、適用・例外・versioningが承認済み |
+| FS-06 | Tailwind                               | Token利用、utility convention、arbitrary value、styling ownership、migration ruleを決める                          | FS-05                                | standard/config方針、Token接続、境界、段階migration、例外が承認済み             |
+| FS-07 | Responsive                             | breakpoint、mobile-first/desktop behavior、layout adaptation、component責務、content priorityを決める              | FS-03、FS-05、必要なvisual baseline  | policy、viewport acceptance、owner、検証方法、例外が承認済み                    |
+| FS-08 | UI Regulation                          | visual consistency、interaction、state representation、accessibility、component usage、exception processをまとめる | FS-02〜07、Product contracts         | minimum regulation、review checklist、例外・更新processが承認済み               |
+| FS-09 | October Parent Closure Review          | 7成果物、migration/deferred、検証、Bootcamp handoffを評価する                                                      | FS-02〜08、本Parent                  | Closure Criteriaを評価し、blockerと承認候補を記録済み                           |
+| FS-10 | Explicit Product Owner Approval Record | Product Owner承認を記録しParentを正式Closeする                                                                     | FS-09、明示Approval Evidence         | final status、criteria、deferred、Bootcamp handoffを承認記録へ同期済み          |
 
 FS-01では各workstreamの具体的なtaxonomy、directory、Token値、Tailwind設定、breakpoint、UI ruleを確定しない。
 
@@ -223,16 +223,16 @@ PD-03 `Strategy Plan Rail`は`NEEDS_DISCOVERY / DEFERRED_NON_BLOCKER`を維持�
 
 ### October implementation / migration handoff
 
-| ID | Handoff | Owner | Dependency / review trigger | Status |
-| --- | --- | --- | --- | --- |
-| `OCT-FE-M01` | target directory touch-and-migrate | Frontend Architecture + Feature owner | legacy fileを機能変更で触る時 | `DEFERRED_NON_BLOCKER` |
-| `OCT-FE-M02` | `src/lib/ui/tokens.css`最小実装 | Frontend UI / Design | visual baselineとToken Contract v1 | `DEFERRED_NON_BLOCKER` |
-| `OCT-FE-M03` | Tailwind adapter、version、reset/base owner接続 | Frontend Platform / UI | M02完了後 | `DEFERRED_NON_BLOCKER` |
-| `OCT-FE-M04` | new/touched code adoption、Shared UI/Layout | Component / Feature owner | UI変更時のFS-02〜08 review | `DEFERRED_NON_BLOCKER` |
-| `OCT-FE-M05` | legacy CSS cleanup | Component / Feature owner | M02/M03後にlegacy styleを触る時 | `DEFERRED_NON_BLOCKER` |
-| `OCT-FE-M06` | responsive owner単位migration | Layout / Page / Component owner | FS-07 viewportsとvisual parity | `DEFERRED_NON_BLOCKER` |
-| `OCT-FE-M07` | UI Regulation remediation | Frontend UI + Feature owner | 該当UI変更/accessibility Phase | `DEFERRED_NON_BLOCKER` |
-| `OCT-FE-M08` | browser/accessibility/visual verification | Frontend Quality + Design | Source migrationごと | `DEFERRED_NON_BLOCKER` |
+| ID           | Handoff                                         | Owner                                 | Dependency / review trigger        | Status                 |
+| ------------ | ----------------------------------------------- | ------------------------------------- | ---------------------------------- | ---------------------- |
+| `OCT-FE-M01` | target directory touch-and-migrate              | Frontend Architecture + Feature owner | legacy fileを機能変更で触る時      | `DEFERRED_NON_BLOCKER` |
+| `OCT-FE-M02` | `src/lib/ui/tokens.css`最小実装                 | Frontend UI / Design                  | visual baselineとToken Contract v1 | `DEFERRED_NON_BLOCKER` |
+| `OCT-FE-M03` | Tailwind adapter、version、reset/base owner接続 | Frontend Platform / UI                | M02完了後                          | `DEFERRED_NON_BLOCKER` |
+| `OCT-FE-M04` | new/touched code adoption、Shared UI/Layout     | Component / Feature owner             | UI変更時のFS-02〜08 review         | `DEFERRED_NON_BLOCKER` |
+| `OCT-FE-M05` | legacy CSS cleanup                              | Component / Feature owner             | M02/M03後にlegacy styleを触る時    | `DEFERRED_NON_BLOCKER` |
+| `OCT-FE-M06` | responsive owner単位migration                   | Layout / Page / Component owner       | FS-07 viewportsとvisual parity     | `DEFERRED_NON_BLOCKER` |
+| `OCT-FE-M07` | UI Regulation remediation                       | Frontend UI + Feature owner           | 該当UI変更/accessibility Phase     | `DEFERRED_NON_BLOCKER` |
+| `OCT-FE-M08` | browser/accessibility/visual verification       | Frontend Quality + Design             | Source migrationごと               | `DEFERRED_NON_BLOCKER` |
 
 `Deferred != Forgotten`。各handoffは個別Phaseへ移す時もorigin ID、owner、dependency、verification、review/closure evidenceを保持する。
 
@@ -240,18 +240,18 @@ PD-03 `Strategy Plan Rail`は`NEEDS_DISCOVERY / DEFERRED_NON_BLOCKER`を維持�
 
 FS-09で次の10条件を評価した。結果は`PASS 9 / PENDING_NON_BLOCKER 1 / BLOCKED 0`である。
 
-| # | Criterion | Required evidence | Current |
-| ---: | --- | --- | --- |
-| 1 | Taxonomy approved | FS-02 decision record | PASS |
-| 2 | Feature/UI/Layout boundary approved | FS-03 decision record | PASS |
-| 3 | Directory policy approved | FS-04 decision record | PASS |
-| 4 | Design Token foundation approved | FS-05 decision record | PASS |
-| 5 | Tailwind standard approved | FS-06 decision record | PASS |
-| 6 | Responsive policy approved | FS-07 decision record | PASS |
-| 7 | UI Regulation approved | FS-08 decision record | PASS |
-| 8 | Migration/deferred items tracked | Parent ledger with owner/dependency/reopen condition | PASS |
-| 9 | Required source changes verified | Phase-specific quality and visual evidence | PENDING_NON_BLOCKER |
-| 10 | Technical Bootcamp handoff ready | approved scope、prerequisites、source references | PASS |
+|   # | Criterion                           | Required evidence                                    | Current             |
+| --: | ----------------------------------- | ---------------------------------------------------- | ------------------- |
+|   1 | Taxonomy approved                   | FS-02 decision record                                | PASS                |
+|   2 | Feature/UI/Layout boundary approved | FS-03 decision record                                | PASS                |
+|   3 | Directory policy approved           | FS-04 decision record                                | PASS                |
+|   4 | Design Token foundation approved    | FS-05 decision record                                | PASS                |
+|   5 | Tailwind standard approved          | FS-06 decision record                                | PASS                |
+|   6 | Responsive policy approved          | FS-07 decision record                                | PASS                |
+|   7 | UI Regulation approved              | FS-08 decision record                                | PASS                |
+|   8 | Migration/deferred items tracked    | Parent ledger with owner/dependency/reopen condition | PASS                |
+|   9 | Required source changes verified    | Phase-specific quality and visual evidence           | PENDING_NON_BLOCKER |
+|  10 | Technical Bootcamp handoff ready    | approved scope、prerequisites、source references     | PASS                |
 
 Criterion 9は、FS-01〜09にSource変更がなく、将来のToken/Tailwind/directory/responsive/UI remediationとbrowser/accessibility/visual verificationが未実施のため`PASS`にしない。これらは上記Ledgerで追跡可能であり、October Parent Closure blockerではない。
 

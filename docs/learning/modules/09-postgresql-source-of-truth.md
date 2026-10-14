@@ -21,17 +21,17 @@ Prerequisites: `M01`–`M08`
 
 Relational Databaseは、dataをtableとして保持し、keyによってrelationを表現するdurable storageである。PostgreSQLはPanoptes Railsが利用するRDBMSであり、現在の`database.yml`は`postgresql` adapterを指定している。
 
-| Concept | Meaning | Panoptesでの読み方 |
-| --- | --- | --- |
-| Table | 同種recordの集合 | `users`、`organizations`等 |
-| Row | 1 record | 1 User、1 Organization等 |
-| Column | recordの属性 | `status`、`slug`、`user_id`等 |
-| Schema | table・column・constraint等の構造 | CURRENTは`rails/db/schema.rb`で確認 |
-| Primary key | row identity | CURRENT 4 tableはUUID |
-| Foreign key | 別table rowへの参照整合性 | Membership→User/Organization |
-| Index | lookupを支えるdata structure | `supabase_user_id`、slug、FK等 |
-| Constraint | invalid shape/relationを拒否するDB rule | NOT NULL、UNIQUE、FK、CHECK |
-| Transaction | 複数DB operationをatomic unitにする仕組み | Target Job/Usage/Audit作成等 |
+| Concept     | Meaning                                   | Panoptesでの読み方                  |
+| ----------- | ----------------------------------------- | ----------------------------------- |
+| Table       | 同種recordの集合                          | `users`、`organizations`等          |
+| Row         | 1 record                                  | 1 User、1 Organization等            |
+| Column      | recordの属性                              | `status`、`slug`、`user_id`等       |
+| Schema      | table・column・constraint等の構造         | CURRENTは`rails/db/schema.rb`で確認 |
+| Primary key | row identity                              | CURRENT 4 tableはUUID               |
+| Foreign key | 別table rowへの参照整合性                 | Membership→User/Organization        |
+| Index       | lookupを支えるdata structure              | `supabase_user_id`、slug、FK等      |
+| Constraint  | invalid shape/relationを拒否するDB rule   | NOT NULL、UNIQUE、FK、CHECK         |
+| Transaction | 複数DB operationをatomic unitにする仕組み | Target Job/Usage/Audit作成等        |
 
 SQL全体の暗記が目的ではない。重要なのは、どのbusiness factをdurableにし、どのinvariantをDBでも守り、誰が保存判断をするかである。
 
@@ -67,14 +67,14 @@ PostgreSQLが単独では決めないもの:
 
 Source of Truthとは、ある種類のfactについてcanonical authorityとして参照される場所またはcontractである。ただし「正本」は1種類だけではなく、何のauthorityかを明示する必要がある。
 
-| Kind | Owner | Meaning |
-| --- | --- | --- |
-| Business decision authority | Rails | rule、authorization、transition、保存可否を決める |
-| Durable canonical data | PostgreSQL | Railsが確定したbusiness stateを永続保持する |
-| Derived data | calculation/read model | canonical inputから再計算・再構築できる |
-| Cache | Frontend/server cache | performanceのための一時copy。stale/missし得る |
-| Presentation state | Frontend | tab、modal、入力途中等。business truthではない |
-| Replica | DB/infrastructure | canonical dataのcopy。write authorityとは限らない |
+| Kind                        | Owner                  | Meaning                                           |
+| --------------------------- | ---------------------- | ------------------------------------------------- |
+| Business decision authority | Rails                  | rule、authorization、transition、保存可否を決める |
+| Durable canonical data      | PostgreSQL             | Railsが確定したbusiness stateを永続保持する       |
+| Derived data                | calculation/read model | canonical inputから再計算・再構築できる           |
+| Cache                       | Frontend/server cache  | performanceのための一時copy。stale/missし得る     |
+| Presentation state          | Frontend               | tab、modal、入力途中等。business truthではない    |
+| Replica                     | DB/infrastructure      | canonical dataのcopy。write authorityとは限らない |
 
 「Railsが正本」と「DBが正本」は、対象を省略すると曖昧になる。Panoptesでは次のように言い分ける。
 
@@ -85,14 +85,14 @@ Rails process memoryだけに状態を置けば再起動で失われる。一方
 
 ## 5. Rails vs PostgreSQL
 
-| Concern | Rails | PostgreSQL |
-| --- | --- | --- |
-| Business rule | canonical owner | 決定結果を保持し、単純invariantを補強 |
-| Authorization | actor・membership・operationを評価 | relation dataを保持するが許可判断はしない |
-| State transition | 遷移可否とmeaningを判断 | accepted stateをdurableに保存 |
-| Transaction | operation群とfailure policyを組み立てる | BEGIN/COMMIT/ROLLBACKを実行する |
-| Persistence | 何をいつ保存するか決める | row/index/constraintとして保持する |
-| Query | use caseに必要なqueryを選ぶ | execution/index supportを提供する |
+| Concern          | Rails                                   | PostgreSQL                                |
+| ---------------- | --------------------------------------- | ----------------------------------------- |
+| Business rule    | canonical owner                         | 決定結果を保持し、単純invariantを補強     |
+| Authorization    | actor・membership・operationを評価      | relation dataを保持するが許可判断はしない |
+| State transition | 遷移可否とmeaningを判断                 | accepted stateをdurableに保存             |
+| Transaction      | operation群とfailure policyを組み立てる | BEGIN/COMMIT/ROLLBACKを実行する           |
+| Persistence      | 何をいつ保存するか決める                | row/index/constraintとして保持する        |
+| Query            | use caseに必要なqueryを選ぶ             | execution/index supportを提供する         |
 
 例: RailsはAnalysisJobを`completed`へ遷移できるかをevidenceとpolicyから判断する。PostgreSQLは確定した`completed`と関連lineageをtransactionで保存する。
 
@@ -108,12 +108,12 @@ User
   `--< SystemRole
 ```
 
-| Entity | Identity | Relation | Owner / lifecycle |
-| --- | --- | --- | --- |
-| User | UUID、external identity=`supabase_user_id` | Membership/SystemRoleを持つ | Railsがverified Supabase subjectからmap。active/suspended/deleted |
-| Organization | UUID、human-facing unique slug | Membershipを持つ | Rails business resource。active/suspended |
-| OrganizationMembership | UUID + unique `(organization_id,user_id)` | UserとOrganizationを接続 | role/statusを持つassociation |
-| SystemRole | UUID + unique `(user_id,role)` | Userに属する | CURRENTはsystem_adminのみ |
+| Entity                 | Identity                                   | Relation                    | Owner / lifecycle                                                 |
+| ---------------------- | ------------------------------------------ | --------------------------- | ----------------------------------------------------------------- |
+| User                   | UUID、external identity=`supabase_user_id` | Membership/SystemRoleを持つ | Railsがverified Supabase subjectからmap。active/suspended/deleted |
+| Organization           | UUID、human-facing unique slug             | Membershipを持つ            | Rails business resource。active/suspended                         |
+| OrganizationMembership | UUID + unique `(organization_id,user_id)`  | UserとOrganizationを接続    | role/statusを持つassociation                                      |
+| SystemRole             | UUID + unique `(user_id,role)`             | Userに属する                | CURRENTはsystem_adminのみ                                         |
 
 ### TARGET / DEFERRED
 
@@ -170,11 +170,11 @@ Membership rowが存在しても、statusが`suspended`かもしれず、roleが
 
 ### Layer boundary
 
-| Layer | Purpose | Example |
-| --- | --- | --- |
-| Frontend validation | 即時feedback、入力補助 | required表示、format hint |
-| Rails validation | application/business-friendly validation | slug format、name length、enum、operation rule |
-| DB constraint | raceや別write pathにも効くintegrity safety net | UNIQUE、NOT NULL、FK、CHECK |
+| Layer               | Purpose                                        | Example                                        |
+| ------------------- | ---------------------------------------------- | ---------------------------------------------- |
+| Frontend validation | 即時feedback、入力補助                         | required表示、format hint                      |
+| Rails validation    | application/business-friendly validation       | slug format、name length、enum、operation rule |
+| DB constraint       | raceや別write pathにも効くintegrity safety net | UNIQUE、NOT NULL、FK、CHECK                    |
 
 Rails validationだけでは、同時requestの競合やRails以外のwriteからDBを完全には守れない。DB constraintだけでは、context-sensitiveなbusiness error、authorization、複数resourceのpolicyを十分に説明できない。重複して見える場合も、canonical meaningと各layerの目的を明示する。
 
@@ -212,12 +212,12 @@ CURRENTの確認範囲では、AnalysisJob/Usage/Audit transactionはなく、ap
 
 同じdataへ複数requestが同時に到達すると、application側で先に読んだ状態が保存時には古くなっていることがある。
 
-| Risk | Rails decision | DB support candidate |
-| --- | --- | --- |
-| 同じJobの二重開始 | idempotency/eligibilityを定義 | unique idempotency key、transaction、lock |
-| Usage二重消費 | reservation/consumption policy | unique event identity、atomic update |
-| duplicate Snapshot | materialization policy | unique lineage/Job relation |
-| 同じMembership二重作成 | readable validation/error | CURRENT unique `(organization,user)` |
+| Risk                   | Rails decision                 | DB support candidate                      |
+| ---------------------- | ------------------------------ | ----------------------------------------- |
+| 同じJobの二重開始      | idempotency/eligibilityを定義  | unique idempotency key、transaction、lock |
+| Usage二重消費          | reservation/consumption policy | unique event identity、atomic update      |
+| duplicate Snapshot     | materialization policy         | unique lineage/Job relation               |
+| 同じMembership二重作成 | readable validation/error      | CURRENT unique `(organization,user)`      |
 
 CURRENTの`UserMapper`はunique `supabase_user_id`に対するraceで`ActiveRecord::RecordNotUnique`をretryする。これはDB UNIQUEが最終的な競合防止線である小さな例である。
 
@@ -245,12 +245,12 @@ Chronological latest rowを自動的にcurrentと解釈してはいけない。S
 
 承認済みlogical contract:
 
-| Job outcome | Snapshot policy |
-| --- | --- |
-| `completed` | Snapshot作成可。policy-driven current promotion可 |
-| `partially_completed` | limitations付きLimited Snapshotを条件付き作成可。自動current/Strategy promotionなし |
-| `failed` | Formal Snapshot作成不可 |
-| `cancelled` / `timed_out` | 途中artifactとFormal Snapshotを分離 |
+| Job outcome               | Snapshot policy                                                                     |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| `completed`               | Snapshot作成可。policy-driven current promotion可                                   |
+| `partially_completed`     | limitations付きLimited Snapshotを条件付き作成可。自動current/Strategy promotionなし |
+| `failed`                  | Formal Snapshot作成不可                                                             |
+| `cancelled` / `timed_out` | 途中artifactとFormal Snapshotを分離                                                 |
 
 Snapshotはimmutable historyとして、生成時のmeaning、version、evidence、lineageを保持する。Partial Snapshotのexact threshold、physical schema、retention、promotion exceptionはDEFERREDである。
 
@@ -340,33 +340,33 @@ Indexにはwrite/update costとstorage costがある。index数を増やせば�
 
 ## 19. CURRENT / TARGET / DEFERRED
 
-| Area | CURRENT | TARGET | DEFERRED |
-| --- | --- | --- | --- |
-| DB adapter | PostgreSQL、development/test/production config | managed production persistence | platform provisioning/tuning |
-| Identity schema | User、Organization、Membership、SystemRole | resource-derived Organization scope | advanced identity lifecycle |
-| Integrity | UUID、NOT NULL、UNIQUE、FK、CHECK、indexes | business resourceごとのintegrity | exact constraints/index tuning |
-| Project/Analysis | none in Rails schema | Organization-scoped Project/AnalysisJob | physical tables/migrations |
-| Snapshot/history | logical contract only | immutable Snapshot + lineage | schema、retention、promotion implementation |
-| Usage/Audit | none in Rails schema | durable usage decision/audit event | unit、price、schema、retention |
-| Transaction | ordinary ActiveRecord persistence; no reviewed Analysis transaction | Job+Usage+Audit atomic persistence | isolation/outbox/idempotency details |
-| Cache/derived | frontend/server-specific existing caches | reconstructable read/derived boundary | materialization policy |
+| Area             | CURRENT                                                             | TARGET                                  | DEFERRED                                    |
+| ---------------- | ------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------- |
+| DB adapter       | PostgreSQL、development/test/production config                      | managed production persistence          | platform provisioning/tuning                |
+| Identity schema  | User、Organization、Membership、SystemRole                          | resource-derived Organization scope     | advanced identity lifecycle                 |
+| Integrity        | UUID、NOT NULL、UNIQUE、FK、CHECK、indexes                          | business resourceごとのintegrity        | exact constraints/index tuning              |
+| Project/Analysis | none in Rails schema                                                | Organization-scoped Project/AnalysisJob | physical tables/migrations                  |
+| Snapshot/history | logical contract only                                               | immutable Snapshot + lineage            | schema、retention、promotion implementation |
+| Usage/Audit      | none in Rails schema                                                | durable usage decision/audit event      | unit、price、schema、retention              |
+| Transaction      | ordinary ActiveRecord persistence; no reviewed Analysis transaction | Job+Usage+Audit atomic persistence      | isolation/outbox/idempotency details        |
+| Cache/derived    | frontend/server-specific existing caches                            | reconstructable read/derived boundary   | materialization policy                      |
 
 ## 20. Representative repository mapping
 
 以下は限定確認した10例であり、全schema/migration監査ではない。
 
-| Source | Current role | Relation / constraint | Rails owner | Status |
-| --- | --- | --- | --- | --- |
-| `rails/config/database.yml` | PostgreSQL connection/environment config | adapter、pool、DB name/URL | Rails configuration | `CURRENT` |
-| `rails/db/schema.rb` | CURRENT schema snapshot | 4 tables、UUID、index、CHECK、FK | migration結果をRailsがload | `CURRENT` |
-| `rails/db/migrate/20260807000000_create_identity_and_organization_boundary.rb` | identity/org schema creation | NOT NULL、UNIQUE、FK、CHECK | Rails migration | `CURRENT` |
-| `rails/app/models/application_record.rb` | ActiveRecord model base | DB access boundary | Rails models | `CURRENT` |
-| `rails/app/models/user.rb` | User association/status/validation | Membership/SystemRole、unique Supabase ID | identity lifecycle | `CURRENT` |
-| `rails/app/models/organization.rb` | Organization association/status/slug validation | Membership、case-insensitive slug | Organization invariant | `CURRENT` |
-| `rails/app/models/organization_membership.rb` | User–Organization relation | belongs_to pair、scoped uniqueness、role/status | membership vocabulary | `CURRENT` |
-| `rails/app/models/system_role.rb` | system-level role relation | belongs_to User、unique user/role | system role vocabulary | `CURRENT` |
-| `rails/app/services/auth/user_mapper.rb` | verified subjectをUserへpersist | unique raceを`RecordNotUnique` retry | identity mapping decision | `CURRENT` |
-| Project/AnalysisJob/Snapshot/Usage/Audit/Lineage schema | repository内にphysical implementationなし | logical relationのみ承認済み | future Rails use case | `TARGET / DEFERRED` |
+| Source                                                                         | Current role                                    | Relation / constraint                           | Rails owner                | Status              |
+| ------------------------------------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------- | -------------------------- | ------------------- |
+| `rails/config/database.yml`                                                    | PostgreSQL connection/environment config        | adapter、pool、DB name/URL                      | Rails configuration        | `CURRENT`           |
+| `rails/db/schema.rb`                                                           | CURRENT schema snapshot                         | 4 tables、UUID、index、CHECK、FK                | migration結果をRailsがload | `CURRENT`           |
+| `rails/db/migrate/20260807000000_create_identity_and_organization_boundary.rb` | identity/org schema creation                    | NOT NULL、UNIQUE、FK、CHECK                     | Rails migration            | `CURRENT`           |
+| `rails/app/models/application_record.rb`                                       | ActiveRecord model base                         | DB access boundary                              | Rails models               | `CURRENT`           |
+| `rails/app/models/user.rb`                                                     | User association/status/validation              | Membership/SystemRole、unique Supabase ID       | identity lifecycle         | `CURRENT`           |
+| `rails/app/models/organization.rb`                                             | Organization association/status/slug validation | Membership、case-insensitive slug               | Organization invariant     | `CURRENT`           |
+| `rails/app/models/organization_membership.rb`                                  | User–Organization relation                      | belongs_to pair、scoped uniqueness、role/status | membership vocabulary      | `CURRENT`           |
+| `rails/app/models/system_role.rb`                                              | system-level role relation                      | belongs_to User、unique user/role               | system role vocabulary     | `CURRENT`           |
+| `rails/app/services/auth/user_mapper.rb`                                       | verified subjectをUserへpersist                 | unique raceを`RecordNotUnique` retry            | identity mapping decision  | `CURRENT`           |
+| Project/AnalysisJob/Snapshot/Usage/Audit/Lineage schema                        | repository内にphysical implementationなし       | logical relationのみ承認済み                    | future Rails use case      | `TARGET / DEFERRED` |
 
 ## 21. Common misunderstandings
 
@@ -550,18 +550,18 @@ CURRENT schemaはIdentity/Organization boundaryまで。AnalysisJob/Usage/Audit/
 
 ## 25. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. RDB/PostgreSQL fundamentals explained | `PASS` |
-| 2. Source of Truth explained | `PASS` |
-| 3. Rails vs PostgreSQL boundary explained | `PASS` |
-| 4. entity/relation explained | `PASS` |
-| 5. key/constraint explained | `PASS` |
-| 6. transaction/concurrency explained | `PASS` |
-| 7. current/history/snapshot explained | `PASS` |
-| 8. derived/cache distinction explained | `PASS` |
+| Criterion                                     | Result |
+| --------------------------------------------- | ------ |
+| 1. RDB/PostgreSQL fundamentals explained      | `PASS` |
+| 2. Source of Truth explained                  | `PASS` |
+| 3. Rails vs PostgreSQL boundary explained     | `PASS` |
+| 4. entity/relation explained                  | `PASS` |
+| 5. key/constraint explained                   | `PASS` |
+| 6. transaction/concurrency explained          | `PASS` |
+| 7. current/history/snapshot explained         | `PASS` |
+| 8. derived/cache distinction explained        | `PASS` |
 | 9. representative repository mapping included | `PASS` |
-| 10. exercises + answers included | `PASS` |
+| 10. exercises + answers included              | `PASS` |
 
 Authoring DoD: `10 / 10 PASS`。
 

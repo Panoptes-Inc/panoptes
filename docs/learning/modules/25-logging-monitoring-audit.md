@@ -24,12 +24,12 @@ Prerequisites: `M01`–`M24`（direct curriculum dependencies: `M07`–`M15`, `M
 
 Observabilityは、System内部で何が起きているかを、外部へ出されたsignalから理解・診断できる能力である。
 
-| Signal | Main question |
-| --- | --- |
-| Log | この個別eventで何が起きたか |
-| Metric | System behaviorが時間とともにどう変化したか |
-| Correlation / Trace | 複数service・stepがどの処理に属するか |
-| Alert | Operator actionが必要なconditionか |
+| Signal              | Main question                               |
+| ------------------- | ------------------------------------------- |
+| Log                 | この個別eventで何が起きたか                 |
+| Metric              | System behaviorが時間とともにどう変化したか |
+| Correlation / Trace | 複数service・stepがどの処理に属するか       |
+| Alert               | Operator actionが必要なconditionか          |
 
 ```text
 Observability != Loggingだけ
@@ -76,18 +76,18 @@ Free-textだけでなくmachine-readable fieldを使えば、検索・集計・c
 
 Candidate fields（formal schemaの新規決定ではない）:
 
-| Field | Purpose | Caution |
-| --- | --- | --- |
-| `timestamp` | event時刻 | clock/timezone consistency |
-| `level` | severity | 何でもErrorにしない |
-| `service` | emitting owner | canonical namingが必要 |
-| `event` | stable event meaning | message文字列と分離 |
-| `request_id` | HTTP request trace | Job IDと混同しない |
-| `correlation_id` | cross-hop relation | trusted generation/validation |
-| `analysis_job_id` | Business work | Organization accessに注意 |
-| `attempt` / `attempt_id` | technical execution | exact schemaは未決定 |
-| `duration_ms` | latency | unitを明示 |
-| `result` / `error_code` | outcome/category | raw exception/payloadを避ける |
+| Field                    | Purpose              | Caution                       |
+| ------------------------ | -------------------- | ----------------------------- |
+| `timestamp`              | event時刻            | clock/timezone consistency    |
+| `level`                  | severity             | 何でもErrorにしない           |
+| `service`                | emitting owner       | canonical namingが必要        |
+| `event`                  | stable event meaning | message文字列と分離           |
+| `request_id`             | HTTP request trace   | Job IDと混同しない            |
+| `correlation_id`         | cross-hop relation   | trusted generation/validation |
+| `analysis_job_id`        | Business work        | Organization accessに注意     |
+| `attempt` / `attempt_id` | technical execution  | exact schemaは未決定          |
+| `duration_ms`            | latency              | unitを明示                    |
+| `result` / `error_code`  | outcome/category     | raw exception/payloadを避ける |
 
 Organization contextが必要な場合も、privacy、data minimization、access restrictionを考慮する。
 
@@ -121,11 +121,11 @@ CURRENT Rails `ApplicationController`はunhandled errorを`event`、`error_class
 
 Metricは時間経過に沿って集計・監視できる数値である。
 
-| Type | Meaning | Panoptes candidate |
-| --- | --- | --- |
-| Counter | 累積event数 | accepted/completed/timed-out jobs total |
-| Gauge | 現在値 | queue depth、active workers |
-| Histogram / Distribution | 値の分布 | request/analysis duration |
+| Type                     | Meaning     | Panoptes candidate                      |
+| ------------------------ | ----------- | --------------------------------------- |
+| Counter                  | 累積event数 | accepted/completed/timed-out jobs total |
+| Gauge                    | 現在値      | queue depth、active workers             |
+| Histogram / Distribution | 値の分布    | request/analysis duration               |
 
 Logは個別event、Metricは集約behaviorである。すべてのLogをMetricにする必要はなく、high-cardinality IDをMetric labelへ無制限に入れると運用負荷が増える。
 
@@ -236,11 +236,11 @@ MetricはBusiness Stateから安全に集計できるが、Metric自体を正本
 
 ## 15. Progress, heartbeat, and canonical state
 
-| Concept | Meaning | Not equivalent to |
-| --- | --- | --- |
-| Progress | technical step/percent/message | canonical business decision |
-| Heartbeat | Worker/Attemptのliveness | progress or success |
-| Canonical Job State | Rails-owned lifecycle | UI animation/Worker log |
+| Concept             | Meaning                        | Not equivalent to           |
+| ------------------- | ------------------------------ | --------------------------- |
+| Progress            | technical step/percent/message | canonical business decision |
+| Heartbeat           | Worker/Attemptのliveness       | progress or success         |
+| Canonical Job State | Rails-owned lifecycle          | UI animation/Worker log     |
 
 `Progress 60%`は特定Canonical stateや残時間を保証しない。Heartbeatがあっても処理が前進しているとは限らず、Heartbeatが一度欠けても即座にBusiness failureとは限らない。timeout/staleness contractと組み合わせる。
 
@@ -390,10 +390,10 @@ flowchart TB
     N -.references.-> C
 ```
 
-| Record | Core question | Example |
-| --- | --- | --- |
-| Logging | Systemがどう動いたか | WorkerがArtifact保存に失敗 |
-| Audit | 誰が何をしたか | UserがReanalysisを要求 |
+| Record  | Core question        | Example                                   |
+| ------- | -------------------- | ----------------------------------------- |
+| Logging | Systemがどう動いたか | WorkerがArtifact保存に失敗                |
+| Audit   | 誰が何をしたか       | UserがReanalysisを要求                    |
 | Lineage | 何から何が作られたか | Snapshot SはJob J/Result R/Evidence E由来 |
 
 Audit record数をMetricへ集計することは可能だが、概念は別である。Repositoryの`docs/audit/`はengineering review/decision documentationであり、runtime Business Audit trailではない。
@@ -492,15 +492,15 @@ Debug telemetry reliability != Mandatory audit durability
 
 ## 32. Ownership map
 
-| Layer | Observability ownership | Must not become |
-| --- | --- | --- |
-| Frontend | client-visible failure context、approved client telemetry | Secret/payload dump、Business audit authority |
-| SvelteKit BFF | request/session/proxy/timeout diagnostics、ID forwarding | Canonical Job/Audit owner |
-| Rails | Business lifecycle、authz、mutation、safe error、Audit owner | Worker resource monitor |
-| PostgreSQL | persistence/resource signals、durable audit storage candidate | User-facing diagnosis owner |
-| Queue | delivery/age/redelivery/DLQ signals | Business state authority |
-| Worker | stage/attempt/browser/fetch/artifact diagnostics | Business decision authority |
-| Infrastructure | resource/platform/service availability | Product semantics owner |
+| Layer          | Observability ownership                                       | Must not become                               |
+| -------------- | ------------------------------------------------------------- | --------------------------------------------- |
+| Frontend       | client-visible failure context、approved client telemetry     | Secret/payload dump、Business audit authority |
+| SvelteKit BFF  | request/session/proxy/timeout diagnostics、ID forwarding      | Canonical Job/Audit owner                     |
+| Rails          | Business lifecycle、authz、mutation、safe error、Audit owner  | Worker resource monitor                       |
+| PostgreSQL     | persistence/resource signals、durable audit storage candidate | User-facing diagnosis owner                   |
+| Queue          | delivery/age/redelivery/DLQ signals                           | Business state authority                      |
+| Worker         | stage/attempt/browser/fetch/artifact diagnostics              | Business decision authority                   |
+| Infrastructure | resource/platform/service availability                        | Product semantics owner                       |
 
 ## 33. Worked example: AnalysisJob is unusually slow
 
@@ -559,20 +559,20 @@ Signalsを組み合わせることで、「API failure」「Worker dead」「Bus
 
 ## 35. Representative repository mapping
 
-| Representative | Observable concern | Owner/category | Status |
-| --- | --- | --- | --- |
-| `src/lib/server/rails/client.ts` | request/correlation ID、timeout、upstream status | BFF / correlation+diagnostic | `CURRENT` |
-| `rails/app/controllers/application_controller.rb` | request context、safe error、response meta | Rails / log+correlation | `CURRENT` |
-| `rails/app/controllers/concerns/authentication.rb` | authenticated request boundary | Rails / security event source | `CURRENT` source; metric/audit `TARGET` |
-| `rails/app/controllers/concerns/organization_authorization.rb` | Organization/Role decision | Rails / authz event source | `CURRENT` source; audit/monitoring `TARGET` |
-| `rails/config/initializers/filter_parameter_logging.rb` | sensitive parameter redaction | Rails / security logging | `CURRENT` |
-| `src/lib/panoptes/domain/runtime-progress.ts` | Job/Session/progress/terminal mapping | Frontend / state diagnostic | `CURRENT` |
-| `src/lib/panoptes/utils/errors.ts` | safe error code/message/retryable | Frontend / error representation | `CURRENT` |
-| `docs/api/openapi-draft.yaml` | error meta、Job/Snapshot identifiers | Contract / correlation input | Mixed `CURRENT/TARGET` contract |
-| `tests/unit/analysis-job-adapter.test.ts` | unknown status diagnostic、partial/terminal mapping | Test evidence / diagnostic contract | `CURRENT` |
-| `.github/workflows/quality.yml` | Frontend CI step output | CI / operational build log | `CURRENT` |
-| `.github/workflows/rails-quality.yml` | Rails test/lint/security output | CI / operational build log | `CURRENT` |
-| `docs/DEVELOPMENT_LOG.md` | engineering phase history | Documentation record | `CURRENT`; not runtime Audit |
+| Representative                                                 | Observable concern                                  | Owner/category                      | Status                                      |
+| -------------------------------------------------------------- | --------------------------------------------------- | ----------------------------------- | ------------------------------------------- |
+| `src/lib/server/rails/client.ts`                               | request/correlation ID、timeout、upstream status    | BFF / correlation+diagnostic        | `CURRENT`                                   |
+| `rails/app/controllers/application_controller.rb`              | request context、safe error、response meta          | Rails / log+correlation             | `CURRENT`                                   |
+| `rails/app/controllers/concerns/authentication.rb`             | authenticated request boundary                      | Rails / security event source       | `CURRENT` source; metric/audit `TARGET`     |
+| `rails/app/controllers/concerns/organization_authorization.rb` | Organization/Role decision                          | Rails / authz event source          | `CURRENT` source; audit/monitoring `TARGET` |
+| `rails/config/initializers/filter_parameter_logging.rb`        | sensitive parameter redaction                       | Rails / security logging            | `CURRENT`                                   |
+| `src/lib/panoptes/domain/runtime-progress.ts`                  | Job/Session/progress/terminal mapping               | Frontend / state diagnostic         | `CURRENT`                                   |
+| `src/lib/panoptes/utils/errors.ts`                             | safe error code/message/retryable                   | Frontend / error representation     | `CURRENT`                                   |
+| `docs/api/openapi-draft.yaml`                                  | error meta、Job/Snapshot identifiers                | Contract / correlation input        | Mixed `CURRENT/TARGET` contract             |
+| `tests/unit/analysis-job-adapter.test.ts`                      | unknown status diagnostic、partial/terminal mapping | Test evidence / diagnostic contract | `CURRENT`                                   |
+| `.github/workflows/quality.yml`                                | Frontend CI step output                             | CI / operational build log          | `CURRENT`                                   |
+| `.github/workflows/rails-quality.yml`                          | Rails test/lint/security output                     | CI / operational build log          | `CURRENT`                                   |
+| `docs/DEVELOPMENT_LOG.md`                                      | engineering phase history                           | Documentation record                | `CURRENT`; not runtime Audit                |
 
 ## 36. Common misunderstandings
 
@@ -706,18 +706,18 @@ Loggingは個別diagnosis、Monitoringはsystem/product health、Auditはactor a
 
 ## 40. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Observability fundamentals explained | `PASS` |
-| 2 | Logging explained | `PASS` |
-| 3 | Metrics/Monitoring explained | `PASS` |
-| 4 | Alerting explained | `PASS` |
-| 5 | Correlation/Tracing explained | `PASS` |
-| 6 | Job/Worker/API observability explained | `PASS` |
-| 7 | Audit explained | `PASS` |
-| 8 | Logging/Audit/Lineage separation explained | `PASS` |
-| 9 | Repository mapping + diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                  | Result |
+| --: | ------------------------------------------ | ------ |
+|   1 | Observability fundamentals explained       | `PASS` |
+|   2 | Logging explained                          | `PASS` |
+|   3 | Metrics/Monitoring explained               | `PASS` |
+|   4 | Alerting explained                         | `PASS` |
+|   5 | Correlation/Tracing explained              | `PASS` |
+|   6 | Job/Worker/API observability explained     | `PASS` |
+|   7 | Audit explained                            | `PASS` |
+|   8 | Logging/Audit/Lineage separation explained | `PASS` |
+|   9 | Repository mapping + diagrams included     | `PASS` |
+|  10 | Exercises + answers included               | `PASS` |
 
 M25 authoring result: `10 / 10 PASS`。教材完成はMonitoring/Logging/Tracing導入、SLO/Alert/Retention決定、Production observability readinessの完了を意味しない。
 
@@ -737,4 +737,3 @@ M26ではruntime/service/network/storage/environment/secret/deployment boundary�
 - [M23 Security Fundamentals](./23-security-fundamentals.md)
 - [M24 Testing / CI/CD](./24-testing-cicd.md)
 - [Panoptes Technical Bootcamp](../panoptes-technical-bootcamp.md)
-

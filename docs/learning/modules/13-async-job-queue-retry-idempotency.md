@@ -37,16 +37,16 @@ Panoptesのcrawl、Chromium capture、HTML extraction、internal/visual analysis
 
 Queueは「処理すべき仕事をProducerからConsumerへ引き渡すdelivery mechanism」である。
 
-| Term | Meaning |
-| --- | --- |
-| Producer | 実行依頼をmessageとしてenqueueする側 |
-| Message | Consumerへ渡すexecution delivery unit |
-| Enqueue / Dequeue | Queueへの投入 / 取得 |
-| Consumer | messageを受け取りtechnical executionを行う側 |
-| Acknowledgement | 処理済みとしてdeliveryを完了させる通知 |
+| Term               | Meaning                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| Producer           | 実行依頼をmessageとしてenqueueする側                          |
+| Message            | Consumerへ渡すexecution delivery unit                         |
+| Enqueue / Dequeue  | Queueへの投入 / 取得                                          |
+| Consumer           | messageを受け取りtechnical executionを行う側                  |
+| Acknowledgement    | 処理済みとしてdeliveryを完了させる通知                        |
 | Visibility / lease | 処理中messageを一時的に他Consumerから隠す、または所有する概念 |
-| Redelivery | ack欠落やlease expiry等により同じmessageを再配送すること |
-| DLQ | 通常retryで回復しないmessageを隔離する場所 |
+| Redelivery         | ack欠落やlease expiry等により同じmessageを再配送すること      |
+| DLQ                | 通常retryで回復しないmessageを隔離する場所                    |
 
 Queueはbuffering、delivery、redeliveryを助ける。しかし、AnalysisJobのcanonical status、Organization authorization、usage、Result/Snapshot lineageを決めるBusiness Databaseではない。
 
@@ -91,22 +91,22 @@ DB persist前にQueue送信だけ成功すると、messageはあるのにcanonic
 AnalysisJob != Queue Message != Attempt
 ```
 
-| Identity | Purpose | Lifetime / multiplicity | Source of Truth |
-| --- | --- | --- | --- |
-| AnalysisJob | 1つのbusiness executionとcanonical lifecycle | Reanalysisごとに新規。1 Jobに複数delivery/attempt可 | Rails/PostgreSQL |
-| Queue Message | technical executionを届ける単位 | redeliveryで同一内容が複数回届き得る | Queue delivery metadata。Business SoTではない |
-| Attempt | 同じJobをtechnicalに実行する1試行 | Retryごとに増え得る | TARGET concept。Production model未実装 |
-| Idempotency key | 同一operation requestの重複business effectを防ぐ相関キー | operation scope内で再送に利用 | server-side enforcementが必要 |
+| Identity        | Purpose                                                  | Lifetime / multiplicity                             | Source of Truth                               |
+| --------------- | -------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------- |
+| AnalysisJob     | 1つのbusiness executionとcanonical lifecycle             | Reanalysisごとに新規。1 Jobに複数delivery/attempt可 | Rails/PostgreSQL                              |
+| Queue Message   | technical executionを届ける単位                          | redeliveryで同一内容が複数回届き得る                | Queue delivery metadata。Business SoTではない |
+| Attempt         | 同じJobをtechnicalに実行する1試行                        | Retryごとに増え得る                                 | TARGET concept。Production model未実装        |
+| Idempotency key | 同一operation requestの重複business effectを防ぐ相関キー | operation scope内で再送に利用                       | server-side enforcementが必要                 |
 
 `1 Job -> Attempt 1 -> Attempt 2 -> Attempt 3`はあり得る。Retryはsame Jobのtechnical recoveryであり、Reanalysisはnew Job/new lineageのbusiness executionである。Queue retryが新しいAnalysisJobを勝手に作ってはならない。
 
 ## 6. Delivery semantics
 
-| Model | Property | Risk / note |
-| --- | --- | --- |
-| at-most-once | 重複を抑えるが、失敗時に失われ得る | 未処理messageの喪失を許容できるかが重要 |
-| at-least-once | 処理されるまで再配送し得る | duplicate deliveryを前提にConsumerを安全化する |
-| exactly-once | 観測上1回の効果を目指す | 分散境界全体の物理的一回実行は現実的に難しく、idempotent effect等で構成する |
+| Model         | Property                           | Risk / note                                                                 |
+| ------------- | ---------------------------------- | --------------------------------------------------------------------------- |
+| at-most-once  | 重複を抑えるが、失敗時に失われ得る | 未処理messageの喪失を許容できるかが重要                                     |
+| at-least-once | 処理されるまで再配送し得る         | duplicate deliveryを前提にConsumerを安全化する                              |
+| exactly-once  | 観測上1回の効果を目指す            | 分散境界全体の物理的一回実行は現実的に難しく、idempotent effect等で構成する |
 
 Panoptesの特定delivery guaranteeは未決定である。ただし、どの製品を選んでもtimeout、network partition、ack lossは起こり得るため、「duplicate deliveryは起きない」を正しさの前提にしない。
 
@@ -114,16 +114,16 @@ Panoptesの特定delivery guaranteeは未決定である。ただし、どの製
 
 Retryは一時的なtechnical failureからsame AnalysisJobを回復させる再試行である。
 
-| Candidate | Default classification | Reason |
-| --- | --- | --- |
-| temporary network timeout | Retry candidate | 一過性で回復し得る |
-| upstream 429 / temporary 5xx | Retry candidate | backoff後に回復し得る。ただし契約・期限を考慮 |
-| temporary browser crash | Retry candidate | 新しいtechnical attemptで回復し得る |
-| recoverable infrastructure failure | Retry candidate | 一過性なら再実行可能 |
-| invalid URL/input | Do not retry | 同じinputでは決定的に失敗する |
-| authorization denied | Do not retry | Business/security decisionでありtechnical retryでは解決しない |
-| permanently unsupported target | Do not retry | capability/policy判断が必要 |
-| malformed persisted payload | Do not blindly retry | poison messageの可能性。隔離・修復・調査が必要 |
+| Candidate                          | Default classification | Reason                                                        |
+| ---------------------------------- | ---------------------- | ------------------------------------------------------------- |
+| temporary network timeout          | Retry candidate        | 一過性で回復し得る                                            |
+| upstream 429 / temporary 5xx       | Retry candidate        | backoff後に回復し得る。ただし契約・期限を考慮                 |
+| temporary browser crash            | Retry candidate        | 新しいtechnical attemptで回復し得る                           |
+| recoverable infrastructure failure | Retry candidate        | 一過性なら再実行可能                                          |
+| invalid URL/input                  | Do not retry           | 同じinputでは決定的に失敗する                                 |
+| authorization denied               | Do not retry           | Business/security decisionでありtechnical retryでは解決しない |
+| permanently unsupported target     | Do not retry           | capability/policy判断が必要                                   |
+| malformed persisted payload        | Do not blindly retry   | poison messageの可能性。隔離・修復・調査が必要                |
 
 一般的なpolicy要素はmax attempts、exponential backoff、jitter、retryable classification、whole-job deadlineである。無限retryはcapacity、cost、failure visibilityを損なう。具体値は本Phaseでは決めず、既存契約の設計値もProduction設定済みとは扱わない。
 
@@ -180,12 +180,12 @@ Queue arrival orderも常に保証されない。Attempt Aの古いresultがAtte
 
 ### 10.1 Timeout levels
 
-| Timeout | What expired | Canonical `timed_out`との関係 |
-| --- | --- | --- |
-| HTTP timeout | client/BFF/Rails request wait | Requestが切れただけでJob終了とは限らない |
-| Queue visibility/lease expiry | delivery ownership window | redelivery契機になり得る。Job outcomeではない |
-| Worker step timeout | crawl/capture/LLM等の1 step | Retryable factかもしれない |
-| Whole Job timeout | Job全体の許容時間 | Railsがfacts/policyを評価し`timed_out`を確定する候補 |
+| Timeout                       | What expired                  | Canonical `timed_out`との関係                        |
+| ----------------------------- | ----------------------------- | ---------------------------------------------------- |
+| HTTP timeout                  | client/BFF/Rails request wait | Requestが切れただけでJob終了とは限らない             |
+| Queue visibility/lease expiry | delivery ownership window     | redelivery契機になり得る。Job outcomeではない        |
+| Worker step timeout           | crawl/capture/LLM等の1 step   | Retryable factかもしれない                           |
+| Whole Job timeout             | Job全体の許容時間             | Railsがfacts/policyを評価し`timed_out`を確定する候補 |
 
 Technical timeoutが発生しただけでWorker/Queueが即座にbusiness `timed_out`を決めない。canonical outcome ownerはRailsである。
 
@@ -216,22 +216,22 @@ Poison messageの例:
 
 `DLQ != failed AnalysisJob list`である。DLQはdelivery failureの隔離先で、Business outcomeはRails/PostgreSQLへ残す。DLQ messageを無検証で再投入したり、`completed`へ変えたりしない。
 
-| Signal | Answers | Must not be confused with |
-| --- | --- | --- |
-| Heartbeat / last activity | Worker/attemptが活動中か | 進捗率、business success |
-| Progress checkpoint | technical stepがどこまで進んだか | canonical lifecycleの決定権 |
-| Job state | canonical lifecycleは何か | process healthそのもの |
+| Signal                    | Answers                          | Must not be confused with   |
+| ------------------------- | -------------------------------- | --------------------------- |
+| Heartbeat / last activity | Worker/attemptが活動中か         | 進捗率、business success    |
+| Progress checkpoint       | technical stepがどこまで進んだか | canonical lifecycleの決定権 |
+| Job state                 | canonical lifecycleは何か        | process healthそのもの      |
 
 Heartbeat欠落はstuck/crashの疑いを示すが、それだけで`failed`や`timed_out`を確定しない。exact interval、threshold、schemaはDEFERREDである。
 
 ## 12. Rails / Queue / Worker boundary
 
-| Layer | Owns | Does not own | Failure responsibility |
-| --- | --- | --- | --- |
-| Rails | Job creation、authorization、canonical lifecycle、retry eligibility/business policy、cancellation decision、terminal outcome、Usage/Audit | crawl/Chromiumの実行、delivery transport | factを検証し、canonical persistenceとresponseを整合させる |
-| Queue | delivery、buffering、redelivery、supported retry scheduling、lease/visibility metadata | Business authorization、canonical outcome、Snapshot/Usage truth | delivery failureを観測可能にし、exhausted messageを隔離可能にする |
-| Worker | technical attempt、crawl/capture/analysis、heartbeat/progress facts、artifact production、technical error classification | Business statusの無条件確定、Usage/billing decision、Organization authorization policy | retry-safeに実行し、identity付きfactsをRailsへ報告する |
-| PostgreSQL | durable Job、business status、lineage、accepted Result/Snapshot、Usage/Audit | execution delivery | transaction/constraintによりcanonical effectを保護する |
+| Layer      | Owns                                                                                                                                      | Does not own                                                                           | Failure responsibility                                            |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Rails      | Job creation、authorization、canonical lifecycle、retry eligibility/business policy、cancellation decision、terminal outcome、Usage/Audit | crawl/Chromiumの実行、delivery transport                                               | factを検証し、canonical persistenceとresponseを整合させる         |
+| Queue      | delivery、buffering、redelivery、supported retry scheduling、lease/visibility metadata                                                    | Business authorization、canonical outcome、Snapshot/Usage truth                        | delivery failureを観測可能にし、exhausted messageを隔離可能にする |
+| Worker     | technical attempt、crawl/capture/analysis、heartbeat/progress facts、artifact production、technical error classification                  | Business statusの無条件確定、Usage/billing decision、Organization authorization policy | retry-safeに実行し、identity付きfactsをRailsへ報告する            |
+| PostgreSQL | durable Job、business status、lineage、accepted Result/Snapshot、Usage/Audit                                                              | execution delivery                                                                     | transaction/constraintによりcanonical effectを保護する            |
 
 Queueからmessageが消えてもAnalysisJob historyは残らなければならない。QueueはDurable Business Databaseではない。Worker successも、validation・eligibility・persistenceを経たProduct successと同義ではない。
 
@@ -243,47 +243,47 @@ Screenshot、HTML、extraction、analysis outputはRetryで複数生成され得
 
 ## 14. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | FrontendがAnalysis command用idempotency keyを生成する。mock clientがkey/payload signatureを保持し、same request replay/different payload conflictを模擬する。polling controllerはone in-flight、timeout/backoff、stop decisionを扱う。adapter/runtime projectionはterminal/stale updateを防御する。Production business clientは未接続時503でfail closedする。 |
-| TARGET | Railsがcanonical Job/business decisionを所有し、Queueがdelivery、Workerがtechnical executionを担当する。Job/attempt/sequence検証、idempotent commit、outbox等でdispatch/persistence consistencyを保護する方向が文書化されている。 |
-| DEFERRED | Production Queue製品/guarantee、Worker orchestration、Attempt persistence、claim/lease方式、retry具体値、DLQ、heartbeat、cancellation propagation、artifact identity、production server-side idempotency enforcement。 |
+| Classification | Confirmed scope                                                                                                                                                                                                                                                                                                                                               |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT        | FrontendがAnalysis command用idempotency keyを生成する。mock clientがkey/payload signatureを保持し、same request replay/different payload conflictを模擬する。polling controllerはone in-flight、timeout/backoff、stop decisionを扱う。adapter/runtime projectionはterminal/stale updateを防御する。Production business clientは未接続時503でfail closedする。 |
+| TARGET         | Railsがcanonical Job/business decisionを所有し、Queueがdelivery、Workerがtechnical executionを担当する。Job/attempt/sequence検証、idempotent commit、outbox等でdispatch/persistence consistencyを保護する方向が文書化されている。                                                                                                                             |
+| DEFERRED       | Production Queue製品/guarantee、Worker orchestration、Attempt persistence、claim/lease方式、retry具体値、DLQ、heartbeat、cancellation propagation、artifact identity、production server-side idempotency enforcement。                                                                                                                                        |
 
 承認済み設計原則はProduction実装完了を意味しない。特にCURRENTのtimer pollingやmock runtime progressionはQueue/Worker実装ではない。
 
 ## 15. Representative repository mapping
 
-| Representative source | Role | Job / Attempt / Queue relation | Idempotency relevance | Status |
-| --- | --- | --- | --- | --- |
-| [M12 AnalysisJob Lifecycle](./12-analysis-job-lifecycle.md) | canonical lifecycle教材 | JobとRetry/Reanalysisを定義 | terminal/state overwrite防止の前提 | Approved learning contract |
-| [AnalysisJob State Machine](../../api/analysis-job-state-machine.md) | lifecycle/event設計 | attempt/sequence、stale eventの概念 | duplicate same-state no-op、old event reject | Target design;後続PD-04差分あり |
-| [API Boundary](../../architecture/api-boundary.md) | system responsibility | Rails→Queue→Worker、outbox候補 | Rails validation/transaction boundary | Target design |
-| [Panoptes API v1](../../api/panoptes-api-v1.md) | HTTP/API contract | create/read/cancel/reanalyze境界 | Idempotency-Key replay/conflict draft | Target draft |
-| `src/lib/panoptes/utils/idempotency.ts` | client identity helper | Queue/Attemptは扱わない | UUID-based keyを生成するだけ | CURRENT frontend |
-| `src/lib/panoptes/actions/analysis.ts` | Feature command orchestration | create/reanalyze、pollingを起動 | operationごとにkeyを付与 | CURRENT frontend |
-| `src/lib/panoptes/polling/analysis-polling-controller.ts` | HTTP status polling | Queue consumerではない | one in-flight、timeout/backoffを制御 | CURRENT frontend |
-| `src/lib/panoptes/actions/network.ts` | reconnect UX | delivery retryではなくclient connectivity | Queue retryと区別する例 | CURRENT frontend |
-| `src/lib/features/analysis-job/adapter/analysis-job-adapter.ts` | canonical response projection | terminal stopをpresentationへ写像 | unknown/status不整合をfail safe | CURRENT frontend |
-| `src/lib/panoptes/domain/runtime-progress.ts` | runtime update guard | sequence-like monotonic projection | stale/terminal overwriteを抑止 | CURRENT frontend |
-| `src/lib/panoptes/api/mock-backend.ts` / `mock/state.ts` | browser-local mock | time-based Job模擬。Queue/Attemptではない | key + payload signature replay/conflictを模擬 | CURRENT mock only |
-| `src/lib/panoptes/api/unavailable-canonical-business-client.ts` | fail-closed boundary | Production async backend未接続を明示 | mockへのsilent fallbackを防止 | CURRENT frontend |
+| Representative source                                                | Role                          | Job / Attempt / Queue relation            | Idempotency relevance                         | Status                          |
+| -------------------------------------------------------------------- | ----------------------------- | ----------------------------------------- | --------------------------------------------- | ------------------------------- |
+| [M12 AnalysisJob Lifecycle](./12-analysis-job-lifecycle.md)          | canonical lifecycle教材       | JobとRetry/Reanalysisを定義               | terminal/state overwrite防止の前提            | Approved learning contract      |
+| [AnalysisJob State Machine](../../api/analysis-job-state-machine.md) | lifecycle/event設計           | attempt/sequence、stale eventの概念       | duplicate same-state no-op、old event reject  | Target design;後続PD-04差分あり |
+| [API Boundary](../../architecture/api-boundary.md)                   | system responsibility         | Rails→Queue→Worker、outbox候補            | Rails validation/transaction boundary         | Target design                   |
+| [Panoptes API v1](../../api/panoptes-api-v1.md)                      | HTTP/API contract             | create/read/cancel/reanalyze境界          | Idempotency-Key replay/conflict draft         | Target draft                    |
+| `src/lib/panoptes/utils/idempotency.ts`                              | client identity helper        | Queue/Attemptは扱わない                   | UUID-based keyを生成するだけ                  | CURRENT frontend                |
+| `src/lib/panoptes/actions/analysis.ts`                               | Feature command orchestration | create/reanalyze、pollingを起動           | operationごとにkeyを付与                      | CURRENT frontend                |
+| `src/lib/panoptes/polling/analysis-polling-controller.ts`            | HTTP status polling           | Queue consumerではない                    | one in-flight、timeout/backoffを制御          | CURRENT frontend                |
+| `src/lib/panoptes/actions/network.ts`                                | reconnect UX                  | delivery retryではなくclient connectivity | Queue retryと区別する例                       | CURRENT frontend                |
+| `src/lib/features/analysis-job/adapter/analysis-job-adapter.ts`      | canonical response projection | terminal stopをpresentationへ写像         | unknown/status不整合をfail safe               | CURRENT frontend                |
+| `src/lib/panoptes/domain/runtime-progress.ts`                        | runtime update guard          | sequence-like monotonic projection        | stale/terminal overwriteを抑止                | CURRENT frontend                |
+| `src/lib/panoptes/api/mock-backend.ts` / `mock/state.ts`             | browser-local mock            | time-based Job模擬。Queue/Attemptではない | key + payload signature replay/conflictを模擬 | CURRENT mock only               |
+| `src/lib/panoptes/api/unavailable-canonical-business-client.ts`      | fail-closed boundary          | Production async backend未接続を明示      | mockへのsilent fallbackを防止                 | CURRENT frontend                |
 
 ## 16. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| Async = Parallel | 受付と完了の分離。並列性は別軸 |
-| Job = Queue Message | Jobはbusiness identity、messageはdelivery unit |
-| Job = Attempt | 1 Jobに複数technical attemptsがあり得る |
-| Retry = Reanalysis | Retryはsame Job recovery、Reanalysisはnew Job/lineage |
-| Retryならeffectも繰り返す | effectはidempotently一度に保護する |
-| Idempotency = codeが一度しか動かない | 複数実行されてもbusiness effectを重複させない |
-| Queue = Source of Truth | canonical Job/history/resultはRails/PostgreSQL |
-| DLQ = failed Job一覧 | delivery failureの隔離でありbusiness outcome storeではない |
-| Technical timeout = 即`timed_out` | Railsがfacts/policyからcanonical outcomeを決める |
-| Cancel = instant kill | authorizationとcooperative stop/finalizationを伴う |
-| Heartbeat = Progress | activity signalとcompletion progressは別 |
-| Worker success = Product success | Rails validation/persistence/eligibility後にProduct outcomeとなる |
+| Misunderstanding                     | Correction                                                        |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| Async = Parallel                     | 受付と完了の分離。並列性は別軸                                    |
+| Job = Queue Message                  | Jobはbusiness identity、messageはdelivery unit                    |
+| Job = Attempt                        | 1 Jobに複数technical attemptsがあり得る                           |
+| Retry = Reanalysis                   | Retryはsame Job recovery、Reanalysisはnew Job/lineage             |
+| Retryならeffectも繰り返す            | effectはidempotently一度に保護する                                |
+| Idempotency = codeが一度しか動かない | 複数実行されてもbusiness effectを重複させない                     |
+| Queue = Source of Truth              | canonical Job/history/resultはRails/PostgreSQL                    |
+| DLQ = failed Job一覧                 | delivery failureの隔離でありbusiness outcome storeではない        |
+| Technical timeout = 即`timed_out`    | Railsがfacts/policyからcanonical outcomeを決める                  |
+| Cancel = instant kill                | authorizationとcooperative stop/finalizationを伴う                |
+| Heartbeat = Progress                 | activity signalとcompletion progressは別                          |
+| Worker success = Product success     | Rails validation/persistence/eligibility後にProduct outcomeとなる |
 
 ## 17. Decision heuristic
 
@@ -383,18 +383,18 @@ at-least-once deliveryではack lossやlease expiryにより同じJobのmessage�
 
 ## 20. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Sync/Async distinction explained | `PASS` |
-| 2 | Queue fundamentals explained | `PASS` |
-| 3 | Job/Message/Attempt distinction explained | `PASS` |
-| 4 | Retry model explained | `PASS` |
-| 5 | Idempotency explained | `PASS` |
-| 6 | Duplicate delivery explained | `PASS` |
-| 7 | Timeout/cancellation explained | `PASS` |
-| 8 | DLQ/heartbeat concepts explained | `PASS` |
-| 9 | Rails/Queue/Worker mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                          | Result |
+| --: | -------------------------------------------------- | ------ |
+|   1 | Sync/Async distinction explained                   | `PASS` |
+|   2 | Queue fundamentals explained                       | `PASS` |
+|   3 | Job/Message/Attempt distinction explained          | `PASS` |
+|   4 | Retry model explained                              | `PASS` |
+|   5 | Idempotency explained                              | `PASS` |
+|   6 | Duplicate delivery explained                       | `PASS` |
+|   7 | Timeout/cancellation explained                     | `PASS` |
+|   8 | DLQ/heartbeat concepts explained                   | `PASS` |
+|   9 | Rails/Queue/Worker mapping + two diagrams included | `PASS` |
+|  10 | Exercises + answers included                       | `PASS` |
 
 M13 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Production Queue/Worker、retry、DLQ、heartbeat、cancellation/idempotency実装の完成判定ではない。
 

@@ -40,13 +40,13 @@ Axisは「評価結果」ではなく「何を評価するかを固定する観�
 Axis != Observation != Submetric != Score
 ```
 
-| Concept | Question | Example |
-| --- | --- | --- |
-| Evidence | 何を直接観測したか | Hero HTML、CTA DOM、Screenshot |
-| Observation | Evidenceからどんな構造化factを得たか | target audienceと具体便益が明示されている |
-| Submetric | Observationをどの評価単位へ整理するか | benefit specificity、offer visibility |
-| Axis | 何の意味を評価しているか | `valueProposition` |
-| Score | Formula/profileでどう数値評価したか | Axis score 0–100 presentation value等 |
+| Concept     | Question                              | Example                                   |
+| ----------- | ------------------------------------- | ----------------------------------------- |
+| Evidence    | 何を直接観測したか                    | Hero HTML、CTA DOM、Screenshot            |
+| Observation | Evidenceからどんな構造化factを得たか  | target audienceと具体便益が明示されている |
+| Submetric   | Observationをどの評価単位へ整理するか | benefit specificity、offer visibility     |
+| Axis        | 何の意味を評価しているか              | `valueProposition`                        |
+| Score       | Formula/profileでどう数値評価したか   | Axis score 0–100 presentation value等     |
 
 Observationが存在してもscoreが自動的に決まるわけではない。Axis definitionは意味を定め、Formulaは測り方を定める。
 
@@ -54,14 +54,14 @@ Observationが存在してもscoreが自動的に決まるわけではない。A
 
 Axis Contract v1は`ACTIVE`で、次のID、Label、Definition、Canonical Orderが承認済みである。
 
-| Order | Canonical ID | Canonical Label | Formal definition | Main question |
-| ---: | --- | --- | --- | --- |
-| 1 | `valueProposition` | 価値訴求 | Product / Serviceが誰にどのような価値を提供し、どの課題・便益に応えるものかが、主要messageから明確に伝わる度合い | 誰に、何の価値があるか |
-| 2 | `informationHierarchy` | 情報階層 | 情報の重要度と関係性を把握しやすいよう、適切な順序・階層・groupで構成されている度合い | 何が重要で、どう関係するか |
-| 3 | `userFlowQuality` | 導線強度 | 次に取るべきActionを識別でき、CTA・link・navigation・page transitionで主要目的地点までの経路が途切れず接続されている度合い | 次のActionへ到達できるか |
-| 4 | `trustStructure` | 信頼構造 | Product / Serviceまたは提供主体を信頼する根拠・証拠・権威性・透明性が十分かつ適切に提示・構成されている度合い | 信用判断を何が支えるか |
-| 5 | `differentiationClarity` | 差別化明確性 | 競合・他選択肢と比較した固有の違い・独自性・選ぶ理由が明確に伝わる度合い | なぜ他ではなくこれか |
-| 6 | `decisionSupport` | 意思決定支援 | 比較・選択・問い合わせ・契約等の判断に必要な情報が十分かつ明確に提示されている度合い | 判断材料が揃っているか |
+| Order | Canonical ID             | Canonical Label | Formal definition                                                                                                          | Main question              |
+| ----: | ------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+|     1 | `valueProposition`       | 価値訴求        | Product / Serviceが誰にどのような価値を提供し、どの課題・便益に応えるものかが、主要messageから明確に伝わる度合い           | 誰に、何の価値があるか     |
+|     2 | `informationHierarchy`   | 情報階層        | 情報の重要度と関係性を把握しやすいよう、適切な順序・階層・groupで構成されている度合い                                      | 何が重要で、どう関係するか |
+|     3 | `userFlowQuality`        | 導線強度        | 次に取るべきActionを識別でき、CTA・link・navigation・page transitionで主要目的地点までの経路が途切れず接続されている度合い | 次のActionへ到達できるか   |
+|     4 | `trustStructure`         | 信頼構造        | Product / Serviceまたは提供主体を信頼する根拠・証拠・権威性・透明性が十分かつ適切に提示・構成されている度合い              | 信用判断を何が支えるか     |
+|     5 | `differentiationClarity` | 差別化明確性    | 競合・他選択肢と比較した固有の違い・独自性・選ぶ理由が明確に伝わる度合い                                                   | なぜ他ではなくこれか       |
+|     6 | `decisionSupport`        | 意思決定支援    | 比較・選択・問い合わせ・契約等の判断に必要な情報が十分かつ明確に提示されている度合い                                       | 判断材料が揃っているか     |
 
 Canonical OrderはProduct Domain上のstandard conceptual orderingである。importance、weight、ranking、causal dependency、UI強制順、processing/collection順、Backend array positionを意味しない。Feature UIは理由を記録したexplicit overrideを持ち得る。
 
@@ -192,14 +192,14 @@ Non-public pricingを自動的に低評価しない。quote process、scope、el
 
 ## 11. Cross-axis boundaries
 
-| Shared evidence/theme | Axis A asks | Axis B asks |
-| --- | --- | --- |
-| Value message | `valueProposition`: 何の価値か | `differentiationClarity`: なぜ他ではなくこれか |
-| Navigation | `informationHierarchy`: 情報分類・階層は明確か | `userFlowQuality`: destinationへ到達できるか |
-| Pricing section | `informationHierarchy`: 配置・groupは理解可能か | `decisionSupport`: 判断情報は十分か |
-| Case study | `trustStructure`: credibilityを支えるか | `decisionSupport`: 選択条件・risk判断を助けるか |
-| CTA | `userFlowQuality`: next action/pathは明確か | `decisionSupport`: CTA前後に判断材料があるか |
-| Claim + proof | `valueProposition`: benefitが伝わるか | `trustStructure`: claimを支えるEvidenceがあるか |
+| Shared evidence/theme | Axis A asks                                     | Axis B asks                                     |
+| --------------------- | ----------------------------------------------- | ----------------------------------------------- |
+| Value message         | `valueProposition`: 何の価値か                  | `differentiationClarity`: なぜ他ではなくこれか  |
+| Navigation            | `informationHierarchy`: 情報分類・階層は明確か  | `userFlowQuality`: destinationへ到達できるか    |
+| Pricing section       | `informationHierarchy`: 配置・groupは理解可能か | `decisionSupport`: 判断情報は十分か             |
+| Case study            | `trustStructure`: credibilityを支えるか         | `decisionSupport`: 選択条件・risk判断を助けるか |
+| CTA                   | `userFlowQuality`: next action/pathは明確か     | `decisionSupport`: CTA前後に判断材料があるか    |
+| Claim + proof         | `valueProposition`: benefitが伝わるか           | `trustStructure`: claimを支えるEvidenceがあるか |
 
 同じEvidenceを複数Axisへ利用できるが、semantic aspectを分離する。Evidence reuseが許可されてもFormula上のdouble countingが自動的に許可されるわけではない。Dedup/cap/contribution ruleはM17へhandoffする。
 
@@ -207,10 +207,10 @@ FAQはUI形式ではなくcontent purposeで分類する。Security/credibility 
 
 ## 12. Internal and Visual evidence
 
-| Layer | Typical evidence | What it can support |
-| --- | --- | --- |
-| `INTERNAL` | HTML、DOM、heading、link、CTA、structured text、metadata | presence、structure、relation、destination、typed content |
-| `VISUAL` | Screenshot、spatial hierarchy、prominence、grouping、emphasis | visibility、visual priority、proximity、perceived grouping |
+| Layer      | Typical evidence                                              | What it can support                                        |
+| ---------- | ------------------------------------------------------------- | ---------------------------------------------------------- |
+| `INTERNAL` | HTML、DOM、heading、link、CTA、structured text、metadata      | presence、structure、relation、destination、typed content  |
+| `VISUAL`   | Screenshot、spatial hierarchy、prominence、grouping、emphasis | visibility、visual priority、proximity、perceived grouping |
 
 VisualはInternalの代替ではなく、InternalもVisualの代替ではない。
 
@@ -275,14 +275,14 @@ flowchart TD
 
 同じHeroでもAxisごとに問いが異なる。
 
-| Axis | Heroで見る問い |
-| --- | --- |
-| `valueProposition` | target、problem、benefit、offerが明確か |
-| `informationHierarchy` | headline、supporting copy、CTA、proofの優先度とgroupが明確か |
-| `userFlowQuality` | primary CTAとdestination、次のpathが発見・到達可能か |
-| `trustStructure` | claimを支えるproof/credential等が見える・到達可能か |
-| `differentiationClarity` | 固有のmechanism・specialization・reason-to-chooseが伝わるか |
-| `decisionSupport` | CTAを押す前後にscope、price/process等の判断材料へ進めるか |
+| Axis                     | Heroで見る問い                                               |
+| ------------------------ | ------------------------------------------------------------ |
+| `valueProposition`       | target、problem、benefit、offerが明確か                      |
+| `informationHierarchy`   | headline、supporting copy、CTA、proofの優先度とgroupが明確か |
+| `userFlowQuality`        | primary CTAとdestination、次のpathが発見・到達可能か         |
+| `trustStructure`         | claimを支えるproof/credential等が見える・到達可能か          |
+| `differentiationClarity` | 固有のmechanism・specialization・reason-to-chooseが伝わるか  |
+| `decisionSupport`        | CTAを押す前後にscope、price/process等の判断材料へ進めるか    |
 
 Heroが同一でも、同じfactを6回数えるのではなく、各semantic questionへ対応するObservationを分離する。
 
@@ -290,12 +290,12 @@ Heroが同一でも、同じfactを6回数えるのではなく、各semantic qu
 
 承認済みPD-02D Treatment Model Bでは次を分離する。
 
-| Concept | Values / meaning |
-| --- | --- |
-| Completeness | `PRESENT / MISSING / NOT_APPLICABLE / UNKNOWN / PARTIAL` |
-| Eligibility | `ELIGIBLE / INELIGIBLE / CONDITIONALLY_ELIGIBLE / UNDETERMINED` |
-| Score State | `CALCULATED / NON_CALCULATED` |
-| Evidence Role | `REQUIRED / OPTIONAL / CONDITIONAL / NOT_APPLICABLE` |
+| Concept       | Values / meaning                                                |
+| ------------- | --------------------------------------------------------------- |
+| Completeness  | `PRESENT / MISSING / NOT_APPLICABLE / UNKNOWN / PARTIAL`        |
+| Eligibility   | `ELIGIBLE / INELIGIBLE / CONDITIONALLY_ELIGIBLE / UNDETERMINED` |
+| Score State   | `CALCULATED / NON_CALCULATED`                                   |
+| Evidence Role | `REQUIRED / OPTIONAL / CONDITIONAL / NOT_APPLICABLE`            |
 
 重要な規則:
 
@@ -356,48 +356,48 @@ Own/Competitor/IndustryのObservation/Score差からgap、strength、weakness、
 
 ## 20. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | Frontend fixture/view modelに6 label/radar/0–100 presentationがある。Self/Competitor UIはscoreを表示し比較する。mock Snapshotにradar/scoreがある。 |
+| Classification | Confirmed scope                                                                                                                                                                                                                          |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT        | Frontend fixture/view modelに6 label/radar/0–100 presentationがある。Self/Competitor UIはscoreを表示し比較する。mock Snapshotにradar/scoreがある。                                                                                       |
 | CURRENT caveat | fixture/UIはlegacy `funnelStrength`、非Canonical順、short label差、label-only arrays、missing→0 fallback、synthetic competitor radarを含む。Canonical Observation type、completeness/eligibility、formula provenanceは実装されていない。 |
-| TARGET | Axis Contract v1、Observation Contract v1、Formula Architecture/Version logical contract、Treatment Model Bに従い、Workerがcandidateを計算しRailsがvalidate/persistし、Frontendがvalidated resultを表示する。 |
-| DEFERRED | exact parameters/weights/fusion ratio/threshold/rounding、calibration、dedup、physical schema/API、Worker/Rails/Frontend implementation、legacy `funnelStrength` migration、canonical presentation normalization。 |
+| TARGET         | Axis Contract v1、Observation Contract v1、Formula Architecture/Version logical contract、Treatment Model Bに従い、Workerがcandidateを計算しRailsがvalidate/persistし、Frontendがvalidated resultを表示する。                            |
+| DEFERRED       | exact parameters/weights/fusion ratio/threshold/rounding、calibration、dedup、physical schema/API、Worker/Rails/Frontend implementation、legacy `funnelStrength` migration、canonical presentation normalization。                       |
 
 Product Decision Completeはcalibration/implementation completeを意味しない。
 
 ## 21. Representative repository mapping
 
-| Representative source | Axis role | Observation relation | Status | Formula dependency |
-| --- | --- | --- | --- | --- |
-| [Score / Axis Data Dictionary](../../product/score-axis-data-dictionary.md) | Axis Contract v1の詳細正本 | Observation/Formula/Missing chain | Approved Product contract | exact parameters deferred |
-| [Product Decision Register](../../product/product-decision-register.md) PD-02 | approval/status summary | Contract chain/closure | `DECIDED / COMPLETE` | calibration/implementation incomplete |
-| [M14 Worker / Collection](./14-python-worker-chromium-collection.md) | Evidence acquisition boundary | Worker candidate/provenance | Approved learning contract | no formula execution evidence |
-| [M15 Snapshot / Lineage](./15-snapshot-history-lineage.md) | versioned historical meaning | Score→Evidence lineage | Approved learning contract | version-aware comparison required |
-| `src/lib/db/dummy/panoptes_dummy_ui.ts` | fixture labels/keys/order | no atomic Observation | CURRENT fixture | legacy `funnelStrength`; not canonical |
-| `self-analysis-overview-presentation.ts` | Self axis presentation list | no provenance/completeness | CURRENT UI data | legacy key/noncanonical order |
-| `self-analysis-view-model.ts` | radar/delta/metric mapping | missing source may fall back/synthesize | CURRENT presentation | not business formula |
-| `competitor-card-presentation.ts` | Competitor radar labels/values | derives six values from three scores | CURRENT presentation/mock | synthetic, not canonical formula |
-| `src/lib/panoptes/types.ts` | generic radar/breakdown payload | no Observation/completeness contract | CURRENT frontend, partial | label/value arrays only |
-| `src/lib/panoptes/api/mock/snapshot-factory.ts` | mock scores/radar | direct final Snapshot generation | CURRENT mock only | deterministic fixture values |
-| [OpenAPI draft](../../api/openapi-draft.yaml) | generic Snapshot transport | no typed Observation/Axis result | Target draft | physical wire incomplete |
-| [Snapshot Component Map](../../architecture/snapshot-component-map.md) | UI consumption graph | View Models consume aggregate payload | CURRENT mapping | rendering only |
+| Representative source                                                         | Axis role                       | Observation relation                    | Status                     | Formula dependency                     |
+| ----------------------------------------------------------------------------- | ------------------------------- | --------------------------------------- | -------------------------- | -------------------------------------- |
+| [Score / Axis Data Dictionary](../../product/score-axis-data-dictionary.md)   | Axis Contract v1の詳細正本      | Observation/Formula/Missing chain       | Approved Product contract  | exact parameters deferred              |
+| [Product Decision Register](../../product/product-decision-register.md) PD-02 | approval/status summary         | Contract chain/closure                  | `DECIDED / COMPLETE`       | calibration/implementation incomplete  |
+| [M14 Worker / Collection](./14-python-worker-chromium-collection.md)          | Evidence acquisition boundary   | Worker candidate/provenance             | Approved learning contract | no formula execution evidence          |
+| [M15 Snapshot / Lineage](./15-snapshot-history-lineage.md)                    | versioned historical meaning    | Score→Evidence lineage                  | Approved learning contract | version-aware comparison required      |
+| `src/lib/db/dummy/panoptes_dummy_ui.ts`                                       | fixture labels/keys/order       | no atomic Observation                   | CURRENT fixture            | legacy `funnelStrength`; not canonical |
+| `self-analysis-overview-presentation.ts`                                      | Self axis presentation list     | no provenance/completeness              | CURRENT UI data            | legacy key/noncanonical order          |
+| `self-analysis-view-model.ts`                                                 | radar/delta/metric mapping      | missing source may fall back/synthesize | CURRENT presentation       | not business formula                   |
+| `competitor-card-presentation.ts`                                             | Competitor radar labels/values  | derives six values from three scores    | CURRENT presentation/mock  | synthetic, not canonical formula       |
+| `src/lib/panoptes/types.ts`                                                   | generic radar/breakdown payload | no Observation/completeness contract    | CURRENT frontend, partial  | label/value arrays only                |
+| `src/lib/panoptes/api/mock/snapshot-factory.ts`                               | mock scores/radar               | direct final Snapshot generation        | CURRENT mock only          | deterministic fixture values           |
+| [OpenAPI draft](../../api/openapi-draft.yaml)                                 | generic Snapshot transport      | no typed Observation/Axis result        | Target draft               | physical wire incomplete               |
+| [Snapshot Component Map](../../architecture/snapshot-component-map.md)        | UI consumption graph            | View Models consume aggregate payload   | CURRENT mapping            | rendering only                         |
 
 ## 22. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| Axis = Score | Axisはsemantic evaluation viewpoint |
-| Observation = Score | ObservationはEvidenceから得たtyped fact |
-| Missing = 0 | 0はvalid value、Missing/Unknown/N/A/Partialは別state |
-| Visualだけで全Axisを決める | Internal/Visualは別Layerで相互補完 |
-| Internalだけで全Axisを決める | prominence/grouping等はVisual Evidenceが必要になり得る |
-| CTA = Decision Supportだけ | pathはFlow、周辺判断材料はDecision Support等に分かれる |
-| 多情報 = Hierarchy不良 | quantityではなくpriority/relation/groupingを評価 |
-| Trust Structure = actual trust | 公開site上のcredibility Evidence構造 |
-| Differentiation = feature count | observableな固有性とreason-to-chooseのclarity |
-| Score差 = Strategy | diagnosis inputでありStrategy decisionではない |
-| Canonical Order = Weight | conceptual listingで、weight/importanceではない |
-| Formula versionを無視して比較できる | semantic/calculation compatibility確認が必要 |
+| Misunderstanding                    | Correction                                             |
+| ----------------------------------- | ------------------------------------------------------ |
+| Axis = Score                        | Axisはsemantic evaluation viewpoint                    |
+| Observation = Score                 | ObservationはEvidenceから得たtyped fact                |
+| Missing = 0                         | 0はvalid value、Missing/Unknown/N/A/Partialは別state   |
+| Visualだけで全Axisを決める          | Internal/Visualは別Layerで相互補完                     |
+| Internalだけで全Axisを決める        | prominence/grouping等はVisual Evidenceが必要になり得る |
+| CTA = Decision Supportだけ          | pathはFlow、周辺判断材料はDecision Support等に分かれる |
+| 多情報 = Hierarchy不良              | quantityではなくpriority/relation/groupingを評価       |
+| Trust Structure = actual trust      | 公開site上のcredibility Evidence構造                   |
+| Differentiation = feature count     | observableな固有性とreason-to-chooseのclarity          |
+| Score差 = Strategy                  | diagnosis inputでありStrategy decisionではない         |
+| Canonical Order = Weight            | conceptual listingで、weight/importanceではない        |
+| Formula versionを無視して比較できる | semantic/calculation compatibility確認が必要           |
 
 ## 23. Decision heuristic
 
@@ -510,18 +510,18 @@ Own siteとCompetitorで、同じ`decisionSupport` Observation scope/versionが�
 
 ## 26. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Six Axis purpose explained | `PASS` |
-| 2 | All six canonical Axis explained | `PASS` |
-| 3 | Axis boundaries explained | `PASS` |
-| 4 | Evidence/Observation/Axis distinction explained | `PASS` |
-| 5 | Internal/Visual relation explained | `PASS` |
-| 6 | Missing/Partial handling explained | `PASS` |
-| 7 | Score/Formula boundary explained | `PASS` |
-| 8 | Comparison/Strategy boundary explained | `PASS` |
-| 9 | Repository mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                       | Result |
+| --: | ----------------------------------------------- | ------ |
+|   1 | Six Axis purpose explained                      | `PASS` |
+|   2 | All six canonical Axis explained                | `PASS` |
+|   3 | Axis boundaries explained                       | `PASS` |
+|   4 | Evidence/Observation/Axis distinction explained | `PASS` |
+|   5 | Internal/Visual relation explained              | `PASS` |
+|   6 | Missing/Partial handling explained              | `PASS` |
+|   7 | Score/Formula boundary explained                | `PASS` |
+|   8 | Comparison/Strategy boundary explained          | `PASS` |
+|   9 | Repository mapping + two diagrams included      | `PASS` |
+|  10 | Exercises + answers included                    | `PASS` |
 
 M16 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Formula parameter確定、calibration、legacy migration、Worker/Rails/Frontend implementationの完成判定ではない。
 

@@ -126,15 +126,15 @@ Conceptual example:
 
 ## 7. Utility categories
 
-| Category | Purpose | Good use | Misuse |
-| --- | --- | --- | --- |
-| Layout | display、position、grid/flex、alignment、overflow | ownerが決めたstructureを表現 | classでComponent ownershipを決める |
-| Spacing / Sizing | gap、padding、margin、control/icon/container size | Token scaleへ接続 | arbitrary pxの乱発、spacing/sizing混同 |
-| Typography | size、weight、line-height、alignment、wrapping | Semantic typographyを投影 | `text-[13px]`を新standard化 |
-| Semantic Appearance | text、surface、border、shadow、action/status | Semantic Tokenを使用 | Hex/default palette直参照 |
-| State | hover、focus、active、selected、disabled | programmatic stateと同期したappearance | CSSだけでdisabled等を偽装 |
-| Responsive | named breakpointで差分適用 | Mobile-first adaptation | device名として固定設計 |
-| One-off Composition | Page/Feature固有の局所composition | reuse不要な明示的配置 | 反復contractを永久に複製 |
+| Category            | Purpose                                           | Good use                               | Misuse                                 |
+| ------------------- | ------------------------------------------------- | -------------------------------------- | -------------------------------------- |
+| Layout              | display、position、grid/flex、alignment、overflow | ownerが決めたstructureを表現           | classでComponent ownershipを決める     |
+| Spacing / Sizing    | gap、padding、margin、control/icon/container size | Token scaleへ接続                      | arbitrary pxの乱発、spacing/sizing混同 |
+| Typography          | size、weight、line-height、alignment、wrapping    | Semantic typographyを投影              | `text-[13px]`を新standard化            |
+| Semantic Appearance | text、surface、border、shadow、action/status      | Semantic Tokenを使用                   | Hex/default palette直参照              |
+| State               | hover、focus、active、selected、disabled          | programmatic stateと同期したappearance | CSSだけでdisabled等を偽装              |
+| Responsive          | named breakpointで差分適用                        | Mobile-first adaptation                | device名として固定設計                 |
+| One-off Composition | Page/Feature固有の局所composition                 | reuse不要な明示的配置                  | 反復contractを永久に複製               |
 
 ## 8. Layout utilities
 
@@ -205,14 +205,14 @@ Conditional classはcomplete literalまたはstatic mapをdefaultとし、build-
 
 FS-07 Canonical Breakpoints:
 
-| Variant | Threshold | Meaning |
-| --- | ---: | --- |
-| base | `<640px` | base/mobile-first behavior |
-| `sm:` | `640px` | compact enhancement |
-| `md:` | `768px` | medium composition |
-| `lg:` | `1024px` | major region/navigation split |
-| `xl:` | `1280px` | wide grid/desktop spacing |
-| `2xl:` | `1536px` | wide analytics density only |
+| Variant | Threshold | Meaning                       |
+| ------- | --------: | ----------------------------- |
+| base    |  `<640px` | base/mobile-first behavior    |
+| `sm:`   |   `640px` | compact enhancement           |
+| `md:`   |   `768px` | medium composition            |
+| `lg:`   |  `1024px` | major region/navigation split |
+| `xl:`   |  `1280px` | wide grid/desktop spacing     |
+| `2xl:`  |  `1536px` | wide analytics density only   |
 
 Mobile-firstではbaseを定義し、必要なthresholdから差分を追加する。
 
@@ -329,13 +329,13 @@ Utility名やColor Tokenが正しくても、実ブラウザーでfocus、contra
 
 ## 22. Component responsibility
 
-| Owner | Tailwind usage boundary |
-| --- | --- |
-| UI / Primitive | Semantic appearance、control-local layout/state |
-| Composite | presentation composition |
-| Feature | feature-specific placement/state mapping後のappearance |
-| Layout | persistent structural styling、major region adaptation |
-| Page | section order、content priority、page composition |
+| Owner          | Tailwind usage boundary                                |
+| -------------- | ------------------------------------------------------ |
+| UI / Primitive | Semantic appearance、control-local layout/state        |
+| Composite      | presentation composition                               |
+| Feature        | feature-specific placement/state mapping後のappearance |
+| Layout         | persistent structural styling、major region adaptation |
+| Page           | section order、content priority、page composition      |
 
 Tailwind class placementもM04のFeature/UI/Layout boundaryとimport/state ownershipを壊さない。
 
@@ -364,14 +364,18 @@ Before:
 
 ```css
 .example-button {
-  display: inline-flex;
-  padding: 12px 20px;
-  color: #fff;
-  background: #564aff;
+	display: inline-flex;
+	padding: 12px 20px;
+	color: #fff;
+	background: #564aff;
 }
-.example-button:hover { opacity: 0.9; }
+.example-button:hover {
+	opacity: 0.9;
+}
 @media (min-width: 768px) {
-  .example-button { padding-inline: 24px; }
+	.example-button {
+		padding-inline: 24px;
+	}
 }
 ```
 
@@ -426,12 +430,12 @@ Legacy CSSからTailwindへ移す時は、機能だけでなく次を確認す�
 
 ## 27. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | Svelte/local/global CSS、hardcoded values、media queries、inline/class stylingがある。SvelteKit/Viteを使用する。 |
-| CURRENT tooling | `package.json`にTailwind dependencyはなく、Tailwind config/PostCSS integrationも確認できない。`src/lib/ui/tokens.css`も未実装。 |
-| TARGET | `tokens.css -> Tailwind adapter -> Semantic Utility -> Component`。Mobile-first named breakpointとresponsibility別Utilityを利用する。 |
-| DEFERRED | Tailwind install/version/config、Token実装、adapter/reset connection、bulk migration、legacy cleanup、full browser/visual/accessibility verification。 |
+| Classification  | Confirmed scope                                                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| CURRENT         | Svelte/local/global CSS、hardcoded values、media queries、inline/class stylingがある。SvelteKit/Viteを使用する。                                       |
+| CURRENT tooling | `package.json`にTailwind dependencyはなく、Tailwind config/PostCSS integrationも確認できない。`src/lib/ui/tokens.css`も未実装。                        |
+| TARGET          | `tokens.css -> Tailwind adapter -> Semantic Utility -> Component`。Mobile-first named breakpointとresponsibility別Utilityを利用する。                  |
+| DEFERRED        | Tailwind install/version/config、Token実装、adapter/reset connection、bulk migration、legacy cleanup、full browser/visual/accessibility verification。 |
 
 Target Standardの承認はTooling/Source実装済みを意味しない。最新Tailwindの特定syntaxをCURRENTへ仮定しない。
 
@@ -439,36 +443,36 @@ Target Standardの承認はTooling/Source実装済みを意味しない。最新
 
 全CSS/class監査ではなく、FS-06で限定確認済みの10 examplesとtooling manifestを教材上で照合した。
 
-| Source | Current styling method | Tailwind applicability / Token relation | Migration status |
-| --- | --- | --- | --- |
-| `package.json` / Vite config | SvelteKit/Vite、Tailwind dependencyなし | adapter/toolingはTARGET | NOT IMPLEMENTED |
-| `src/app.css` | global body typography/surface/reset-related rule | Semantic Token接続可、global base継続 | Token後にreview |
-| `PanoptesSiteHeader.svelte` | local flex/gap/radius/state + pseudo gradient/animation | simple utility適合、effectはlocal CSS候補 | touch-and-migrate |
-| `LandingHeroPrimarySection.svelte` | positioning/surface/radius/complex shadow | basic utility + local art-direction exception | no redesign |
-| `LandingHeroSecondarySection.svelte` | Primaryと共通するbasic style/effect | common utility候補、effect保持可 | visual parity required |
-| `PanoptesShellMainSurface.svelte` | grid/gap + `min-height` | layout utility、feature sizing exception review | owner review |
-| `SignUpBtn.svelte` | control/action/state/gradient/transition | Token後utility適合、gradientはlocal候補 | Shared UI priority |
-| `SignUpFields.svelte` | input layout/focus/disabled/pseudo | utility + accessibility contract、pseudoはCSS可 | Shared UI priority |
-| `PanoptesToastStack.svelte` | grid/spacing/status/layer/backdrop/compound width | semantic utility + local/arbitrary review | owner review |
-| `src/routes/app/+layout.svelte` / `AppLogo.svelte` | structural CSS、720px query、intrinsic `min()` | Layout utility + breakpoint migration / asset exception | no mechanical conversion |
+| Source                                             | Current styling method                                  | Tailwind applicability / Token relation                 | Migration status         |
+| -------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------- | ------------------------ |
+| `package.json` / Vite config                       | SvelteKit/Vite、Tailwind dependencyなし                 | adapter/toolingはTARGET                                 | NOT IMPLEMENTED          |
+| `src/app.css`                                      | global body typography/surface/reset-related rule       | Semantic Token接続可、global base継続                   | Token後にreview          |
+| `PanoptesSiteHeader.svelte`                        | local flex/gap/radius/state + pseudo gradient/animation | simple utility適合、effectはlocal CSS候補               | touch-and-migrate        |
+| `LandingHeroPrimarySection.svelte`                 | positioning/surface/radius/complex shadow               | basic utility + local art-direction exception           | no redesign              |
+| `LandingHeroSecondarySection.svelte`               | Primaryと共通するbasic style/effect                     | common utility候補、effect保持可                        | visual parity required   |
+| `PanoptesShellMainSurface.svelte`                  | grid/gap + `min-height`                                 | layout utility、feature sizing exception review         | owner review             |
+| `SignUpBtn.svelte`                                 | control/action/state/gradient/transition                | Token後utility適合、gradientはlocal候補                 | Shared UI priority       |
+| `SignUpFields.svelte`                              | input layout/focus/disabled/pseudo                      | utility + accessibility contract、pseudoはCSS可         | Shared UI priority       |
+| `PanoptesToastStack.svelte`                        | grid/spacing/status/layer/backdrop/compound width       | semantic utility + local/arbitrary review               | owner review             |
+| `src/routes/app/+layout.svelte` / `AppLogo.svelte` | structural CSS、720px query、intrinsic `min()`          | Layout utility + breakpoint migration / asset exception | no mechanical conversion |
 
 このsampleはutility適合箇所とCSS継続箇所の両方を示すが、Tailwind適用率や全class数を示さない。
 
 ## 29. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| Tailwind = Design System | Styling framework/consumerでありDesign Decision全体ではない |
-| Tailwind = Token SoT | `tokens.css`がTarget SoT |
-| Tailwind導入 = CSS禁止 | Global/local CSSとの共存を許容 |
-| Utility classが多い = 必ず悪い | 責務・可読性・反復contractで判断 |
-| Arbitrary valueは常用可能 | 限定例外でありdefaultではない |
-| Responsive utilityでComponentが全責務を持つ | Page/Layout/Component ownerを維持 |
-| `hidden` = responsive design | content priorityと代替導線が必要 |
-| Tailwind使用 = accessibility完了 | HTML/keyboard/ARIA/実測が必要 |
-| 同じclass = Shared Component | semantic reuse contractが必要 |
-| Migration = Redesign | visual parityをdefaultとする |
-| Target Tailwind = 導入済み | dependency/configともCURRENT未実装 |
+| Misunderstanding                            | Correction                                                  |
+| ------------------------------------------- | ----------------------------------------------------------- |
+| Tailwind = Design System                    | Styling framework/consumerでありDesign Decision全体ではない |
+| Tailwind = Token SoT                        | `tokens.css`がTarget SoT                                    |
+| Tailwind導入 = CSS禁止                      | Global/local CSSとの共存を許容                              |
+| Utility classが多い = 必ず悪い              | 責務・可読性・反復contractで判断                            |
+| Arbitrary valueは常用可能                   | 限定例外でありdefaultではない                               |
+| Responsive utilityでComponentが全責務を持つ | Page/Layout/Component ownerを維持                           |
+| `hidden` = responsive design                | content priorityと代替導線が必要                            |
+| Tailwind使用 = accessibility完了            | HTML/keyboard/ARIA/実測が必要                               |
+| 同じclass = Shared Component                | semantic reuse contractが必要                               |
+| Migration = Redesign                        | visual parityをdefaultとする                                |
+| Target Tailwind = 導入済み                  | dependency/configともCURRENT未実装                          |
 
 ## 30. Decision heuristic
 
@@ -577,18 +581,18 @@ Token SoTをframework外の`tokens.css`へ置けば、Tailwind Utility、Svelte 
 
 ## 33. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Tailwind fundamentals explained | `PASS` |
-| 2 | Utility-first model explained | `PASS` |
-| 3 | Token/Tailwind boundary explained | `PASS` |
-| 4 | Utility categories explained | `PASS` |
-| 5 | Responsive/state utility explained | `PASS` |
-| 6 | CSS coexistence explained | `PASS` |
-| 7 | Arbitrary value rule explained | `PASS` |
-| 8 | Migration/visual parity explained | `PASS` |
-| 9 | Repository mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                  | Result |
+| --: | ------------------------------------------ | ------ |
+|   1 | Tailwind fundamentals explained            | `PASS` |
+|   2 | Utility-first model explained              | `PASS` |
+|   3 | Token/Tailwind boundary explained          | `PASS` |
+|   4 | Utility categories explained               | `PASS` |
+|   5 | Responsive/state utility explained         | `PASS` |
+|   6 | CSS coexistence explained                  | `PASS` |
+|   7 | Arbitrary value rule explained             | `PASS` |
+|   8 | Migration/visual parity explained          | `PASS` |
+|   9 | Repository mapping + two diagrams included | `PASS` |
+|  10 | Exercises + answers included               | `PASS` |
 
 M20 authoring result: `10 / 10 PASS`。教材完成はTailwind dependency/config、Token implementation、CSS migration、visual/accessibility verificationの完成を意味しない。
 

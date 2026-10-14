@@ -43,14 +43,14 @@ Scalabilityは、loadが増えたときにacceptable performanceを維持でき�
 
 ## 4. Core performance terms
 
-| Concept | Meaning | Panoptes example |
-| --- | --- | --- |
-| Latency | 一つのoperation完了時間 | API response、Job completion、LLM call |
-| Throughput | 一定時間内の処理量 | requests/sec、jobs/hour、pages/min |
-| Concurrency | 同時進行中の処理数 | active requests/jobs/browser processes |
-| Saturation | resourceがcapacity限界へ近い状態 | CPU、memory、DB connections、Worker slots |
-| Backlog | 到着済みだが未処理の仕事 | queue depth/oldest message age |
-| Bottleneck | 全体性能を最も制限する箇所 | DB、Chromium、LLM、Storage等 |
+| Concept     | Meaning                          | Panoptes example                          |
+| ----------- | -------------------------------- | ----------------------------------------- |
+| Latency     | 一つのoperation完了時間          | API response、Job completion、LLM call    |
+| Throughput  | 一定時間内の処理量               | requests/sec、jobs/hour、pages/min        |
+| Concurrency | 同時進行中の処理数               | active requests/jobs/browser processes    |
+| Saturation  | resourceがcapacity限界へ近い状態 | CPU、memory、DB connections、Worker slots |
+| Backlog     | 到着済みだが未処理の仕事         | queue depth/oldest message age            |
+| Bottleneck  | 全体性能を最も制限する箇所       | DB、Chromium、LLM、Storage等              |
 
 Concurrencyを増やすとThroughputが増える場合があるが、Saturation後はLatencyが急増し、Throughputが頭打ちまたは悪化する。
 
@@ -435,16 +435,16 @@ Public CDN、shared cache、batch、parallel、reuseはSecurity/Tenant isolation
 
 M25のsignalでPerformance hypothesisを検証する。
 
-| Layer | Representative metrics |
-| --- | --- |
-| Frontend | initial load、route/render duration、bundle/resource size |
-| BFF/API | request latency/status/timeout、upstream duration |
-| Rails | controller/service/query/serialization duration |
-| DB | query latency、connections、lock/contention |
-| Queue | depth、oldest age、enqueue-to-start |
-| Worker | Job/stage duration、concurrency、CPU/memory/browser crash |
-| External Web/LLM | latency、failure/rate limit、usage |
-| Artifact | size/count、upload/download duration/failure |
+| Layer            | Representative metrics                                    |
+| ---------------- | --------------------------------------------------------- |
+| Frontend         | initial load、route/render duration、bundle/resource size |
+| BFF/API          | request latency/status/timeout、upstream duration         |
+| Rails            | controller/service/query/serialization duration           |
+| DB               | query latency、connections、lock/contention               |
+| Queue            | depth、oldest age、enqueue-to-start                       |
+| Worker           | Job/stage duration、concurrency、CPU/memory/browser crash |
+| External Web/LLM | latency、failure/rate limit、usage                        |
+| Artifact         | size/count、upload/download duration/failure              |
 
 Instrumentationがない箇所を推測だけで最適化しない。Correlation ID/Job ID/Attempt IDでend-to-end timingを結ぶ。
 
@@ -527,20 +527,20 @@ SignalsはBottleneck候補を支持するが、この例だけで原因を確定
 
 ## 37. Representative repository mapping
 
-| Representative | Potential performance concern | Relevant metric | Owner / status |
-| --- | --- | --- | --- |
-| `src/lib/panoptes/polling/analysis-polling-controller.ts` | poll frequency/in-flight/timeout | requests/client、timeout、overlap | Frontend `CURRENT` |
-| `src/lib/panoptes/domain/runtime-progress.ts` | interval/state/stale update | polling rate、progress age | Frontend `CURRENT` |
-| `src/lib/panoptes/api/canonical-bff-client.ts` | fetch/parse/timeout | BFF request latency/timeout | Frontend client `CURRENT` |
-| `src/lib/server/rails/client.ts` | session/proxy/upstream timeout | proxy/upstream latency/status | BFF `CURRENT` |
-| `rails/app/controllers/api/v1/organizations_controller.rb` | join/include/order/serialization | query count/latency/rows | Rails `CURRENT` |
-| `rails/config/database.yml` | connection pool/capacity | used/waiting connections | DB config `CURRENT` |
-| `rails/config/puma.rb` | threads/throughput/latency trade-off | request concurrency/latency | Rails runtime `CURRENT` |
-| `svelte.config.js` / `vite.config.js` | bundle/runtime target | bundle/load/render metrics | Web config `CURRENT` |
-| `src/lib/panoptes/api/mock-backend.ts` | mock Job timing/storage | not Production evidence | Development mock `CURRENT` |
-| `docs/learning/modules/14-python-worker-chromium-collection.md` | fetch/Chromium/LLM stages | stage duration/resource | Worker `TARGET` |
-| `docs/learning/modules/25-logging-monitoring-audit.md` | timing/saturation visibility | cross-layer metrics | Observability `TARGET` |
-| `docs/learning/modules/26-infrastructure-cloud-boundary.md` | scaling/backpressure/capacity | resource/load/cost | Infrastructure `TARGET` |
+| Representative                                                  | Potential performance concern        | Relevant metric                   | Owner / status             |
+| --------------------------------------------------------------- | ------------------------------------ | --------------------------------- | -------------------------- |
+| `src/lib/panoptes/polling/analysis-polling-controller.ts`       | poll frequency/in-flight/timeout     | requests/client、timeout、overlap | Frontend `CURRENT`         |
+| `src/lib/panoptes/domain/runtime-progress.ts`                   | interval/state/stale update          | polling rate、progress age        | Frontend `CURRENT`         |
+| `src/lib/panoptes/api/canonical-bff-client.ts`                  | fetch/parse/timeout                  | BFF request latency/timeout       | Frontend client `CURRENT`  |
+| `src/lib/server/rails/client.ts`                                | session/proxy/upstream timeout       | proxy/upstream latency/status     | BFF `CURRENT`              |
+| `rails/app/controllers/api/v1/organizations_controller.rb`      | join/include/order/serialization     | query count/latency/rows          | Rails `CURRENT`            |
+| `rails/config/database.yml`                                     | connection pool/capacity             | used/waiting connections          | DB config `CURRENT`        |
+| `rails/config/puma.rb`                                          | threads/throughput/latency trade-off | request concurrency/latency       | Rails runtime `CURRENT`    |
+| `svelte.config.js` / `vite.config.js`                           | bundle/runtime target                | bundle/load/render metrics        | Web config `CURRENT`       |
+| `src/lib/panoptes/api/mock-backend.ts`                          | mock Job timing/storage              | not Production evidence           | Development mock `CURRENT` |
+| `docs/learning/modules/14-python-worker-chromium-collection.md` | fetch/Chromium/LLM stages            | stage duration/resource           | Worker `TARGET`            |
+| `docs/learning/modules/25-logging-monitoring-audit.md`          | timing/saturation visibility         | cross-layer metrics               | Observability `TARGET`     |
+| `docs/learning/modules/26-infrastructure-cloud-boundary.md`     | scaling/backpressure/capacity        | resource/load/cost                | Infrastructure `TARGET`    |
 
 ## 38. Common misunderstandings
 
@@ -684,18 +684,18 @@ PanoptesのLatencyはClient、BFF、Rails、DB、Queue、Worker、Chromium、Ext
 
 ## 42. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Performance fundamentals explained | `PASS` |
-| 2 | Scalability fundamentals explained | `PASS` |
-| 3 | Latency/Throughput/Concurrency/Saturation explained | `PASS` |
-| 4 | Frontend/API/DB performance explained | `PASS` |
-| 5 | Queue/Worker/Chromium performance explained | `PASS` |
-| 6 | Caching/Backpressure explained | `PASS` |
-| 7 | Capacity/Cost trade-off explained | `PASS` |
-| 8 | Performance Testing/Observability connection explained | `PASS` |
-| 9 | Repository mapping + diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                              | Result |
+| --: | ------------------------------------------------------ | ------ |
+|   1 | Performance fundamentals explained                     | `PASS` |
+|   2 | Scalability fundamentals explained                     | `PASS` |
+|   3 | Latency/Throughput/Concurrency/Saturation explained    | `PASS` |
+|   4 | Frontend/API/DB performance explained                  | `PASS` |
+|   5 | Queue/Worker/Chromium performance explained            | `PASS` |
+|   6 | Caching/Backpressure explained                         | `PASS` |
+|   7 | Capacity/Cost trade-off explained                      | `PASS` |
+|   8 | Performance Testing/Observability connection explained | `PASS` |
+|   9 | Repository mapping + diagrams included                 | `PASS` |
+|  10 | Exercises + answers included                           | `PASS` |
 
 M28 authoring result: `10 / 10 PASS`。教材完成はPerformance実測、SLO/Capacity確定、Production optimization、Load/Benchmark、Autoscaling readinessの完了を意味しない。
 
@@ -718,4 +718,3 @@ Closure ReviewではM01〜M28のartifact/status/dependency/completion、Deferred
 - [M26 Infrastructure / Cloud Boundary](./26-infrastructure-cloud-boundary.md)
 - [M27 Stripe / Billing / CRM / Webhook](./27-stripe-billing-crm-webhook.md)
 - [Panoptes Technical Bootcamp](../panoptes-technical-bootcamp.md)
-

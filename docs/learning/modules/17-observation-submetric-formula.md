@@ -81,20 +81,20 @@ Observationは少なくとも次の性質を目指す。
 
 承認済みlogical contract:
 
-| Group | Approved contract |
-| --- | --- |
-| Identity | `observationId` instance identityと`observationType` stable definition identityを分離 |
-| Semantic mapping | Canonical Axis、versioned Submetric、semantic aspect、Evidenceを個別参照 |
-| Value | BOOLEAN、COUNT、NUMBER、RATIO、ENUM、TEXT、SEMANTIC_CLASSIFICATION、bounded STRUCTURED |
-| Measurement | `DETERMINISTIC / SEMANTIC`。HYBRIDは別Observationへ分解 |
-| Layer | `INTERNAL / VISUAL`を別Observationとして保持 |
-| Scope | SITE、PAGE、SECTION、COMPONENT、ELEMENT、LINK_GRAPH、PATH、SCREENSHOT |
-| Provenance core | AnalysisJob、source artifact、`capturedAt`、pipeline/version |
-| Conditional provenance | run/page/DOM/HTML/Screenshot/viewport/bounding box/evidence span/component lineage |
-| Completeness | `PRESENT / MISSING / NOT_APPLICABLE / UNKNOWN / PARTIAL` |
-| Coverage | availabilityを明示。unknown denominatorを0にしない |
-| Confidence | Deterministicでは原則不要。Semanticではsource/classifier/version/rationale等をconditional required |
-| Version lineage | Axis Contract、Analysis Pipeline、Observation Schema。Formula VersionはScore側 |
+| Group                  | Approved contract                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| Identity               | `observationId` instance identityと`observationType` stable definition identityを分離              |
+| Semantic mapping       | Canonical Axis、versioned Submetric、semantic aspect、Evidenceを個別参照                           |
+| Value                  | BOOLEAN、COUNT、NUMBER、RATIO、ENUM、TEXT、SEMANTIC_CLASSIFICATION、bounded STRUCTURED             |
+| Measurement            | `DETERMINISTIC / SEMANTIC`。HYBRIDは別Observationへ分解                                            |
+| Layer                  | `INTERNAL / VISUAL`を別Observationとして保持                                                       |
+| Scope                  | SITE、PAGE、SECTION、COMPONENT、ELEMENT、LINK_GRAPH、PATH、SCREENSHOT                              |
+| Provenance core        | AnalysisJob、source artifact、`capturedAt`、pipeline/version                                       |
+| Conditional provenance | run/page/DOM/HTML/Screenshot/viewport/bounding box/evidence span/component lineage                 |
+| Completeness           | `PRESENT / MISSING / NOT_APPLICABLE / UNKNOWN / PARTIAL`                                           |
+| Coverage               | availabilityを明示。unknown denominatorを0にしない                                                 |
+| Confidence             | Deterministicでは原則不要。Semanticではsource/classifier/version/rationale等をconditional required |
+| Version lineage        | Axis Contract、Analysis Pipeline、Observation Schema。Formula VersionはScore側                     |
 
 Observation identityはEvidence identityではない。同じEvidenceからAxis/Submetric/semantic aspectの異なるObservationを作り得る。Evidence reuseとFormula contribution/double countingは別問題である。
 
@@ -117,12 +117,12 @@ Possible documented candidate dimensions:
 
 ### Axis vs Submetric
 
-| Axis | Submetric |
-| --- | --- |
-| Product meaningを固定する | Axisを測る具体的dimension |
-| Axis Contractでversioned | Formula/Profileから参照されるversioned identity |
-| Weightやnormalizationを含まない | normalization/aggregation/weight/applicability ruleへ接続し得る |
-| 例: `decisionSupport` | 例候補: option comparison support、scope clarity、process transparency |
+| Axis                            | Submetric                                                              |
+| ------------------------------- | ---------------------------------------------------------------------- |
+| Product meaningを固定する       | Axisを測る具体的dimension                                              |
+| Axis Contractでversioned        | Formula/Profileから参照されるversioned identity                        |
+| Weightやnormalizationを含まない | normalization/aggregation/weight/applicability ruleへ接続し得る        |
+| 例: `decisionSupport`           | 例候補: option comparison support、scope clarity、process transparency |
 
 1 ObservationだけでAxis Scoreを決めるとは限らない。複数Observation、scope、coverage、required roleをSubmetric boundaryで整理する。
 
@@ -227,13 +227,13 @@ Exact casing、nesting、physical ID、JSON、table、OpenAPIは未決定であ�
 
 ## 10. Missing, N/A, Unknown, Partial, and valid zero
 
-| State | Meaning | Must not become silently |
-| --- | --- | --- |
-| `PRESENT` with value `0` | 観測・計算が成立し、結果が0 | Missing/Unknownの代替 |
-| `MISSING` | 十分な観測scopeでmeaningful absence | generic 0/penalty |
-| `NOT_APPLICABLE` | 対象にmeasurement自体が適用されない | 0、Missing |
-| `UNKNOWN` | 観測・technical/semantic理由で確定不能 | negative Evidence、0 |
-| `PARTIAL` | 必要input/coverageの一部だけ有効 | completeと無標識の同一score |
+| State                    | Meaning                                | Must not become silently    |
+| ------------------------ | -------------------------------------- | --------------------------- |
+| `PRESENT` with value `0` | 観測・計算が成立し、結果が0            | Missing/Unknownの代替       |
+| `MISSING`                | 十分な観測scopeでmeaningful absence    | generic 0/penalty           |
+| `NOT_APPLICABLE`         | 対象にmeasurement自体が適用されない    | 0、Missing                  |
+| `UNKNOWN`                | 観測・technical/semantic理由で確定不能 | negative Evidence、0        |
+| `PARTIAL`                | 必要input/coverageの一部だけ有効       | completeと無標識の同一score |
 
 例:
 
@@ -429,48 +429,48 @@ Axis relation:
 
 ## 19. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | Frontendにoverall/internal/visual score、radar、delta等のpresentation types/view modelsとmock valuesがある。Product docsにはObservation、Formula Architecture/Policy/Version/Wire、Missing/Partial Contractがある。 |
+| Classification | Confirmed scope                                                                                                                                                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT        | Frontendにoverall/internal/visual score、radar、delta等のpresentation types/view modelsとmock valuesがある。Product docsにはObservation、Formula Architecture/Policy/Version/Wire、Missing/Partial Contractがある。                           |
 | CURRENT caveat | TypeScript/OpenAPIにcanonical Observation、Submetric result、`AnalysisScoreResult`、`formulaVersion`、eligibility/completeness provenanceは実装されていない。mockはfinal scoreを直接生成し、presentation mapperはfallback/synthetic値を作る。 |
-| TARGET | Worker calculation engineがRails-resolved Formula Manifestとtyped ObservationsからSubmetric/Axis/Layer/Overallを計算し、Railsがvalidate/persistしてversioned resultをAPI/UIへ提供する。 |
-| DEFERRED | exact weight/ratio/normalization parameter/threshold/rounding、calibration dataset/execution、confidence calibration、dedup/double-count、physical JSON/DB/OpenAPI、Worker/Rails/Frontend implementation。 |
+| TARGET         | Worker calculation engineがRails-resolved Formula Manifestとtyped ObservationsからSubmetric/Axis/Layer/Overallを計算し、Railsがvalidate/persistしてversioned resultをAPI/UIへ提供する。                                                       |
+| DEFERRED       | exact weight/ratio/normalization parameter/threshold/rounding、calibration dataset/execution、confidence calibration、dedup/double-count、physical JSON/DB/OpenAPI、Worker/Rails/Frontend implementation。                                    |
 
 Decision CompleteはExact Parameter、Calibration、Production implementation完了を意味しない。
 
 ## 20. Representative repository mapping
 
-| Representative source | Pipeline layer | Responsibility | Status | Version relation |
-| --- | --- | --- | --- | --- |
-| [Score / Axis Data Dictionary](../../product/score-axis-data-dictionary.md) | Full contract chain | Formula/Observation/Missing detail SoT | Approved logical contracts | Axis/Observation/Formula versions |
-| [Product Decision Register](../../product/product-decision-register.md) PD-02C/D | Decision summary | approval/status/handoff | Decision complete | exact parameter deferred |
-| [M15 Snapshot / Lineage](./15-snapshot-history-lineage.md) | Historical output | generation-time lineage | Approved learning contract | no silent reinterpretation |
-| [M16 Common 6 Axis](./16-common-six-axis.md) | Axis semantics | ID/definition/boundary | Approved learning contract | Axis Contract v1 |
-| `src/lib/panoptes/types.ts` | Presentation result | overall/internal/visual/radar shapes | CURRENT frontend, partial | no formula lineage |
-| `src/lib/components/ComponentsBase/Self/data/self-analysis-view-model.ts` | Presentation mapping | clamp/fallback/delta rows | CURRENT UI | not business formula |
-| `competitor-card-presentation.ts` | Synthetic presentation | three scores→six radar values | CURRENT UI/mock | not canonical aggregation |
-| `src/lib/panoptes/api/mock/snapshot-factory.ts` | Mock result generation | seeded final score/radar | CURRENT mock only | no Observation/Formula contract |
-| `src/lib/db/dummy/panoptes_dummy_ui.ts` | Fixture mapping | final presentation snapshot | CURRENT fixture | legacy keys/order |
-| [OpenAPI draft](../../api/openapi-draft.yaml) | Target transport draft | generic Snapshot payload | incomplete | no `AnalysisScoreResult` schema |
-| [AnalysisJob State Machine](../../api/analysis-job-state-machine.md) | Job lifecycle | finalization/Snapshot commit | Target draft | result accepted by Rails |
-| [API Boundary](../../architecture/api-boundary.md) | Ownership | Worker execution/Rails canonical persistence | Target design draft | future registry/result boundary |
+| Representative source                                                            | Pipeline layer         | Responsibility                               | Status                     | Version relation                  |
+| -------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------- | -------------------------- | --------------------------------- |
+| [Score / Axis Data Dictionary](../../product/score-axis-data-dictionary.md)      | Full contract chain    | Formula/Observation/Missing detail SoT       | Approved logical contracts | Axis/Observation/Formula versions |
+| [Product Decision Register](../../product/product-decision-register.md) PD-02C/D | Decision summary       | approval/status/handoff                      | Decision complete          | exact parameter deferred          |
+| [M15 Snapshot / Lineage](./15-snapshot-history-lineage.md)                       | Historical output      | generation-time lineage                      | Approved learning contract | no silent reinterpretation        |
+| [M16 Common 6 Axis](./16-common-six-axis.md)                                     | Axis semantics         | ID/definition/boundary                       | Approved learning contract | Axis Contract v1                  |
+| `src/lib/panoptes/types.ts`                                                      | Presentation result    | overall/internal/visual/radar shapes         | CURRENT frontend, partial  | no formula lineage                |
+| `src/lib/components/ComponentsBase/Self/data/self-analysis-view-model.ts`        | Presentation mapping   | clamp/fallback/delta rows                    | CURRENT UI                 | not business formula              |
+| `competitor-card-presentation.ts`                                                | Synthetic presentation | three scores→six radar values                | CURRENT UI/mock            | not canonical aggregation         |
+| `src/lib/panoptes/api/mock/snapshot-factory.ts`                                  | Mock result generation | seeded final score/radar                     | CURRENT mock only          | no Observation/Formula contract   |
+| `src/lib/db/dummy/panoptes_dummy_ui.ts`                                          | Fixture mapping        | final presentation snapshot                  | CURRENT fixture            | legacy keys/order                 |
+| [OpenAPI draft](../../api/openapi-draft.yaml)                                    | Target transport draft | generic Snapshot payload                     | incomplete                 | no `AnalysisScoreResult` schema   |
+| [AnalysisJob State Machine](../../api/analysis-job-state-machine.md)             | Job lifecycle          | finalization/Snapshot commit                 | Target draft               | result accepted by Rails          |
+| [API Boundary](../../architecture/api-boundary.md)                               | Ownership              | Worker execution/Rails canonical persistence | Target design draft        | future registry/result boundary   |
 
 ## 21. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| Observation = Score | ObservationはEvidence-backed typed fact |
-| Submetric = Axis | SubmetricはAxis内のmeasurement dimension |
-| Formula = Axis Definition | Formulaは測り方、Axisは意味 |
-| Missing = 0 | Missingとvalid zeroは別 |
-| N/A = Missing | applicableでないこととabsenceは別 |
-| Unknown = Negative | 判定不能をnegative Evidenceにしない |
-| Valid zero = Missing | measurement成立後の0は有効値 |
-| Canonical Order = Weight | conceptual orderからweightを推定しない |
-| Worker = Formula Business Owner | Workerはgiven contractを実行するengine |
-| Formula Versionなしで比較可能 | generation-time semanticsが不明になる |
-| Score = Strategy | diagnosisとaction decisionは別 |
-| LLM explanation = Explainability | lineage/evidence/version traceが必要 |
+| Misunderstanding                 | Correction                               |
+| -------------------------------- | ---------------------------------------- |
+| Observation = Score              | ObservationはEvidence-backed typed fact  |
+| Submetric = Axis                 | SubmetricはAxis内のmeasurement dimension |
+| Formula = Axis Definition        | Formulaは測り方、Axisは意味              |
+| Missing = 0                      | Missingとvalid zeroは別                  |
+| N/A = Missing                    | applicableでないこととabsenceは別        |
+| Unknown = Negative               | 判定不能をnegative Evidenceにしない      |
+| Valid zero = Missing             | measurement成立後の0は有効値             |
+| Canonical Order = Weight         | conceptual orderからweightを推定しない   |
+| Worker = Formula Business Owner  | Workerはgiven contractを実行するengine   |
+| Formula Versionなしで比較可能    | generation-time semanticsが不明になる    |
+| Score = Strategy                 | diagnosisとaction decisionは別           |
+| LLM explanation = Explainability | lineage/evidence/version traceが必要     |
 
 ## 22. Decision heuristic
 
@@ -586,18 +586,18 @@ Formula Versionがあれば、当時使ったSubmetric、normalization、weight�
 
 ## 25. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Measurement pipeline explained | `PASS` |
-| 2 | Observation contract explained | `PASS` |
-| 3 | Submetric explained | `PASS` |
-| 4 | Formula role explained | `PASS` |
-| 5 | Missing/N/A/Unknown/Partial/Zero distinction explained | `PASS` |
-| 6 | Eligibility explained | `PASS` |
-| 7 | Formula Version / lineage explained | `PASS` |
-| 8 | Rails/Worker formula ownership explained | `PASS` |
-| 9 | Repository mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                              | Result |
+| --: | ------------------------------------------------------ | ------ |
+|   1 | Measurement pipeline explained                         | `PASS` |
+|   2 | Observation contract explained                         | `PASS` |
+|   3 | Submetric explained                                    | `PASS` |
+|   4 | Formula role explained                                 | `PASS` |
+|   5 | Missing/N/A/Unknown/Partial/Zero distinction explained | `PASS` |
+|   6 | Eligibility explained                                  | `PASS` |
+|   7 | Formula Version / lineage explained                    | `PASS` |
+|   8 | Rails/Worker formula ownership explained               | `PASS` |
+|   9 | Repository mapping + two diagrams included             | `PASS` |
+|  10 | Exercises + answers included                           | `PASS` |
 
 M17 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Exact Formula Parameter、Calibration、physical schema、Worker/Rails/Frontend implementationの完成判定ではない。
 

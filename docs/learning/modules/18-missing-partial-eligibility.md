@@ -34,12 +34,12 @@ Missing treatmentは表示上の都合ではなくmeasurement semanticsである
 
 PD-02Dが接続する主要な状態集合は次のとおりである。
 
-| Dimension | Approved values | Answers |
-| --- | --- | --- |
-| Completeness | `PRESENT / MISSING / NOT_APPLICABLE / UNKNOWN / PARTIAL` | input/resultがどの程度成立したか |
-| Eligibility | `ELIGIBLE / INELIGIBLE / CONDITIONALLY_ELIGIBLE / UNDETERMINED` | Profile rule上、正式計算してよいか |
-| Score State | `CALCULATED / NON_CALCULATED` | 数値結果が正式に計算されたか |
-| Score value | valid number or absent | 計算結果はいくつか |
+| Dimension    | Approved values                                                 | Answers                            |
+| ------------ | --------------------------------------------------------------- | ---------------------------------- |
+| Completeness | `PRESENT / MISSING / NOT_APPLICABLE / UNKNOWN / PARTIAL`        | input/resultがどの程度成立したか   |
+| Eligibility  | `ELIGIBLE / INELIGIBLE / CONDITIONALLY_ELIGIBLE / UNDETERMINED` | Profile rule上、正式計算してよいか |
+| Score State  | `CALCULATED / NON_CALCULATED`                                   | 数値結果が正式に計算されたか       |
+| Score value  | valid number or absent                                          | 計算結果はいくつか                 |
 
 この直交性がTreatment Model Bの中心である。`PARTIAL + CALCULATED`も、`PRESENT + NON_CALCULATED`もcontract次第で成立し得る。
 
@@ -137,13 +137,13 @@ Valid ZeroはEvidence-backed resultである。Missingを便宜的に0へ変換�
 
 ## 9. State comparison
 
-| State | Evidence exists | Applicable | Determinate | Full coverage | Numeric 0 allowed? |
-| --- | --- | --- | --- | --- | --- |
-| Missing | no / insufficient | usually yes | no | no | no substitute |
-| N/A | irrelevant | no | yes: not applicable | not counted | no substitute |
-| Unknown | yes or partial | yes | no | varies | no substitute |
-| Partial | some | yes | partly | no | only if contract permits |
-| Valid Zero | yes | yes | yes | contract-sufficient | yes, actual value |
+| State      | Evidence exists   | Applicable  | Determinate         | Full coverage       | Numeric 0 allowed?       |
+| ---------- | ----------------- | ----------- | ------------------- | ------------------- | ------------------------ |
+| Missing    | no / insufficient | usually yes | no                  | no                  | no substitute            |
+| N/A        | irrelevant        | no          | yes: not applicable | not counted         | no substitute            |
+| Unknown    | yes or partial    | yes         | no                  | varies              | no substitute            |
+| Partial    | some              | yes         | partly              | no                  | only if contract permits |
+| Valid Zero | yes               | yes         | yes                 | contract-sufficient | yes, actual value        |
 
 この表は判定補助である。Exact field semanticsとrequired scopeは承認済みContract/Profileを優先する。
 
@@ -189,12 +189,12 @@ required evidence不足等で正式計算できない場合は`NON_CALCULATED`�
 
 ## 12. Score State and numeric value
 
-| Case | Score State | Value | Interpretation |
-| --- | --- | --- | --- |
-| 正常計算して0 | `CALCULATED` | `0` | valid zero |
-| PartialだがProfile上計算可 | `CALCULATED` | number | limited result + limitations |
-| required input不足 | `NON_CALCULATED` | absent | missing/ineligible reason required |
-| applicableか未判定 | `NON_CALCULATED` | absent | undetermined reason required |
+| Case                       | Score State      | Value  | Interpretation                     |
+| -------------------------- | ---------------- | ------ | ---------------------------------- |
+| 正常計算して0              | `CALCULATED`     | `0`    | valid zero                         |
+| PartialだがProfile上計算可 | `CALCULATED`     | number | limited result + limitations       |
+| required input不足         | `NON_CALCULATED` | absent | missing/ineligible reason required |
+| applicableか未判定         | `NON_CALCULATED` | absent | undetermined reason required       |
 
 `null`、missing field、0、status enumを同じ意味にしない。Physical JSON/OpenAPIはdeferredだが、logical distinctionは承認済みである。
 
@@ -219,11 +219,11 @@ Internal/Visualの両Layerがeligible/calculatedならapproved Fusion Profileで
 
 `AnalysisJob outcome = partially_completed`と`Axis completeness = PARTIAL`は別概念である。
 
-| Concept | Level | Meaning | Owner |
-| --- | --- | --- | --- |
-| `partially_completed` | Job/Product outcome | usable validated Resultはあるがrequired processingの一部が未完了 | Rails |
-| Axis `PARTIAL` | Measurement coverage | そのAxisのinput/coverageが一部のみ有効 | Formula/Profile evaluation |
-| `CALCULATED` | Score result | score valueが正式に計算された | Formula result, Rails validation |
+| Concept               | Level                | Meaning                                                          | Owner                            |
+| --------------------- | -------------------- | ---------------------------------------------------------------- | -------------------------------- |
+| `partially_completed` | Job/Product outcome  | usable validated Resultはあるがrequired processingの一部が未完了 | Rails                            |
+| Axis `PARTIAL`        | Measurement coverage | そのAxisのinput/coverageが一部のみ有効                           | Formula/Profile evaluation       |
+| `CALCULATED`          | Score result         | score valueが正式に計算された                                    | Formula result, Rails validation |
 
 Completed Jobでも全Axisが必ずFullとは限らず、Partial Jobでもusableな一部AxisがFullの場合はあり得る。Job outcomeから各Axis stateを推測しない。
 
@@ -288,22 +288,22 @@ flowchart TD
 
 ## 22. Worked example
 
-| Submetric | Observation | State | Treatment |
-| --- | --- | --- | --- |
-| A | required scopeを正常走査しcount=0 | `PRESENT`, valid zero | eligible contributor候補 |
-| B | required screenshotが取得不能 | `MISSING` | 0へ変換しない |
-| C | DOM evidenceから正常計算 | `PRESENT`, available | eligible contributor候補 |
+| Submetric | Observation                       | State                 | Treatment                |
+| --------- | --------------------------------- | --------------------- | ------------------------ |
+| A         | required scopeを正常走査しcount=0 | `PRESENT`, valid zero | eligible contributor候補 |
+| B         | required screenshotが取得不能     | `MISSING`             | 0へ変換しない            |
+| C         | DOM evidenceから正常計算          | `PRESENT`, available  | eligible contributor候補 |
 
 AとCだけを単純平均しBを隠すとobserved-only denominatorになりcoverageを過大表示する。Versioned ProfileがBをrequired/optional/conditionalのどれと定義するか確認し、Eligibilityを判定する。Bがrequiredなら`NON_CALCULATED`候補、conditionalでlimited calculation可なら`CALCULATED + PARTIAL`候補である。Exact thresholdや数値はこの情報だけでは決められない。
 
 ## 23. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | Frontendにscore types、radar/chart projection、fixture/mock、一部fallbackがある。Product docsにPD-02D Treatment Model Bとlogical state contractがある。 |
+| Classification | Confirmed scope                                                                                                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT        | Frontendにscore types、radar/chart projection、fixture/mock、一部fallbackがある。Product docsにPD-02D Treatment Model Bとlogical state contractがある。                                |
 | CURRENT caveat | Canonical stateのfull API propagation、Rails persistence、Worker calculationは実装確認できない。現行fallbackにはmissing→0やsynthetic valueがあり、Product contractの実装証拠ではない。 |
-| TARGET | Workerがtyped inputとtechnical reasonsを出力し、versioned Profileでcalculationし、RailsがEligibility/Resultをvalidate・persistし、BFF/API/UIがstateとlimitationsを欠落なく伝える。 |
-| DEFERRED | exact threshold、required set、minimum Observation count、fusion fallback、calibration parameter、physical JSON/DB/OpenAPI、Production implementation、exact UI copy。 |
+| TARGET         | Workerがtyped inputとtechnical reasonsを出力し、versioned Profileでcalculationし、RailsがEligibility/Resultをvalidate・persistし、BFF/API/UIがstateとlimitationsを欠落なく伝える。     |
+| DEFERRED       | exact threshold、required set、minimum Observation count、fusion fallback、calibration parameter、physical JSON/DB/OpenAPI、Production implementation、exact UI copy。                 |
 
 Decision CompleteはImplementation CompleteやProduction Readyを意味しない。
 
@@ -311,37 +311,37 @@ Decision CompleteはImplementation CompleteやProduction Readyを意味しない
 
 以下は限定確認した12例であり、repo-wide score監査ではない。
 
-| Source | State meaning / layer | CURRENT / TARGET | Eligibility relation |
-| --- | --- | --- | --- |
-| [Score / Axis Data Dictionary](../../product/score-axis-data-dictionary.md) PD-02D | Canonical states | Approved contract | Primary logical contract |
-| [Product Decision Register](../../product/product-decision-register.md) PD-02D | Approval/status | `DECISION_COMPLETE` | Model B approved |
-| [M17 Observation / Formula](./17-observation-submetric-formula.md) | Formula input/result states | Approved learning contract | Profile evaluates eligibility |
-| [M12 AnalysisJob Lifecycle](./12-analysis-job-lifecycle.md) | Job-level partial outcome | Current contract / target enforcement | Snapshot eligibility |
-| [M15 Snapshot / History / Lineage](./15-snapshot-history-lineage.md) | Limited Snapshot semantics | Approved learning contract | preserves limitations |
-| [M16 Common 6 Axis](./16-common-six-axis.md) | Per-Axis completeness | Approved learning contract | Axis states may differ |
-| `src/lib/panoptes/types.ts` | aggregate score/radar payload | CURRENT partial | canonical state fields incomplete |
-| `src/lib/features/analysis-job/mapping/analysis-job-status.ts` | Job status/outcome adaptation | CURRENT frontend | not Axis eligibility |
-| `src/lib/panoptes/api/mock/snapshot-factory.ts` | mock Snapshot scores | CURRENT mock | not canonical formula |
-| `src/lib/components/ComponentsBase/Self/data/self-analysis-view-model.ts` | score/radar presentation | CURRENT UI | fallback may hide missing |
-| `src/lib/components/ComponentsBase/Competitor/data/competitor-card-presentation.ts` | competitor projection | CURRENT mock/UI | synthetic values not eligibility evidence |
-| `docs/api/openapi-draft.yaml` | Snapshot transport draft | TARGET draft | physical state schema incomplete |
+| Source                                                                              | State meaning / layer         | CURRENT / TARGET                      | Eligibility relation                      |
+| ----------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------- | ----------------------------------------- |
+| [Score / Axis Data Dictionary](../../product/score-axis-data-dictionary.md) PD-02D  | Canonical states              | Approved contract                     | Primary logical contract                  |
+| [Product Decision Register](../../product/product-decision-register.md) PD-02D      | Approval/status               | `DECISION_COMPLETE`                   | Model B approved                          |
+| [M17 Observation / Formula](./17-observation-submetric-formula.md)                  | Formula input/result states   | Approved learning contract            | Profile evaluates eligibility             |
+| [M12 AnalysisJob Lifecycle](./12-analysis-job-lifecycle.md)                         | Job-level partial outcome     | Current contract / target enforcement | Snapshot eligibility                      |
+| [M15 Snapshot / History / Lineage](./15-snapshot-history-lineage.md)                | Limited Snapshot semantics    | Approved learning contract            | preserves limitations                     |
+| [M16 Common 6 Axis](./16-common-six-axis.md)                                        | Per-Axis completeness         | Approved learning contract            | Axis states may differ                    |
+| `src/lib/panoptes/types.ts`                                                         | aggregate score/radar payload | CURRENT partial                       | canonical state fields incomplete         |
+| `src/lib/features/analysis-job/mapping/analysis-job-status.ts`                      | Job status/outcome adaptation | CURRENT frontend                      | not Axis eligibility                      |
+| `src/lib/panoptes/api/mock/snapshot-factory.ts`                                     | mock Snapshot scores          | CURRENT mock                          | not canonical formula                     |
+| `src/lib/components/ComponentsBase/Self/data/self-analysis-view-model.ts`           | score/radar presentation      | CURRENT UI                            | fallback may hide missing                 |
+| `src/lib/components/ComponentsBase/Competitor/data/competitor-card-presentation.ts` | competitor projection         | CURRENT mock/UI                       | synthetic values not eligibility evidence |
+| `docs/api/openapi-draft.yaml`                                                       | Snapshot transport draft      | TARGET draft                          | physical state schema incomplete          |
 
 ## 25. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| Missing = 0 | Missingには正式なnumeric valueがない |
-| Unknown = Missing | evidence absenceとmeaning uncertaintyは別 |
-| N/A = Missing | not applicableとrequired absenceは別 |
-| Partial = Full | limitations/coverageを伴う独立状態 |
-| Valid Zero = Missing | 正常計算した0は有効値 |
-| Completeness = Score | 観測充足度とProduct qualityは別 |
-| Eligibility = Score | 計算許可と結果値は別 |
-| Partial Job = Partial Axis | Product outcomeとmeasurement stateは別 |
-| completed Job = all axes Full | Job outcomeだけからAxis stateを推測しない |
-| null = missing field = zero | API semanticを分離する |
-| Partial competitorをFull competitorと単純比較できる | version/coverage/limitations確認が必要 |
-| Missingから確定Strategyを作れる | uncertaintyを保ち、Limited SnapshotはEvidence-only |
+| Misunderstanding                                    | Correction                                         |
+| --------------------------------------------------- | -------------------------------------------------- |
+| Missing = 0                                         | Missingには正式なnumeric valueがない               |
+| Unknown = Missing                                   | evidence absenceとmeaning uncertaintyは別          |
+| N/A = Missing                                       | not applicableとrequired absenceは別               |
+| Partial = Full                                      | limitations/coverageを伴う独立状態                 |
+| Valid Zero = Missing                                | 正常計算した0は有効値                              |
+| Completeness = Score                                | 観測充足度とProduct qualityは別                    |
+| Eligibility = Score                                 | 計算許可と結果値は別                               |
+| Partial Job = Partial Axis                          | Product outcomeとmeasurement stateは別             |
+| completed Job = all axes Full                       | Job outcomeだけからAxis stateを推測しない          |
+| null = missing field = zero                         | API semanticを分離する                             |
+| Partial competitorをFull competitorと単純比較できる | version/coverage/limitations確認が必要             |
+| Missingから確定Strategyを作れる                     | uncertaintyを保ち、Limited SnapshotはEvidence-only |
 
 ## 26. Decision heuristic
 
@@ -445,18 +445,18 @@ Missingは「低品質」ではなく「必要なmeasurementが成立してい�
 
 ## 29. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Missing explained | `PASS` |
-| 2 | N/A explained | `PASS` |
-| 3 | Unknown explained | `PASS` |
-| 4 | Partial explained | `PASS` |
-| 5 | Valid Zero explained | `PASS` |
-| 6 | Completeness explained | `PASS` |
-| 7 | Eligibility explained | `PASS` |
-| 8 | Job/Axis/Score distinctions explained | `PASS` |
-| 9 | Repository mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                  | Result |
+| --: | ------------------------------------------ | ------ |
+|   1 | Missing explained                          | `PASS` |
+|   2 | N/A explained                              | `PASS` |
+|   3 | Unknown explained                          | `PASS` |
+|   4 | Partial explained                          | `PASS` |
+|   5 | Valid Zero explained                       | `PASS` |
+|   6 | Completeness explained                     | `PASS` |
+|   7 | Eligibility explained                      | `PASS` |
+|   8 | Job/Axis/Score distinctions explained      | `PASS` |
+|   9 | Repository mapping + two diagrams included | `PASS` |
+|  10 | Exercises + answers included               | `PASS` |
 
 M18 authoring result: `10 / 10 PASS`。教材完成はExact Threshold、Required Set、Calibration、physical schema、Production implementationの完成を意味しない。
 

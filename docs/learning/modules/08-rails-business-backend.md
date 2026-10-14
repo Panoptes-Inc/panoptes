@@ -24,14 +24,14 @@ Ruby on Railsはrouting、controller、model/Active Record、validation、migrat
 
 ### MVCをAPIとして読む
 
-| Part | General role | Panoptes API-only context |
-| --- | --- | --- |
-| Route | HTTP method/pathをhandlerへ接続 | `rails/config/routes.rb`の`/api/v1/*` |
-| Controller | Request context、params、use-case entry、HTTP response | `ActionController::API`を継承するJSON endpoint |
-| Model | Persistent entityとassociation/validation/domain vocabulary | User、Organization、Membership、SystemRole |
-| Service / use case | 複数modelや外部systemを跨ぐoperation | CURRENTではAuth service群。Analysis domain use caseはDEFERRED |
-| Migration / schema | DB structure、foreign key、index、constraint | Identity/Organization boundaryのみCURRENT |
-| Response mapping | Domain resultをAPI contractへ変換 | CURRENTはcontroller hash + shared success/error envelope |
+| Part               | General role                                                | Panoptes API-only context                                     |
+| ------------------ | ----------------------------------------------------------- | ------------------------------------------------------------- |
+| Route              | HTTP method/pathをhandlerへ接続                             | `rails/config/routes.rb`の`/api/v1/*`                         |
+| Controller         | Request context、params、use-case entry、HTTP response      | `ActionController::API`を継承するJSON endpoint                |
+| Model              | Persistent entityとassociation/validation/domain vocabulary | User、Organization、Membership、SystemRole                    |
+| Service / use case | 複数modelや外部systemを跨ぐoperation                        | CURRENTではAuth service群。Analysis domain use caseはDEFERRED |
+| Migration / schema | DB structure、foreign key、index、constraint                | Identity/Organization boundaryのみCURRENT                     |
+| Response mapping   | Domain resultをAPI contractへ変換                           | CURRENTはcontroller hash + shared success/error envelope      |
 
 API-only modeはHTML page renderingを主目的にせず、JSON APIとserver-side business/persistence concernへ集中する。Panoptesの`ApplicationController < ActionController::API`がこのboundaryを示す。
 
@@ -96,14 +96,14 @@ BFF route guardやFrontend validationは早期拒否・UX・transport protection
 
 ### Neighboring owners
 
-| Concern | Owner |
-| --- | --- |
-| User interaction/presentation | Frontend |
-| Cookie/session/safe proxy | SvelteKit BFF |
-| Business decision/transition | Rails |
-| Durable records/constraints | PostgreSQL |
-| Crawl/capture/analysis execution | Worker |
-| External charge/webhook | Billing integration。Railsがbusiness policyとrecordをorchestrate |
+| Concern                          | Owner                                                            |
+| -------------------------------- | ---------------------------------------------------------------- |
+| User interaction/presentation    | Frontend                                                         |
+| Cookie/session/safe proxy        | SvelteKit BFF                                                    |
+| Business decision/transition     | Rails                                                            |
+| Durable records/constraints      | PostgreSQL                                                       |
+| Crawl/capture/analysis execution | Worker                                                           |
+| External charge/webhook          | Billing integration。Railsがbusiness policyとrecordをorchestrate |
 
 ## 5. CURRENT request lifecycle — Organization detail
 
@@ -185,13 +185,13 @@ PostgreSQL constraintも重要だが、Model/API authorizationの代替ではな
 
 ### Terms
 
-| Term | Question | CURRENT example |
-| --- | --- | --- |
-| Authentication | 誰か | Bearer JWT検証、Supabase subject→User mapping |
-| Authorization | 何をしてよいか | Membership role、SystemRole、resource access |
-| Organization membership | どのtenantに属するか | active Membership + active Organization query |
-| Resource ownership | 対象resourceがどのOrganizationに属するか | Project等でTarget実装が必要 |
-| Operation permission | 現state/roleでその操作を許可するか | Analysis開始/transition等でTarget実装が必要 |
+| Term                    | Question                                 | CURRENT example                               |
+| ----------------------- | ---------------------------------------- | --------------------------------------------- |
+| Authentication          | 誰か                                     | Bearer JWT検証、Supabase subject→User mapping |
+| Authorization           | 何をしてよいか                           | Membership role、SystemRole、resource access  |
+| Organization membership | どのtenantに属するか                     | active Membership + active Organization query |
+| Resource ownership      | 対象resourceがどのOrganizationに属するか | Project等でTarget実装が必要                   |
+| Operation permission    | 現state/roleでその操作を許可するか       | Analysis開始/transition等でTarget実装が必要   |
 
 ### Current authorization pattern
 
@@ -268,13 +268,13 @@ Terminal Jobを同じidentityで`running`へ戻してreanalysisするのでは�
 
 PD-04の承認済みcontract:
 
-| Outcome | Meaning | Snapshot baseline |
-| --- | --- | --- |
-| `completed` | Required processingを完了しvalidated Product Resultが成立 | Snapshot作成可。Policyによりcurrent promotion可 |
+| Outcome               | Meaning                                                                                         | Snapshot baseline                                                     |
+| --------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `completed`           | Required processingを完了しvalidated Product Resultが成立                                       | Snapshot作成可。Policyによりcurrent promotion可                       |
 | `partially_completed` | Usable validated Product Resultがあるがrequired processingの一部が未完了でlimitationsを説明可能 | Limited Snapshotは条件付き。自動current/Strategy source promotionなし |
-| `failed` | Valid Product Resultが成立しない | Formal Snapshot作成不可 |
-| `cancelled` | Cancellation terminal reason | 途中artifactとProduct Snapshotを分離 |
-| `timed_out` | Timeout terminal reason | 後からsilent partial rewriteしない |
+| `failed`              | Valid Product Resultが成立しない                                                                | Formal Snapshot作成不可                                               |
+| `cancelled`           | Cancellation terminal reason                                                                    | 途中artifactとProduct Snapshotを分離                                  |
+| `timed_out`           | Timeout terminal reason                                                                         | 後からsilent partial rewriteしない                                    |
 
 `partially_completed`はObservation/Axis/Score/SnapshotのPARTIALと同義ではなく、Job-level outcomeである。Frontend warningやWorker resultだけで確定せず、Railsがvalidated evidence/completeness policyに基づいてcanonical outcomeを保存するTargetである。
 
@@ -315,16 +315,16 @@ RailsはProduct contractをDB operationへtranslateし、PostgreSQLはその結�
 
 ## 14. Rails vs Worker
 
-| Concern | Rails | Worker |
-| --- | --- | --- |
-| Analysisを開始可能か | decides | does not decide |
-| Job identity/canonical status | owns | receives scoped work and reports facts |
-| Crawl/Chromium/screenshot | requests/orchestrates | executes |
-| Internal/visual/LLM analysis | defines approved work/result contract | executes provider/technical steps |
-| Artifact/evidence | validates references/lineage and persists metadata | produces/uploads technical artifact |
-| Final Product outcome | commits | must not self-authorize |
-| Usage/billing eligibility | owns business policy | must not decide |
-| Retry | owns business retry/new Job policy | owns bounded technical attempt behavior within contract |
+| Concern                       | Rails                                              | Worker                                                  |
+| ----------------------------- | -------------------------------------------------- | ------------------------------------------------------- |
+| Analysisを開始可能か          | decides                                            | does not decide                                         |
+| Job identity/canonical status | owns                                               | receives scoped work and reports facts                  |
+| Crawl/Chromium/screenshot     | requests/orchestrates                              | executes                                                |
+| Internal/visual/LLM analysis  | defines approved work/result contract              | executes provider/technical steps                       |
+| Artifact/evidence             | validates references/lineage and persists metadata | produces/uploads technical artifact                     |
+| Final Product outcome         | commits                                            | must not self-authorize                                 |
+| Usage/billing eligibility     | owns business policy                               | must not decide                                         |
+| Retry                         | owns business retry/new Job policy                 | owns bounded technical attempt behavior within contract |
 
 Workerが「LLM callに成功したのでJobをcompletedへ更新」「costが高いのでUserのplanを拒否」と決めると、authorization、usage、state machine、auditがtechnical runtimeへ漏れる。Workerはfacts/artifactsを返し、Railsがbusiness outcomeへ確定する。
 
@@ -381,16 +381,16 @@ Analysis開始、authorization-sensitive mutation、Usage decision、Snapshot pr
 
 ## 18. Error handling
 
-| Error class | Meaning | Typical HTTP boundary | Current status |
-| --- | --- | ---: | --- |
-| Unauthenticated / invalid token | Actorを確立できない | 401 | `ApiError` subclassesあり |
-| Forbidden | Actorはいるがoperation不可 | 403 | CURRENT |
-| Not found / scoped absence | Resourceなし、またはscopeを秘匿 | 404 | Organization CURRENT |
-| Bad request | Required param等のrequest shape不正 | 400 | CURRENT shared handler |
-| Validation error | Domain/model validation不成立 | 422 | CURRENT `RecordInvalid` mapping |
-| Conflict / invalid transition | Current business stateとoperationが競合 | 409等、API contractに従う | Analysis domain DEFERRED |
-| Worker/upstream failure | Technical dependency failure | Job outcomeまたは5xxをcontractで区別 | Analysis domain DEFERRED |
-| Internal error | Unhandled server defect | safe 500 | CURRENT shared handler |
+| Error class                     | Meaning                                 |                Typical HTTP boundary | Current status                  |
+| ------------------------------- | --------------------------------------- | -----------------------------------: | ------------------------------- |
+| Unauthenticated / invalid token | Actorを確立できない                     |                                  401 | `ApiError` subclassesあり       |
+| Forbidden                       | Actorはいるがoperation不可              |                                  403 | CURRENT                         |
+| Not found / scoped absence      | Resourceなし、またはscopeを秘匿         |                                  404 | Organization CURRENT            |
+| Bad request                     | Required param等のrequest shape不正     |                                  400 | CURRENT shared handler          |
+| Validation error                | Domain/model validation不成立           |                                  422 | CURRENT `RecordInvalid` mapping |
+| Conflict / invalid transition   | Current business stateとoperationが競合 |            409等、API contractに従う | Analysis domain DEFERRED        |
+| Worker/upstream failure         | Technical dependency failure            | Job outcomeまたは5xxをcontractで区別 | Analysis domain DEFERRED        |
+| Internal error                  | Unhandled server defect                 |                             safe 500 | CURRENT shared handler          |
 
 `ApplicationController`はsuccessを`{ data, meta }`、errorを`{ error: { code, message, details, retryable }, meta }`へ統一し、authenticated responseをprivate/no-storeにする。Unhandled exceptionではclassとrequest IDをserver logへ残し、stack/internal detailをresponseへ出さない。
 
@@ -398,16 +398,16 @@ Business errorとtechnical errorを混同しない。たとえば「plan上Analy
 
 ## 19. CURRENT / TARGET / DEFERRED
 
-| Area | `CURRENT` | `TARGET` | `DEFERRED` |
-| --- | --- | --- | --- |
-| Rails surface | health、me、organizations、organization detail、membership readの5 endpoint | Organization-scoped business API | Project/Job/Snapshot/Strategy/Usage write/read |
-| Authentication | Supabase JWT verify、User mapping、Current context | 全business endpointで一貫適用 | production operational validation/rotation |
-| Authorization | Active Organization membershipとread roles | Resource-derived Organization、operation permission | Project/Job/Snapshot policies |
-| Persistence | User、Organization、Membership、SystemRole schema | canonical Project/Job/Snapshot/Evidence/Usage/Audit | physical schema/migrations/retention |
-| Services | Auth verifier/cache/mapper | Complex business use-case/service + transaction | Analysis domain services |
-| Job lifecycle | Frontend adapter/contract文書のみ。Rails modelなし | canonical states/transitions、queue/worker orchestration | implementation、retry/idempotency/outbox |
-| Partial/Snapshot | PD-04 logical contract approved | Rails outcome/Snapshot/promotion owner | threshold/schema/implementation |
-| Usage/Billing | logical separation approved | Rails usage decision + billing integration boundary | unit/price/Stripe implementation |
+| Area             | `CURRENT`                                                                   | `TARGET`                                                 | `DEFERRED`                                     |
+| ---------------- | --------------------------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| Rails surface    | health、me、organizations、organization detail、membership readの5 endpoint | Organization-scoped business API                         | Project/Job/Snapshot/Strategy/Usage write/read |
+| Authentication   | Supabase JWT verify、User mapping、Current context                          | 全business endpointで一貫適用                            | production operational validation/rotation     |
+| Authorization    | Active Organization membershipとread roles                                  | Resource-derived Organization、operation permission      | Project/Job/Snapshot policies                  |
+| Persistence      | User、Organization、Membership、SystemRole schema                           | canonical Project/Job/Snapshot/Evidence/Usage/Audit      | physical schema/migrations/retention           |
+| Services         | Auth verifier/cache/mapper                                                  | Complex business use-case/service + transaction          | Analysis domain services                       |
+| Job lifecycle    | Frontend adapter/contract文書のみ。Rails modelなし                          | canonical states/transitions、queue/worker orchestration | implementation、retry/idempotency/outbox       |
+| Partial/Snapshot | PD-04 logical contract approved                                             | Rails outcome/Snapshot/promotion owner                   | threshold/schema/implementation                |
+| Usage/Billing    | logical separation approved                                                 | Rails usage decision + billing integration boundary      | unit/price/Stripe implementation               |
 
 Target ArchitectureやProduct Decisionの成立を、Rails code実装済みと読み替えない。
 
@@ -415,19 +415,19 @@ Target ArchitectureやProduct Decisionの成立を、Rails code実装済みと�
 
 以下は限定確認した11例であり、全Rails Model/Controller監査ではない。
 
-| Source | Responsibility | Business ownership | Persistence relation | Auth relation | Status |
-| --- | --- | --- | --- | --- | --- |
-| `rails/config/routes.rb` | 5 read endpointのmethod/path mapping | ruleを持たないentry | none | controllerへ接続 | `CURRENT` |
-| `application_controller.rb` | request context、success/error envelope、cache、exception mapping | shared API behavior | `RecordInvalid`等をmapping | Authenticationをinclude | `CURRENT` |
-| `concerns/authentication.rb` | Bearer token要求、claims→Current User | actor確立 | UserMapperへ委譲 | primary Rails auth gate | `CURRENT` |
-| `services/auth/supabase_jwt_verifier.rb` | JWT signature/issuer/audience/expiry検証 | token validity | JWKS cacheのみ | Authenticationから利用 | `CURRENT` |
-| `services/auth/user_mapper.rb` | Supabase subject→Panoptes User、suspended/deleted拒否 | identity status rule | User create/update、last authenticated | verified claims input | `CURRENT` |
-| `concerns/organization_authorization.rb` | active membership/org、required role照合 | Organization read authorization | ActiveRecord membership query | `Current.user`必須 | `CURRENT` |
-| `api/v1/organizations_controller.rb` | Organization list/detail queryとresponse mapping | authorized read behavior | Membership/Organization read | concernでshowをguard | `CURRENT` |
-| `models/organization_membership.rb` | association、role/status、read role set、uniqueness | membership vocabulary/invariant | membership table | authorization queryに利用 | `CURRENT` |
-| `models/organization.rb` | status、association、slug validation/normalization | Organization invariant | organizations table | active scopeで利用 | `CURRENT` |
-| `errors/api_error.rb` | stable code/status/details/retryable error vocabulary | safe failure meaning | none | auth/authz subclasses | `CURRENT` |
-| `db/migrate/20260807000000_create_identity_and_organization_boundary.rb` | UUID tables、FK、unique/check constraints | business authorizationではなくintegrity | PostgreSQL physical boundary | identity/org recordsを支える | `CURRENT`; Analysis schema deferred |
+| Source                                                                   | Responsibility                                                    | Business ownership                      | Persistence relation                   | Auth relation                | Status                              |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------- | --------------------------------------- | -------------------------------------- | ---------------------------- | ----------------------------------- |
+| `rails/config/routes.rb`                                                 | 5 read endpointのmethod/path mapping                              | ruleを持たないentry                     | none                                   | controllerへ接続             | `CURRENT`                           |
+| `application_controller.rb`                                              | request context、success/error envelope、cache、exception mapping | shared API behavior                     | `RecordInvalid`等をmapping             | Authenticationをinclude      | `CURRENT`                           |
+| `concerns/authentication.rb`                                             | Bearer token要求、claims→Current User                             | actor確立                               | UserMapperへ委譲                       | primary Rails auth gate      | `CURRENT`                           |
+| `services/auth/supabase_jwt_verifier.rb`                                 | JWT signature/issuer/audience/expiry検証                          | token validity                          | JWKS cacheのみ                         | Authenticationから利用       | `CURRENT`                           |
+| `services/auth/user_mapper.rb`                                           | Supabase subject→Panoptes User、suspended/deleted拒否             | identity status rule                    | User create/update、last authenticated | verified claims input        | `CURRENT`                           |
+| `concerns/organization_authorization.rb`                                 | active membership/org、required role照合                          | Organization read authorization         | ActiveRecord membership query          | `Current.user`必須           | `CURRENT`                           |
+| `api/v1/organizations_controller.rb`                                     | Organization list/detail queryとresponse mapping                  | authorized read behavior                | Membership/Organization read           | concernでshowをguard         | `CURRENT`                           |
+| `models/organization_membership.rb`                                      | association、role/status、read role set、uniqueness               | membership vocabulary/invariant         | membership table                       | authorization queryに利用    | `CURRENT`                           |
+| `models/organization.rb`                                                 | status、association、slug validation/normalization                | Organization invariant                  | organizations table                    | active scopeで利用           | `CURRENT`                           |
+| `errors/api_error.rb`                                                    | stable code/status/details/retryable error vocabulary             | safe failure meaning                    | none                                   | auth/authz subclasses        | `CURRENT`                           |
+| `db/migrate/20260807000000_create_identity_and_organization_boundary.rb` | UUID tables、FK、unique/check constraints                         | business authorizationではなくintegrity | PostgreSQL physical boundary           | identity/org recordsを支える | `CURRENT`; Analysis schema deferred |
 
 ## 21. Decision heuristic — この処理はどこか
 
@@ -657,18 +657,18 @@ Completedはpolicy-driven promotion可。PartialはLimited Snapshot conditional�
 
 ## 25. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. Rails/API-only fundamentals explained | `PASS` |
-| 2. Rails business responsibility explained | `PASS` |
-| 3. request lifecycle explained | `PASS` |
-| 4. authorization boundary explained | `PASS` |
-| 5. business rule ownership explained | `PASS` |
-| 6. state transition ownership explained | `PASS` |
+| Criterion                                     | Result |
+| --------------------------------------------- | ------ |
+| 1. Rails/API-only fundamentals explained      | `PASS` |
+| 2. Rails business responsibility explained    | `PASS` |
+| 3. request lifecycle explained                | `PASS` |
+| 4. authorization boundary explained           | `PASS` |
+| 5. business rule ownership explained          | `PASS` |
+| 6. state transition ownership explained       | `PASS` |
 | 7. transaction/persistence boundary explained | `PASS` |
-| 8. Rails vs Worker explained | `PASS` |
+| 8. Rails vs Worker explained                  | `PASS` |
 | 9. representative repository mapping included | `PASS` |
-| 10. exercises + answers included | `PASS` |
+| 10. exercises + answers included              | `PASS` |
 
 M08 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M09`

@@ -21,14 +21,14 @@ Prerequisites: `M01`–`M09`
 
 Authentication（AuthN）は「誰であるか」を確認すること。
 
-| Term | Meaning |
-| --- | --- |
-| Identity | Userを識別するsubject |
-| Login | identity providerへ認証情報を提示するflow |
-| Session | 認証後の継続的なserver/browser context |
-| Cookie | Browserがrequestへ付ける保存・transport mechanism |
-| Token | identity/claimsを検証可能な形で伝えるcredential |
-| Logout | local session/cookieを終了・破棄するoperation |
+| Term     | Meaning                                           |
+| -------- | ------------------------------------------------- |
+| Identity | Userを識別するsubject                             |
+| Login    | identity providerへ認証情報を提示するflow         |
+| Session  | 認証後の継続的なserver/browser context            |
+| Cookie   | Browserがrequestへ付ける保存・transport mechanism |
+| Token    | identity/claimsを検証可能な形で伝えるcredential   |
+| Logout   | local session/cookieを終了・破棄するoperation     |
 
 PanoptesではSupabase/Auth Providerがidentityを認証し、SvelteKit serverがcookie/sessionをrequest contextへ解決し、RailsがBearer JWTをもう一度検証してPanoptes Userへmapする。
 
@@ -44,12 +44,12 @@ Login済みであることは、全Organization、Project、AnalysisJob、Snapsh
 
 Authorization（AuthZ）は「そのidentityが、そのresourceに、そのactionを、そのcontextで実行してよいか」を判断すること。
 
-| Element | Question | Example |
-| --- | --- | --- |
-| Subject | 誰が | User A |
-| Resource | 何へ | Organization XのProject Y |
-| Action | 何を | read / update / startAnalysis |
-| Context | どの条件で | active membership、role、resource state |
+| Element  | Question   | Example                                 |
+| -------- | ---------- | --------------------------------------- |
+| Subject  | 誰が       | User A                                  |
+| Resource | 何へ       | Organization XのProject Y               |
+| Action   | 何を       | read / update / startAnalysis           |
+| Context  | どの条件で | active membership、role、resource state |
 
 AuthorizationはIDだけでは判断できない。たとえばUser AがOrganization Xに属し、Project YもXに属し、roleが`startAnalysis`を許可し、Project stateも開始可能であることを確認して初めてoperationを許可できる。
 
@@ -175,14 +175,14 @@ Route Guardはroute familyへ入る前提を早期評価する。
 
 CURRENT SvelteKit policyの例:
 
-| Surface | Entry policy |
-| --- | --- |
-| `/`, `/lp`, `/plan`, `/login`, `/auth/callback` | public |
-| `/api/panoptes/v1/*` | authentication required |
-| `/organization/select`, `/auth/logout` | authentication required |
-| `/admin/*` | authentication + system admin |
-| `/app/dev/ui`, `/dev/analysis-preview` | development only + system admin/developer |
-| other protected page | authentication + active Organization membership context |
+| Surface                                         | Entry policy                                            |
+| ----------------------------------------------- | ------------------------------------------------------- |
+| `/`, `/lp`, `/plan`, `/login`, `/auth/callback` | public                                                  |
+| `/api/panoptes/v1/*`                            | authentication required                                 |
+| `/organization/select`, `/auth/logout`          | authentication required                                 |
+| `/admin/*`                                      | authentication + system admin                           |
+| `/app/dev/ui`, `/dev/analysis-preview`          | development only + system admin/developer               |
+| other protected page                            | authentication + active Organization membership context |
 
 Page requestではlogin/Organization selectionへredirectし、API requestでは401/403 JSONを返す。Guard後のauthenticated responseにはprivate/no-storeが設定される。
 
@@ -239,13 +239,13 @@ Exact policy/service patternはProject実装時に決める。教材だけで新
 
 ## 12. Authentication Provider vs Application Authorization
 
-| Boundary | Owns | Does not own |
-| --- | --- | --- |
-| Supabase/Auth Provider | login、identity、session/token発行 | Panoptes Project/Job/Snapshot permission |
-| SvelteKit/BFF | cookie/session、route entry、safe proxy、request context | canonical business permission |
-| Rails | application authorization、membership/resource/action/state | Browser session UX |
-| PostgreSQL | Membership/resource relationとintegrity | context-sensitive permission decision |
-| Frontend | authorized resultの表示、visibility hint | enforcement |
+| Boundary               | Owns                                                        | Does not own                             |
+| ---------------------- | ----------------------------------------------------------- | ---------------------------------------- |
+| Supabase/Auth Provider | login、identity、session/token発行                          | Panoptes Project/Job/Snapshot permission |
+| SvelteKit/BFF          | cookie/session、route entry、safe proxy、request context    | canonical business permission            |
+| Rails                  | application authorization、membership/resource/action/state | Browser session UX                       |
+| PostgreSQL             | Membership/resource relationとintegrity                     | context-sensitive permission decision    |
+| Frontend               | authorized resultの表示、visibility hint                    | enforcement                              |
 
 External identity providerのmetadataはrequest contextに使えても、Panoptes business permission truthを丸投げしない。
 
@@ -307,11 +307,11 @@ Return後もresourceを再authorizationする。安全なredirect先であるこ
 
 ## 16. 401 / 403 / 404
 
-| Status | General meaning | CURRENT examples |
-| --- | --- | --- |
-| 401 | unauthenticated / invalid credential | BFF session欠落、Rails token欠落・不正・期限切れ |
-| 403 | authenticatedだが許可なし | route/system role deny、required Organization role不一致 |
-| 404 | resource不存在、またはscope情報を露出しないnot found | BFF active-org mismatch、Rails active Membership/Organizationなし |
+| Status | General meaning                                      | CURRENT examples                                                  |
+| ------ | ---------------------------------------------------- | ----------------------------------------------------------------- |
+| 401    | unauthenticated / invalid credential                 | BFF session欠落、Rails token欠落・不正・期限切れ                  |
+| 403    | authenticatedだが許可なし                            | route/system role deny、required Organization role不一致          |
+| 404    | resource不存在、またはscope情報を露出しないnot found | BFF active-org mismatch、Rails active Membership/Organizationなし |
 
 404で秘匿するか403で明示するかはAPI/security contractで決める。教材から無条件な404 policyを新設しない。CURRENT実装では上記のspecific casesが確認できる。
 
@@ -341,16 +341,16 @@ Future capability matrix、Project-specific role、SSO group mapping等は未決
 
 ## 19. CURRENT / TARGET / DEFERRED
 
-| Area | CURRENT | TARGET | DEFERRED |
-| --- | --- | --- | --- |
-| Authentication | Supabase SSR、getUser、callback/logout、Rails JWT再検証 | production verified identity chain | staging/production integration evidence |
-| Session/cookie | server cookie adapter、active-org HTTP-only cookie、BFF token forwarding | consistent secure deployment settings | provider cookie/rotation operational verification |
-| Route guard | public/protected/admin/dev/active-org policies | all intended surfaces mapped | full route permission audit |
-| Organization | User/Membership/Organization DB boundaryとread authorization | resource-derived tenant authorization | lifecycle/admin management |
-| Roles | Rails Membership 6 values、SystemRole system_admin、BFF metadata vocabulary | explicit cross-boundary role mapping | future capability model |
-| Resources | Organization read endpoints | Project/AnalysisJob/Snapshot authorization | schema/endpoints/policies |
-| Deep-link | safe return-to、route protection | Model C current + explicit history | exact URL/current pointer/API implementation |
-| Advanced auth | none confirmed | only after approved need | SSO、Passkey等 |
+| Area           | CURRENT                                                                     | TARGET                                     | DEFERRED                                          |
+| -------------- | --------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------- |
+| Authentication | Supabase SSR、getUser、callback/logout、Rails JWT再検証                     | production verified identity chain         | staging/production integration evidence           |
+| Session/cookie | server cookie adapter、active-org HTTP-only cookie、BFF token forwarding    | consistent secure deployment settings      | provider cookie/rotation operational verification |
+| Route guard    | public/protected/admin/dev/active-org policies                              | all intended surfaces mapped               | full route permission audit                       |
+| Organization   | User/Membership/Organization DB boundaryとread authorization                | resource-derived tenant authorization      | lifecycle/admin management                        |
+| Roles          | Rails Membership 6 values、SystemRole system_admin、BFF metadata vocabulary | explicit cross-boundary role mapping       | future capability model                           |
+| Resources      | Organization read endpoints                                                 | Project/AnalysisJob/Snapshot authorization | schema/endpoints/policies                         |
+| Deep-link      | safe return-to、route protection                                            | Model C current + explicit history         | exact URL/current pointer/API implementation      |
+| Advanced auth  | none confirmed                                                              | only after approved need                   | SSO、Passkey等                                    |
 
 特にBFF `organization_owner`とRails `owner`は語彙が異なる。mappingまたはupstream metadata contractが別途確認されるまで、統一済みとは表現しない。
 
@@ -358,20 +358,20 @@ Future capability matrix、Project-specific role、SSO group mapping等は未決
 
 以下は限定確認した12例であり、全Route permission/Auth監査ではない。
 
-| Source | Classification | Owner | Input | Output | Status |
-| --- | --- | --- | --- | --- | --- |
-| `src/hooks.server.ts` | Route guard / auth context | SvelteKit | request/cookies/route | locals、redirect、401/403/404 | `CURRENT` |
-| `src/lib/server/auth/supabase.ts` | Authentication adapter / selected org context | BFF server | Supabase User、metadata、cookie | `RequestAuthContext` | `CURRENT` |
-| `src/lib/server/auth/policy.ts` | Route entry policy | SvelteKit | route、auth context、environment | allow/redirect/deny/not-found | `CURRENT` |
-| `src/lib/server/supabase-cookies.ts` | Cookie adapter/cleanup | BFF server | provider cookie operations | set/delete cookie | `CURRENT` |
-| `src/routes/auth/callback/+server.ts` + `auth/logout/+server.ts` | Session lifecycle | SvelteKit server | code/session + safe destination | exchange/sign-out/303 | `CURRENT` |
-| `src/routes/organization/select/+page.server.ts` | Organization selection guard | SvelteKit server | Membership context、form ID | active-org cookie + safe redirect | `CURRENT` |
-| `src/lib/server/rails/client.ts` | BFF session forwarding/context guard | BFF server | server session、requested org | Bearer Rails request/safe error | `CURRENT read proxy` |
-| `rails/app/controllers/concerns/authentication.rb` | Rails Authentication | Rails | Authorization header | verified `Current.user` | `CURRENT` |
-| `rails/app/services/auth/supabase_jwt_verifier.rb` | Token verification | Rails | Bearer JWT、JWKS/config | verified claims/error | `CURRENT` |
-| `rails/app/services/auth/user_mapper.rb` | Application identity mapping | Rails | verified claims | active Panoptes User | `CURRENT` |
-| `rails/app/controllers/concerns/organization_authorization.rb` | Organization Authorization | Rails | Current User、org ID、required roles | Current Organization/Membership or 403/404 | `CURRENT` |
-| `rails/app/models/organization_membership.rb` + `system_role.rb` | Membership/Role vocabulary | Rails/PostgreSQL | persisted relation/status/role | scoped auth data | `CURRENT` |
+| Source                                                           | Classification                                | Owner            | Input                                | Output                                     | Status               |
+| ---------------------------------------------------------------- | --------------------------------------------- | ---------------- | ------------------------------------ | ------------------------------------------ | -------------------- |
+| `src/hooks.server.ts`                                            | Route guard / auth context                    | SvelteKit        | request/cookies/route                | locals、redirect、401/403/404              | `CURRENT`            |
+| `src/lib/server/auth/supabase.ts`                                | Authentication adapter / selected org context | BFF server       | Supabase User、metadata、cookie      | `RequestAuthContext`                       | `CURRENT`            |
+| `src/lib/server/auth/policy.ts`                                  | Route entry policy                            | SvelteKit        | route、auth context、environment     | allow/redirect/deny/not-found              | `CURRENT`            |
+| `src/lib/server/supabase-cookies.ts`                             | Cookie adapter/cleanup                        | BFF server       | provider cookie operations           | set/delete cookie                          | `CURRENT`            |
+| `src/routes/auth/callback/+server.ts` + `auth/logout/+server.ts` | Session lifecycle                             | SvelteKit server | code/session + safe destination      | exchange/sign-out/303                      | `CURRENT`            |
+| `src/routes/organization/select/+page.server.ts`                 | Organization selection guard                  | SvelteKit server | Membership context、form ID          | active-org cookie + safe redirect          | `CURRENT`            |
+| `src/lib/server/rails/client.ts`                                 | BFF session forwarding/context guard          | BFF server       | server session、requested org        | Bearer Rails request/safe error            | `CURRENT read proxy` |
+| `rails/app/controllers/concerns/authentication.rb`               | Rails Authentication                          | Rails            | Authorization header                 | verified `Current.user`                    | `CURRENT`            |
+| `rails/app/services/auth/supabase_jwt_verifier.rb`               | Token verification                            | Rails            | Bearer JWT、JWKS/config              | verified claims/error                      | `CURRENT`            |
+| `rails/app/services/auth/user_mapper.rb`                         | Application identity mapping                  | Rails            | verified claims                      | active Panoptes User                       | `CURRENT`            |
+| `rails/app/controllers/concerns/organization_authorization.rb`   | Organization Authorization                    | Rails            | Current User、org ID、required roles | Current Organization/Membership or 403/404 | `CURRENT`            |
+| `rails/app/models/organization_membership.rb` + `system_role.rb` | Membership/Role vocabulary                    | Rails/PostgreSQL | persisted relation/status/role       | scoped auth data                           | `CURRENT`            |
 
 Project/AnalysisJob/Snapshot authorizationは上表に実装例として含めない。logical TARGETでありCURRENT sourceがないためである。
 
@@ -571,18 +571,18 @@ Snapshot endpoint/schema/policyは未実装なので、これはapproved deep-li
 
 ## 25. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. Authentication explained | `PASS` |
-| 2. Authorization explained | `PASS` |
-| 3. Session/cookie boundary explained | `PASS` |
-| 4. Organization/Membership explained | `PASS` |
-| 5. Role/resource ownership explained | `PASS` |
+| Criterion                                          | Result |
+| -------------------------------------------------- | ------ |
+| 1. Authentication explained                        | `PASS` |
+| 2. Authorization explained                         | `PASS` |
+| 3. Session/cookie boundary explained               | `PASS` |
+| 4. Organization/Membership explained               | `PASS` |
+| 5. Role/resource ownership explained               | `PASS` |
 | 6. Route Guard vs Business Authorization explained | `PASS` |
-| 7. multi-tenant isolation explained | `PASS` |
-| 8. deep-link/current-org boundary explained | `PASS` |
-| 9. representative repository mapping included | `PASS` |
-| 10. exercises + answers included | `PASS` |
+| 7. multi-tenant isolation explained                | `PASS` |
+| 8. deep-link/current-org boundary explained        | `PASS` |
+| 9. representative repository mapping included      | `PASS` |
+| 10. exercises + answers included                   | `PASS` |
 
 Authoring DoD: `10 / 10 PASS`。
 

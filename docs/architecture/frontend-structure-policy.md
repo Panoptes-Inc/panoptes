@@ -35,16 +35,16 @@ Architectureは配置・依存・分離を決める。Productの表示意味、U
 
 Primary Categoryは次の8種とする。file名や現行directoryではなく、primary responsibilityで判定する。
 
-| Type | Purpose | May own | Must not own | Allowed dependencies | Reuse / state |
-| --- | --- | --- | --- | --- | --- |
-| Route Entry | SvelteKit URL/data boundary | typed route data/params受渡し、Page Entry選択 | feature orchestration、raw fetch、business mapping | route types、Page Entry | URL単位 / route dataのみ |
-| Page Entry | routeとfeature compositionの接続 | route context注入、page-level composition、command invocation | raw transport、canonical business rule | Feature、Composite、UI、Primitive | route family / minimal page UI state |
-| Layout / Shell | persistent screen/family structure | shared Header/navigation、family spacing、global/family lifecycle | page固有content、use-case orchestration、空pass-through | Page Entry children、UI、Primitive、approved context | route family / persistent UI state |
-| Feature | 一つのuse caseまたは変更理由 | feature composition、view-model mapping、controller/command invocation、feature UI state | direct Rails/BFF transport、他feature内部state、canonical business rule | feature-local controller/command/mapping、Composite、UI、Primitive | feature内 / use-case UI state |
-| Composite | cohesive child群のpresentation composition | section order、props adaptation、callback forwarding、local selection | transport、command実行、business rule、unrelated feature orchestration | same-feature Composite、UI、Primitive | feature/domain内 / local selectionのみ |
-| UI / Presentation | props中心の表示と操作 | display formatting、native interaction、accessibility、presentation state | API、store、business mutation、canonical threshold/formula | Primitive、presentation-only types/helpers | semantic contract一致範囲 / component-local UI |
-| Primitive | 最小のsemantics-neutral UI contract | native element wrapper、accessibility、Token適用、ephemeral interaction | domain copy/model、Feature/Composite依存、business state | platform/native API、Token | cross-feature候補 / ephemeral stateのみ |
-| Preview | deterministicなpreview composition | preview contract、Fixture、固定initial state | runtime store/controller、BFF fallback、production mutation | Feature/Composite/UI/Primitiveのpure surface、Fixture | preview用途 / preview-local state |
+| Type              | Purpose                                    | May own                                                                                  | Must not own                                                            | Allowed dependencies                                               | Reuse / state                                  |
+| ----------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------- |
+| Route Entry       | SvelteKit URL/data boundary                | typed route data/params受渡し、Page Entry選択                                            | feature orchestration、raw fetch、business mapping                      | route types、Page Entry                                            | URL単位 / route dataのみ                       |
+| Page Entry        | routeとfeature compositionの接続           | route context注入、page-level composition、command invocation                            | raw transport、canonical business rule                                  | Feature、Composite、UI、Primitive                                  | route family / minimal page UI state           |
+| Layout / Shell    | persistent screen/family structure         | shared Header/navigation、family spacing、global/family lifecycle                        | page固有content、use-case orchestration、空pass-through                 | Page Entry children、UI、Primitive、approved context               | route family / persistent UI state             |
+| Feature           | 一つのuse caseまたは変更理由               | feature composition、view-model mapping、controller/command invocation、feature UI state | direct Rails/BFF transport、他feature内部state、canonical business rule | feature-local controller/command/mapping、Composite、UI、Primitive | feature内 / use-case UI state                  |
+| Composite         | cohesive child群のpresentation composition | section order、props adaptation、callback forwarding、local selection                    | transport、command実行、business rule、unrelated feature orchestration  | same-feature Composite、UI、Primitive                              | feature/domain内 / local selectionのみ         |
+| UI / Presentation | props中心の表示と操作                      | display formatting、native interaction、accessibility、presentation state                | API、store、business mutation、canonical threshold/formula              | Primitive、presentation-only types/helpers                         | semantic contract一致範囲 / component-local UI |
+| Primitive         | 最小のsemantics-neutral UI contract        | native element wrapper、accessibility、Token適用、ephemeral interaction                  | domain copy/model、Feature/Composite依存、business state                | platform/native API、Token                                         | cross-feature候補 / ephemeral stateのみ        |
+| Preview           | deterministicなpreview composition         | preview contract、Fixture、固定initial state                                             | runtime store/controller、BFF fallback、production mutation             | Feature/Composite/UI/Primitiveのpure surface、Fixture              | preview用途 / preview-local state              |
 
 `Domain-specific reusable`はPrimary CategoryではなくReuse Scope Qualifierとする。Feature、Composite、UIへ付与できるが、依存方向やbusiness logic許可を緩和しない。`Route-level`は曖昧なためcanonical labelに使わず、framework boundaryを`Route Entry`、route compositionを`Page Entry`と呼ぶ。
 
@@ -85,15 +85,15 @@ HeaderはGlobal Singletonではない。MarketingはPage-owned composition、App
 
 ### Canonical Feature / UI / Layout boundary
 
-| Concern | Feature | UI / Presentation | Layout / Shell |
-| --- | --- | --- | --- |
-| Composition | use-case child coordination | propsに基づくrender/local composition | persistent chrome、slot/children arrangement |
-| State | feature lifecycle、request/mutation state | presentation/transient state | route-family chrome/context state |
-| Controller | create/own/invoke | import/ownしない | feature controllerをown/invokeしない |
-| Command | typed use-caseとしてinvoke | typed callbackでintentをemit | feature commandをexecuteしない |
-| Mapping | server/domainからview model | display formattingのみ | route/context shapingのみ |
-| Loading/error | request lifecycleとretry intent | supplied stateを表示しcallback emit | global navigation/session shellだけ |
-| Business logic | Rails resultをorchestrate | 所有しない | 所有しない |
+| Concern        | Feature                                   | UI / Presentation                     | Layout / Shell                               |
+| -------------- | ----------------------------------------- | ------------------------------------- | -------------------------------------------- |
+| Composition    | use-case child coordination               | propsに基づくrender/local composition | persistent chrome、slot/children arrangement |
+| State          | feature lifecycle、request/mutation state | presentation/transient state          | route-family chrome/context state            |
+| Controller     | create/own/invoke                         | import/ownしない                      | feature controllerをown/invokeしない         |
+| Command        | typed use-caseとしてinvoke                | typed callbackでintentをemit          | feature commandをexecuteしない               |
+| Mapping        | server/domainからview model               | display formattingのみ                | route/context shapingのみ                    |
+| Loading/error  | request lifecycleとretry intent           | supplied stateを表示しcallback emit   | global navigation/session shellだけ          |
+| Business logic | Rails resultをorchestrate                 | 所有しない                            | 所有しない                                   |
 
 ## 5. Feature Policy
 
@@ -205,12 +205,12 @@ Controllerはasync orchestration、mount/destroy、polling、retry、abort、rec
 
 ## 11. State Ownership and Store Policy
 
-| State class | Canonical owner | Frontend holder / mutation path | Example |
-| --- | --- | --- | --- |
-| Server / canonical state | Rails | Client resultをFeature controller/store/cacheが保持。mutationはCommand → Client → BFF → Rails | project、job、snapshot、role、workflow、canonical score |
-| Feature state | Feature controller/store、単一ownerならFeature component | Feature action/controllerだけがmutation | polling、bootstrap、request status、selected project workflow |
-| Presentation state | UI/Compositeまたはpure view-model mapping | props/derived state。canonical stateを変更しない | label、tone、formatted percentage、selected projection |
-| Transient interaction state | interactionに最も近いUI/Composite/Page | local stateをdefault。複数child coordination時だけFeatureへlift | modal open、hover/focus、expanded、draft input |
+| State class                 | Canonical owner                                          | Frontend holder / mutation path                                                               | Example                                                       |
+| --------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Server / canonical state    | Rails                                                    | Client resultをFeature controller/store/cacheが保持。mutationはCommand → Client → BFF → Rails | project、job、snapshot、role、workflow、canonical score       |
+| Feature state               | Feature controller/store、単一ownerならFeature component | Feature action/controllerだけがmutation                                                       | polling、bootstrap、request status、selected project workflow |
+| Presentation state          | UI/Compositeまたはpure view-model mapping                | props/derived state。canonical stateを変更しない                                              | label、tone、formatted percentage、selected projection        |
+| Transient interaction state | interactionに最も近いUI/Composite/Page                   | local stateをdefault。複数child coordination時だけFeatureへlift                               | modal open、hover/focus、expanded、draft input                |
 
 Business decisionのSource of Truthは常にRailsであり、Frontend cache/storeはcanonical ownerではない。Storeは複数component/lifecycleから同じstateを購読・更新する必要がある場合だけ使う。単一componentのstateをglobal化せず、Organization scopeをstoreから推測しない。Store mutationはcommand/action/controllerを経由し、presentation componentから直接行わない。
 
@@ -394,13 +394,13 @@ Migrationは`tokens.css実装 -> Tailwind adapter/reset owner接続 -> new code 
 
 Mobile-firstをdefaultとし、Breakpointをdevice名ではなくlayout adaptation thresholdとして扱う。
 
-| Name | Value | Semantic use |
-| --- | ---: | --- |
-| `sm` | `640px` | compact spacing/control/grid enhancement |
-| `md` | `768px` | medium composition、form/modal、1→2 columns |
-| `lg` | `1024px` | navigation、sidebar、major region split |
-| `xl` | `1280px` | wide grid、dense analysis、desktop spacing |
-| `2xl` | `1536px` | wide analytics density only |
+| Name  |    Value | Semantic use                                |
+| ----- | -------: | ------------------------------------------- |
+| `sm`  |  `640px` | compact spacing/control/grid enhancement    |
+| `md`  |  `768px` | medium composition、form/modal、1→2 columns |
+| `lg`  | `1024px` | navigation、sidebar、major region split     |
+| `xl`  | `1280px` | wide grid、dense analysis、desktop spacing  |
+| `2xl` | `1536px` | wide analytics density only                 |
 
 Baseは`0〜639px`を扱う。`xs`は追加せず、`2xl`は通常Pageを無制限に拡張する用途にしない。既存`560 / 720 / 900 / 980 / 1180 / 1280 / 1600px`はmigration evidenceであり、closest breakpointへ機械変換しない。
 
@@ -520,24 +520,24 @@ DEFERにはowner、具体的blocker、再開条件を記録する。`StrategyAna
 
 ## 21. Decision Matrix
 
-| Concern            | Current                                                 | Target                             | Migration                  | Timing            |
-| ------------------ | ------------------------------------------------------- | ---------------------------------- | -------------------------- | ----------------- |
-| `ComponentsBase`   | mixed legacy bucket                                     | feature/shared ownership           | gradual deprecation        | touch-and-migrate |
-| `features`         | partially adopted                                       | feature composition/state/mapping  | new code first             | P0/P1             |
-| Route Entry        | thin canonical entries                                  | framework boundary                 | keep                       | now               |
-| Layout             | root/App valid、pass-through解消                        | persistent responsibility only     | review on addition         | P0                |
-| Preview            | production-reachable legacy names                       | deterministic Preview/Fixture      | contract then rename       | dedicated Phase   |
-| Wrapper            | production component wrapper 0                          | exceptional only                   | prevent/review             | P0                |
-| Mapping/View Model | mixed feature/component data folders                    | feature-local pure mapping         | touch-and-migrate          | P1                |
-| Controller         | Shell/Auth/Survey等で導入                               | side-effect orchestration boundary | add when criteria met      | P0/P1             |
-| Command            | Organization明示境界あり                                | typed org-scoped use case          | backend availabilityに追従 | P1                |
-| Client             | canonical identity client + unavailable business client | `/api/panoptes/v1` typed clients   | Rails contract後           | backend dependent |
-| Store              | runtime stores + legacy global store                    | feature-scoped/minimum global      | no new global default      | P0/P1             |
-| Naming/casing      | multiple legacy names                                   | responsibility/feature naming      | no alias by default        | P1/P2             |
-| Design Token       | component-local hardcoded values                        | `src/lib/ui/tokens.css` semantic contract | new/touchedから段階適用 | FS-05後の実装Phase |
-| Tailwind           | dependency/config未導入                                 | Token consumer / utility layer     | Token実装後に段階接続   | FS-06後の実装Phase |
-| Responsive         | component-local breakpoints/fixed dense UI              | Responsive Contract v1             | owner単位・visual parity | FS-07後の実装Phase |
-| UI Regulation      | patternごとに部分適用                                   | UI Regulation v1                   | new/touched + tracked remediation | FS-08後の実装Phase |
+| Concern            | Current                                                 | Target                                    | Migration                         | Timing             |
+| ------------------ | ------------------------------------------------------- | ----------------------------------------- | --------------------------------- | ------------------ |
+| `ComponentsBase`   | mixed legacy bucket                                     | feature/shared ownership                  | gradual deprecation               | touch-and-migrate  |
+| `features`         | partially adopted                                       | feature composition/state/mapping         | new code first                    | P0/P1              |
+| Route Entry        | thin canonical entries                                  | framework boundary                        | keep                              | now                |
+| Layout             | root/App valid、pass-through解消                        | persistent responsibility only            | review on addition                | P0                 |
+| Preview            | production-reachable legacy names                       | deterministic Preview/Fixture             | contract then rename              | dedicated Phase    |
+| Wrapper            | production component wrapper 0                          | exceptional only                          | prevent/review                    | P0                 |
+| Mapping/View Model | mixed feature/component data folders                    | feature-local pure mapping                | touch-and-migrate                 | P1                 |
+| Controller         | Shell/Auth/Survey等で導入                               | side-effect orchestration boundary        | add when criteria met             | P0/P1              |
+| Command            | Organization明示境界あり                                | typed org-scoped use case                 | backend availabilityに追従        | P1                 |
+| Client             | canonical identity client + unavailable business client | `/api/panoptes/v1` typed clients          | Rails contract後                  | backend dependent  |
+| Store              | runtime stores + legacy global store                    | feature-scoped/minimum global             | no new global default             | P0/P1              |
+| Naming/casing      | multiple legacy names                                   | responsibility/feature naming             | no alias by default               | P1/P2              |
+| Design Token       | component-local hardcoded values                        | `src/lib/ui/tokens.css` semantic contract | new/touchedから段階適用           | FS-05後の実装Phase |
+| Tailwind           | dependency/config未導入                                 | Token consumer / utility layer            | Token実装後に段階接続             | FS-06後の実装Phase |
+| Responsive         | component-local breakpoints/fixed dense UI              | Responsive Contract v1                    | owner単位・visual parity          | FS-07後の実装Phase |
+| UI Regulation      | patternごとに部分適用                                   | UI Regulation v1                          | new/touched + tracked remediation | FS-08後の実装Phase |
 
 ## 22. Migration Strategy
 

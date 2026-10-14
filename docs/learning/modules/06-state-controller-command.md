@@ -41,14 +41,14 @@ Displayed by Frontend != Canonically owned by Frontend
 
 ### 一般的な分類
 
-| Kind | Meaning | Typical persistence |
-| --- | --- | --- |
-| Persistent state | process/reloadを越えて保持するbusiness data | Database/backend |
-| Server state | serverから取得し、serverがauthorityを持つdata | Backend。Frontendはcache/projectionを保持 |
-| Feature state | 一つのuse caseのrequest/lifecycle/coordination state | Frontend lifecycle中。必要ならserver stateへ接続 |
-| Presentation state | 表示方法、選択、formattingに関するstate | Component/Composite lifecycle |
-| Transient state | 一時的interactionに最も近いstate | Local componentをdefault |
-| Derived state | 他stateから再計算できる値 | 原則として別canonical valueにしない |
+| Kind               | Meaning                                              | Typical persistence                              |
+| ------------------ | ---------------------------------------------------- | ------------------------------------------------ |
+| Persistent state   | process/reloadを越えて保持するbusiness data          | Database/backend                                 |
+| Server state       | serverから取得し、serverがauthorityを持つdata        | Backend。Frontendはcache/projectionを保持        |
+| Feature state      | 一つのuse caseのrequest/lifecycle/coordination state | Frontend lifecycle中。必要ならserver stateへ接続 |
+| Presentation state | 表示方法、選択、formattingに関するstate              | Component/Composite lifecycle                    |
+| Transient state    | 一時的interactionに最も近いstate                     | Local componentをdefault                         |
+| Derived state      | 他stateから再計算できる値                            | 原則として別canonical valueにしない              |
 
 Persistent stateとServer stateは重なることが多いが同義ではない。Server responseには一時的なrequest metadataも含まれうる。分類の目的は用語を増やすことではなく、誰が変更でき、どこまで信頼でき、いつ消えるかを明確にすることにある。
 
@@ -56,25 +56,25 @@ Persistent stateとServer stateは重なることが多いが同義ではない�
 
 M04で確定したFrontend ownership modelは4層である。Derived stateはこの4層の既存値から生成されるprojectionとして扱う。
 
-| State class | Canonical owner | Frontend holder / mutation path | Examples |
-| --- | --- | --- | --- |
-| Canonical / Server State | Rails + persistent backend | Client resultをFeature/controller/storeがprojectionとして保持。MutationはCommand→Client→BFF→Rails | Project、AnalysisJob、Snapshot、Role、workflow、canonical score、Organization membership |
-| Feature State | Feature controller/store、単一ownerならFeature component | Feature action/controllerがmutation | bootstrap、polling、request status、selected project workflow、command progress |
-| Presentation State | UI/Compositeまたはpure view model | props/derived/local state。canonical stateを変更しない | display label、tone、render mode、selected visual |
-| Transient State | interactionに最も近いUI/Composite/Page | localをdefault。複数child coordination時だけFeatureへlift | modal open、hover/focus、expanded、draft input |
+| State class              | Canonical owner                                          | Frontend holder / mutation path                                                                   | Examples                                                                                 |
+| ------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Canonical / Server State | Rails + persistent backend                               | Client resultをFeature/controller/storeがprojectionとして保持。MutationはCommand→Client→BFF→Rails | Project、AnalysisJob、Snapshot、Role、workflow、canonical score、Organization membership |
+| Feature State            | Feature controller/store、単一ownerならFeature component | Feature action/controllerがmutation                                                               | bootstrap、polling、request status、selected project workflow、command progress          |
+| Presentation State       | UI/Compositeまたはpure view model                        | props/derived/local state。canonical stateを変更しない                                            | display label、tone、render mode、selected visual                                        |
+| Transient State          | interactionに最も近いUI/Composite/Page                   | localをdefault。複数child coordination時だけFeatureへlift                                         | modal open、hover/focus、expanded、draft input                                           |
 
 ### Concrete examples
 
-| Value | Owner | Frontend meaning |
-| --- | --- | --- |
-| AnalysisJobの正式status | Rails | Store/runtime modelはresponse projectionでありauthorityではない |
-| Snapshot metadata/content | Rails/DB | Featureがrender用に保持し、UIへpropsで渡す |
-| `runtimeStatus`, polling state | Feature runtime | Server statusをadapter/controller/actionがFrontend lifecycleへ写像した値 |
-| selected tab | nearest presentation owner。現ShellではFeature-level local | 表示surfaceの選択でありbusiness truthではない |
-| modal/create sheet open | nearest coordinating Feature/UI | transient interaction |
-| current Organization membership | Rails | SvelteKit/BFF/Featureはverified resultを利用するだけ |
-| Signup form draft | Signup Feature/field UI | submit前のlocal Feature state |
-| `mainSurfaceRenderMode` | derived presentation | Project/runtime stateから再計算する表示projection |
+| Value                           | Owner                                                      | Frontend meaning                                                         |
+| ------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------ |
+| AnalysisJobの正式status         | Rails                                                      | Store/runtime modelはresponse projectionでありauthorityではない          |
+| Snapshot metadata/content       | Rails/DB                                                   | Featureがrender用に保持し、UIへpropsで渡す                               |
+| `runtimeStatus`, polling state  | Feature runtime                                            | Server statusをadapter/controller/actionがFrontend lifecycleへ写像した値 |
+| selected tab                    | nearest presentation owner。現ShellではFeature-level local | 表示surfaceの選択でありbusiness truthではない                            |
+| modal/create sheet open         | nearest coordinating Feature/UI                            | transient interaction                                                    |
+| current Organization membership | Rails                                                      | SvelteKit/BFF/Featureはverified resultを利用するだけ                     |
+| Signup form draft               | Signup Feature/field UI                                    | submit前のlocal Feature state                                            |
+| `mainSurfaceRenderMode`         | derived presentation                                       | Project/runtime stateから再計算する表示projection                        |
 
 ## 4. Derived State
 
@@ -157,11 +157,11 @@ Signupでは`createSignUpController`がform state、validation、submit/resend�
 
 ## 7. Store, Controller, and View Model
 
-| Concept | Primary question | Owns | Does not automatically own |
-| --- | --- | --- | --- |
-| Store | 何をreactively保持するか | state container、subscription | lifecycle、use-case、business rule |
-| Controller | いつ何を実行し、どうcoordinationするか | lifecycle、behavior、commands、state transition | persistence truth、visual styling |
-| View Model / Selector | UIへ何をどの形で見せるか | pure mapping、derived presentation | side effect、transport、canonical mutation |
+| Concept               | Primary question                       | Owns                                            | Does not automatically own                 |
+| --------------------- | -------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
+| Store                 | 何をreactively保持するか               | state container、subscription                   | lifecycle、use-case、business rule         |
+| Controller            | いつ何を実行し、どうcoordinationするか | lifecycle、behavior、commands、state transition | persistence truth、visual styling          |
+| View Model / Selector | UIへ何をどの形で見せるか               | pure mapping、derived presentation              | side effect、transport、canonical mutation |
 
 `analysisRuntimeStore`はruntime valuesを保持するが、自分でpolling開始条件やretry behaviorを決めない。`PanoptesShellController`とactions/polling controllerがbehaviorをcoordinationする。`presentation.ts`のselectorsはstoresからrender modeやlabelをderiveするが、serverをmutationしない。
 
@@ -208,12 +208,12 @@ Rails   = whether/how the business transition is accepted
 
 ClientはHTTP transport contractを所有する。
 
-| Command / Action | Client |
-| --- | --- |
-| `createAndStartAnalysis`を実行したい | canonical BFF endpointへtyped requestを送る |
+| Command / Action                                   | Client                                              |
+| -------------------------------------------------- | --------------------------------------------------- |
+| `createAndStartAnalysis`を実行したい               | canonical BFF endpointへtyped requestを送る         |
 | Feature stateをloadingへ進め、resultをcoordination | method/path/header/timeout/response assertionを扱う |
-| safe errorをFeature lifecycleへ返す | raw transport/provider errorをsafe errorへmapping |
-| operationの成功後に次のFeature actionへ接続 | UIやFeature stateを知らない |
+| safe errorをFeature lifecycleへ返す                | raw transport/provider errorをsafe errorへmapping   |
+| operationの成功後に次のFeature actionへ接続        | UIやFeature stateを知らない                         |
 
 現行`canonical-bff-client.ts`はsame-origin base `/api/panoptes/v1`、typed response assertion、timeout/AbortSignal、safe error boundaryを持つ。Command/Actionは「分析開始」「推論確定」等を表し、ClientのURLやHTTP detailsをUIへ漏らさない。
 
@@ -279,12 +279,12 @@ Organization boundaryも同じである。Frontendが選択したIDはintent/inp
 
 ### Technical request stateとBusiness lifecycleを分ける
 
-| Kind | Examples | Owner / meaning |
-| --- | --- | --- |
-| Request state | `idle`, `loading/submitting`, `success`, `failed` | Feature Controller/Actionの一回のrequest lifecycle |
-| Polling state | `polling`, `backoff`, `stopped` | Frontend technical execution |
-| Business lifecycle | `queued`, `running`, `awaiting_confirmation`, `completed`, `partially_completed`, `failed` | Railsが確定するAnalysisJob state |
-| UI representation | spinner、warning、failed panel、partial notice | UI Regulationに従うpresentation |
+| Kind               | Examples                                                                                   | Owner / meaning                                    |
+| ------------------ | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| Request state      | `idle`, `loading/submitting`, `success`, `failed`                                          | Feature Controller/Actionの一回のrequest lifecycle |
+| Polling state      | `polling`, `backoff`, `stopped`                                                            | Frontend technical execution                       |
+| Business lifecycle | `queued`, `running`, `awaiting_confirmation`, `completed`, `partially_completed`, `failed` | Railsが確定するAnalysisJob state                   |
+| UI representation  | spinner、warning、failed panel、partial notice                                             | UI Regulationに従うpresentation                    |
 
 `loading`は「request中」を表すが、「AnalysisJobがbusiness上running」とは限らない。HTTP requestが完了してJobがqueuedになれば、request loadingは終了してもbusiness processingは継続する。
 
@@ -306,10 +306,10 @@ business reanalysis   = 新しいAnalysis operation/Jobを開始する
 
 ## 13. CURRENT / TARGET / DEFERRED
 
-| Status | Meaning in this Module |
-| --- | --- |
-| `CURRENT` | Repositoryで実装を確認できるstate/store/controller/action/client/callback flow |
-| `TARGET` | Structure Policyで承認済みのownershipとdependency direction |
+| Status     | Meaning in this Module                                                                       |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| `CURRENT`  | Repositoryで実装を確認できるstate/store/controller/action/client/callback flow               |
+| `TARGET`   | Structure Policyで承認済みのownershipとdependency direction                                  |
 | `DEFERRED` | 個別Featureへの全面適用、Action/Command分離、未実装backend/operation、migration/verification |
 
 ### Current
@@ -340,19 +340,19 @@ business reanalysis   = 新しいAnalysis operation/Jobを開始する
 
 以下は限定確認した11例であり、Repo-wide state/controller auditではない。
 
-| Source | State owner | Controller responsibility | Command/operation responsibility | Canonical source | Status |
-| --- | --- | --- | --- | --- | --- |
-| `ComponentsBase/Panoptes/PanoptesShellPage.svelte` | Feature-level local + subscribed store projection | Controller mount、callbacks接続、derived view data | Controller methodへintentを渡す | Project/Job/SnapshotはRails | `CURRENT`, component placement migration deferred |
-| `features/panoptes-shell/controller/panoptes-shell-controller.ts` | bootstrap statusをclosure内保持 | mount/destroy、abort、reconnect、bootstrap、operation coordination | injected dependenciesをintent methodへ束ねる | Rails resultをdependency経由で受ける | `CURRENT = TARGET responsibility` |
-| `features/panoptes-shell/controller/panoptes-shell-controller-adapter.ts` | Store stateを読むがauthorityではない | concrete actions/stores/client boundaryをinject | Analysis/Project/Strategy actionsへ接続 | Rails/BFF | `CURRENT = TARGET placement` |
-| `panoptes/actions/analysis.ts` | runtime/project/session storeをFeature projectionとして更新 | polling、result reconciliationも現状同居 | `createAndStartAnalysis`, `confirmInference`, `reanalyzeCurrentProject` | Rails AnalysisJob/Project/Snapshot | `CURRENT action/command-equivalent`; finer split deferred |
-| `panoptes/api/canonical-bff-client.ts` | stateを所有しない | controllerではない | typed HTTP、timeout/abort、response assertion、安全なerror | BFF/Rails response | `CURRENT client boundary` |
-| `panoptes/stores/runtime.ts` | Frontend runtime projection | behaviorを所有しない | operationなし | Rails statusをadapter/actionがprojection化 | `CURRENT store container` |
-| `panoptes/stores/projects.ts` | Project list/detailのFrontend projection | behaviorを所有しない | operationなし | Rails Project/Snapshot | `CURRENT store container` |
-| `panoptes/selectors/presentation.ts` | stateをcanonical保存しない | controllerではない | operationなし | input storesのmeaningに従う | `CURRENT derived view model` |
-| `Panoptes/analysis/PanoptesAnalysisSurface.svelte` | supplied props + presentation branch | controllerを持たない | `onConfirm/onRetry`等のintent callbackのみ | supplied Feature/Rails projection | `CURRENT callback-only UI` |
-| `features/auth/signup/state/signup-controller.svelte.ts` | Signup form/request stateをcoordination | validate、submit/resend、navigation、cleanup | Auth/Waitlist service operationsへ接続 | Supabase/BFF result。Authorization truthはserver | `CURRENT Feature controller` |
-| `features/auth/signup/state/signup-form-state.svelte.ts` | `$state`でform/transient/request stateを保持 | cooldown helper以外のuse-case transportを持たない | operationなし | DraftはFrontend、account outcomeはserver | `CURRENT state holder` |
+| Source                                                                    | State owner                                                 | Controller responsibility                                          | Command/operation responsibility                                        | Canonical source                                 | Status                                                    |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| `ComponentsBase/Panoptes/PanoptesShellPage.svelte`                        | Feature-level local + subscribed store projection           | Controller mount、callbacks接続、derived view data                 | Controller methodへintentを渡す                                         | Project/Job/SnapshotはRails                      | `CURRENT`, component placement migration deferred         |
+| `features/panoptes-shell/controller/panoptes-shell-controller.ts`         | bootstrap statusをclosure内保持                             | mount/destroy、abort、reconnect、bootstrap、operation coordination | injected dependenciesをintent methodへ束ねる                            | Rails resultをdependency経由で受ける             | `CURRENT = TARGET responsibility`                         |
+| `features/panoptes-shell/controller/panoptes-shell-controller-adapter.ts` | Store stateを読むがauthorityではない                        | concrete actions/stores/client boundaryをinject                    | Analysis/Project/Strategy actionsへ接続                                 | Rails/BFF                                        | `CURRENT = TARGET placement`                              |
+| `panoptes/actions/analysis.ts`                                            | runtime/project/session storeをFeature projectionとして更新 | polling、result reconciliationも現状同居                           | `createAndStartAnalysis`, `confirmInference`, `reanalyzeCurrentProject` | Rails AnalysisJob/Project/Snapshot               | `CURRENT action/command-equivalent`; finer split deferred |
+| `panoptes/api/canonical-bff-client.ts`                                    | stateを所有しない                                           | controllerではない                                                 | typed HTTP、timeout/abort、response assertion、安全なerror              | BFF/Rails response                               | `CURRENT client boundary`                                 |
+| `panoptes/stores/runtime.ts`                                              | Frontend runtime projection                                 | behaviorを所有しない                                               | operationなし                                                           | Rails statusをadapter/actionがprojection化       | `CURRENT store container`                                 |
+| `panoptes/stores/projects.ts`                                             | Project list/detailのFrontend projection                    | behaviorを所有しない                                               | operationなし                                                           | Rails Project/Snapshot                           | `CURRENT store container`                                 |
+| `panoptes/selectors/presentation.ts`                                      | stateをcanonical保存しない                                  | controllerではない                                                 | operationなし                                                           | input storesのmeaningに従う                      | `CURRENT derived view model`                              |
+| `Panoptes/analysis/PanoptesAnalysisSurface.svelte`                        | supplied props + presentation branch                        | controllerを持たない                                               | `onConfirm/onRetry`等のintent callbackのみ                              | supplied Feature/Rails projection                | `CURRENT callback-only UI`                                |
+| `features/auth/signup/state/signup-controller.svelte.ts`                  | Signup form/request stateをcoordination                     | validate、submit/resend、navigation、cleanup                       | Auth/Waitlist service operationsへ接続                                  | Supabase/BFF result。Authorization truthはserver | `CURRENT Feature controller`                              |
+| `features/auth/signup/state/signup-form-state.svelte.ts`                  | `$state`でform/transient/request stateを保持                | cooldown helper以外のuse-case transportを持たない                  | operationなし                                                           | DraftはFrontend、account outcomeはserver         | `CURRENT state holder`                                    |
 
 ## 15. Decision heuristic — このロジックはどこか
 
@@ -579,18 +579,18 @@ Frontend URL format validationやduplicate click抑止は可能だが、Analysis
 
 ## 19. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. State fundamentals explained | `PASS` |
-| 2. Panoptes state classes explained | `PASS` |
-| 3. ownership rule explained | `PASS` |
-| 4. derived state explained | `PASS` |
-| 5. Controller responsibility explained | `PASS` |
-| 6. Command responsibility explained | `PASS` |
+| Criterion                               | Result |
+| --------------------------------------- | ------ |
+| 1. State fundamentals explained         | `PASS` |
+| 2. Panoptes state classes explained     | `PASS` |
+| 3. ownership rule explained             | `PASS` |
+| 4. derived state explained              | `PASS` |
+| 5. Controller responsibility explained  | `PASS` |
+| 6. Command responsibility explained     | `PASS` |
 | 7. UI→Controller→Command flow explained | `PASS` |
-| 8. Server canonical boundary explained | `PASS` |
-| 9. Representative mapping included | `PASS` |
-| 10. Exercises + answers included | `PASS` |
+| 8. Server canonical boundary explained  | `PASS` |
+| 9. Representative mapping included      | `PASS` |
+| 10. Exercises + answers included        | `PASS` |
 
 M06 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M07`

@@ -110,17 +110,17 @@ UI componentがRails URL、raw response、Organization authorization、business 
 
 この分類はM01で最も重要である。
 
-| Area | `CURRENT` — Repositoryで確認済み | `TARGET` — 承認済みArchitecture | `DEFERRED` — 未実装または後続判断 |
-| --- | --- | --- | --- |
-| Frontend shell | `/app`と`/app/analysis`が`PanoptesShellEntryPage`へ接続。Feature controller、store、AnalysisJob adapter、polling構造が存在 | Route→Page→Feature→Clientのcanonical dependency | target directory migration、legacy `ComponentsBase`縮退 |
-| Auth / Organization | SvelteKit server context、canonical BFF client、read-only BFF endpoints、Rails JWT/membership readが存在 | BFFとRailsの二重検証、explicit Organization scope | business resource単位の実API拡張、staging/production validation |
-| BFF | health、current user、organizations、organization、membershipの5 read surfaceが存在 | `/api/panoptes/v1`からOrganization-scoped business APIを安全にproxy | Project、AnalysisJob、Snapshot等のbusiness endpoints |
-| Rails | API-only Railsとidentity/Organization read APIを実装 | Business rule、authorization、Job transition、Snapshot commitのowner | Project、AnalysisJob、Queue、Worker callback、Score、Strategy、Billing |
-| PostgreSQL | User、Organization、Membership、SystemRole schemaを実装 | canonical business data、transaction、constraint、idempotency/outbox/audit | Project、Job、Snapshot、Evidence metadata等のphysical schema |
-| Analysis UI | typed action/store、polling、adapter、development mock lifecycleが存在 | canonical AnalysisJob responseをadapter経由でUIへ投影 | production business client接続。canonical modeは現在503でfail closed |
-| Queue / Worker | production implementationは確認できない | Queueがdelivery、Workerがcrawl/Chromium/analysis/LLM/artifact処理 | provider、runtime、retry、callback、storageの実装と運用判断 |
-| Snapshot / Evidence | dummy/mock Snapshotとpresentation surfaceが存在 | Worker outputをRailsが検証し、immutable Snapshot/Evidence lineageをcommit | canonical production persistence、schema/version/wire、artifact storage |
-| External LLM | production executionは確認できない | Worker内のbounded technical processing。結果はRails validation後に正式化 | provider選定、prompt/output contract、privacy、cost、retry、audit |
+| Area                | `CURRENT` — Repositoryで確認済み                                                                                           | `TARGET` — 承認済みArchitecture                                            | `DEFERRED` — 未実装または後続判断                                       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Frontend shell      | `/app`と`/app/analysis`が`PanoptesShellEntryPage`へ接続。Feature controller、store、AnalysisJob adapter、polling構造が存在 | Route→Page→Feature→Clientのcanonical dependency                            | target directory migration、legacy `ComponentsBase`縮退                 |
+| Auth / Organization | SvelteKit server context、canonical BFF client、read-only BFF endpoints、Rails JWT/membership readが存在                   | BFFとRailsの二重検証、explicit Organization scope                          | business resource単位の実API拡張、staging/production validation         |
+| BFF                 | health、current user、organizations、organization、membershipの5 read surfaceが存在                                        | `/api/panoptes/v1`からOrganization-scoped business APIを安全にproxy        | Project、AnalysisJob、Snapshot等のbusiness endpoints                    |
+| Rails               | API-only Railsとidentity/Organization read APIを実装                                                                       | Business rule、authorization、Job transition、Snapshot commitのowner       | Project、AnalysisJob、Queue、Worker callback、Score、Strategy、Billing  |
+| PostgreSQL          | User、Organization、Membership、SystemRole schemaを実装                                                                    | canonical business data、transaction、constraint、idempotency/outbox/audit | Project、Job、Snapshot、Evidence metadata等のphysical schema            |
+| Analysis UI         | typed action/store、polling、adapter、development mock lifecycleが存在                                                     | canonical AnalysisJob responseをadapter経由でUIへ投影                      | production business client接続。canonical modeは現在503でfail closed    |
+| Queue / Worker      | production implementationは確認できない                                                                                    | Queueがdelivery、Workerがcrawl/Chromium/analysis/LLM/artifact処理          | provider、runtime、retry、callback、storageの実装と運用判断             |
+| Snapshot / Evidence | dummy/mock Snapshotとpresentation surfaceが存在                                                                            | Worker outputをRailsが検証し、immutable Snapshot/Evidence lineageをcommit  | canonical production persistence、schema/version/wire、artifact storage |
+| External LLM        | production executionは確認できない                                                                                         | Worker内のbounded technical processing。結果はRails validation後に正式化   | provider選定、prompt/output contract、privacy、cost、retry、audit       |
 
 `documented`は`implemented`と同義ではない。たとえばAnalysisJob state machineとAPI boundaryはTarget contractを説明するが、Rails R-1はidentity/Organization read onlyである。
 
@@ -128,41 +128,41 @@ UI componentがRails URL、raw response、Organization authorization、business 
 
 Repo-wideに読む必要はない。M01では次の入口だけを地図として使う。
 
-| Path | Layer / role | M01で見る点 |
-| --- | --- | --- |
-| `src/routes/app/+page.svelte` | Route/Page Entry | verified `activeOrganizationId`をShellへ渡す薄いentry |
-| `src/routes/app/analysis/+page.svelte` | Route/Page Entry | 現時点では同じShell entryへ接続するroute |
-| `src/lib/components/ComponentsBase/PanoptesShellEntryPage.svelte` | compatibility Page Entry | fallback SnapshotとOrganization IDをShellへ渡す |
-| `src/lib/components/ComponentsBase/Panoptes/PanoptesShellPage.svelte` | Feature Orchestrator | Shell lifecycleとfeature compositionの現行owner |
-| `src/lib/features/panoptes-shell/` | Feature boundary | controller、view-model、presentation surfaceの分離 |
-| `src/lib/panoptes/actions/analysis.ts` | Feature command/action | URL validation、idempotency key、API invocation、polling/store coordination |
-| `src/lib/panoptes/api/client.ts` | runtime client selection | dev opt-inだけmock。それ以外はunavailable canonical client |
-| `src/lib/panoptes/api/unavailable-canonical-business-client.ts` | explicit unavailable boundary | 未実装Rails business APIをlegacy pathへfallbackせず503にする |
-| `src/lib/panoptes/api/canonical-bff-client.ts` | CURRENT canonical read client | same-origin BFF、response validation、timeout/error mapping |
-| `src/routes/api/panoptes/v1/` | SvelteKit BFF | CURRENTの5 read-only proxy surface |
-| `rails/config/routes.rb` | Rails API entry | CURRENTの5 read-only Rails operations |
-| `rails/app/controllers/concerns/authentication.rb` | Rails authentication | Bearer JWTをRailsで独立検証する入口 |
-| `rails/app/controllers/concerns/organization_authorization.rb` | Rails authorization | DB membership/roleでOrganization scopeを再検証 |
-| `rails/db/migrate/20260807000000_create_identity_and_organization_boundary.rb` | PostgreSQL schema | CURRENT identity/Organization persistent boundary |
-| `docs/architecture/api-boundary.md` | Target contract | BFF、Rails、DB、Queue、Workerの責務とtrust boundary |
-| `docs/api/analysis-job-state-machine.md` | Target Job contract | canonical transitionとSnapshot commit owner |
-| `docs/architecture/analysis-job-frontend-boundary.md` | Frontend mapping | canonical response、mock、runtime modelを分離 |
+| Path                                                                           | Layer / role                  | M01で見る点                                                                 |
+| ------------------------------------------------------------------------------ | ----------------------------- | --------------------------------------------------------------------------- |
+| `src/routes/app/+page.svelte`                                                  | Route/Page Entry              | verified `activeOrganizationId`をShellへ渡す薄いentry                       |
+| `src/routes/app/analysis/+page.svelte`                                         | Route/Page Entry              | 現時点では同じShell entryへ接続するroute                                    |
+| `src/lib/components/ComponentsBase/PanoptesShellEntryPage.svelte`              | compatibility Page Entry      | fallback SnapshotとOrganization IDをShellへ渡す                             |
+| `src/lib/components/ComponentsBase/Panoptes/PanoptesShellPage.svelte`          | Feature Orchestrator          | Shell lifecycleとfeature compositionの現行owner                             |
+| `src/lib/features/panoptes-shell/`                                             | Feature boundary              | controller、view-model、presentation surfaceの分離                          |
+| `src/lib/panoptes/actions/analysis.ts`                                         | Feature command/action        | URL validation、idempotency key、API invocation、polling/store coordination |
+| `src/lib/panoptes/api/client.ts`                                               | runtime client selection      | dev opt-inだけmock。それ以外はunavailable canonical client                  |
+| `src/lib/panoptes/api/unavailable-canonical-business-client.ts`                | explicit unavailable boundary | 未実装Rails business APIをlegacy pathへfallbackせず503にする                |
+| `src/lib/panoptes/api/canonical-bff-client.ts`                                 | CURRENT canonical read client | same-origin BFF、response validation、timeout/error mapping                 |
+| `src/routes/api/panoptes/v1/`                                                  | SvelteKit BFF                 | CURRENTの5 read-only proxy surface                                          |
+| `rails/config/routes.rb`                                                       | Rails API entry               | CURRENTの5 read-only Rails operations                                       |
+| `rails/app/controllers/concerns/authentication.rb`                             | Rails authentication          | Bearer JWTをRailsで独立検証する入口                                         |
+| `rails/app/controllers/concerns/organization_authorization.rb`                 | Rails authorization           | DB membership/roleでOrganization scopeを再検証                              |
+| `rails/db/migrate/20260807000000_create_identity_and_organization_boundary.rb` | PostgreSQL schema             | CURRENT identity/Organization persistent boundary                           |
+| `docs/architecture/api-boundary.md`                                            | Target contract               | BFF、Rails、DB、Queue、Workerの責務とtrust boundary                         |
+| `docs/api/analysis-job-state-machine.md`                                       | Target Job contract           | canonical transitionとSnapshot commit owner                                 |
+| `docs/architecture/analysis-job-frontend-boundary.md`                          | Frontend mapping              | canonical response、mock、runtime modelを分離                               |
 
 Fileの存在だけでProduct readinessを判断しない。どのpathがcanonicalで、どのmodeで実行され、backendまで接続しているかを合わせて確認する。
 
 ## 6. Responsibility Map
 
-| Layer | Owns | Does not own | Receives | Returns | Source of Truth? | Failure時の責務 |
-| --- | --- | --- | --- | --- | --- | --- |
-| Frontend Route/Page/Layout | URL entry、verified context伝播、page/shell composition | business rule、membership判定、Job transition | SvelteKit load data、Feature view model | rendered page、typed user intent | presentation/route stateのみ | safe stateを表示し、server authorityを捏造しない |
-| Feature / UI | use-case orchestration、local/feature state、view-model、callback | canonical business state、Rails authorization、formula | user action、client result | command input、presentation state | local interaction stateのみ | retryable/error/partialを区別し、last stable viewを保つ |
-| Client | BFF path、transport validation、timeout、cancellation、error mapping | UI state、business decision、Rails internal URL | typed command/query | typed response/error | No | malformed/timeoutを安全なerrorへし、silent fallbackしない |
-| SvelteKit BFF | cookie/session、same-origin boundary、token forwarding、active-org gate、safe proxy/shaping | Product rule、final authorization、Job state machine | browser request、verified auth context | safe response/error、Rails request | No | fail closed、secret/raw upstream errorを漏らさない |
-| Rails API | business rule、authorization、workflow、Job/Snapshot transition、transaction | browser presentation、crawl/LLM実行 | authenticated command/query、Worker result event | canonical resource/state、accepted/rejected transition | **Canonical business decision owner** | validation/authorization/transactionを確定し、audit可能にする |
-| PostgreSQL | persistent record、constraint、transaction、lineage metadata | long-running crawl/LLM | Rails transaction | committed durable data | **Persistent business data store** | invariantを守り、部分commitを防ぐ |
-| Queue | delivery、attempt metadata、visibility/deadline | final Job state、authorization | trusted job message | delivery/attempt to Worker | delivery stateのみ | redeliveryとattemptを管理し、business completionを宣言しない |
-| Python Worker | URL/SSRF防御、crawl、Chromium、screenshot、technical analysis、LLM call、artifact upload | membership、billing、final state transition、任意DB更新 | Rails発行のscoped job/attempt | evidence/artifact reference、result event | technical executionのowner | deadline/cancelを守り、structured failureをRailsへ返す |
-| Evidence / Snapshot | Evidenceは観測根拠、Snapshotは正式commitされた時点のimmutable result | current mutable Project stateとの同一視 | Worker artifact + Rails metadata/validation | reproducible historical reference | committed Snapshotはhistorical record | incomplete artifactを勝手にcurrentへ昇格しない |
+| Layer                      | Owns                                                                                        | Does not own                                            | Receives                                         | Returns                                                | Source of Truth?                      | Failure時の責務                                               |
+| -------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------ | ------------------------------------- | ------------------------------------------------------------- |
+| Frontend Route/Page/Layout | URL entry、verified context伝播、page/shell composition                                     | business rule、membership判定、Job transition           | SvelteKit load data、Feature view model          | rendered page、typed user intent                       | presentation/route stateのみ          | safe stateを表示し、server authorityを捏造しない              |
+| Feature / UI               | use-case orchestration、local/feature state、view-model、callback                           | canonical business state、Rails authorization、formula  | user action、client result                       | command input、presentation state                      | local interaction stateのみ           | retryable/error/partialを区別し、last stable viewを保つ       |
+| Client                     | BFF path、transport validation、timeout、cancellation、error mapping                        | UI state、business decision、Rails internal URL         | typed command/query                              | typed response/error                                   | No                                    | malformed/timeoutを安全なerrorへし、silent fallbackしない     |
+| SvelteKit BFF              | cookie/session、same-origin boundary、token forwarding、active-org gate、safe proxy/shaping | Product rule、final authorization、Job state machine    | browser request、verified auth context           | safe response/error、Rails request                     | No                                    | fail closed、secret/raw upstream errorを漏らさない            |
+| Rails API                  | business rule、authorization、workflow、Job/Snapshot transition、transaction                | browser presentation、crawl/LLM実行                     | authenticated command/query、Worker result event | canonical resource/state、accepted/rejected transition | **Canonical business decision owner** | validation/authorization/transactionを確定し、audit可能にする |
+| PostgreSQL                 | persistent record、constraint、transaction、lineage metadata                                | long-running crawl/LLM                                  | Rails transaction                                | committed durable data                                 | **Persistent business data store**    | invariantを守り、部分commitを防ぐ                             |
+| Queue                      | delivery、attempt metadata、visibility/deadline                                             | final Job state、authorization                          | trusted job message                              | delivery/attempt to Worker                             | delivery stateのみ                    | redeliveryとattemptを管理し、business completionを宣言しない  |
+| Python Worker              | URL/SSRF防御、crawl、Chromium、screenshot、technical analysis、LLM call、artifact upload    | membership、billing、final state transition、任意DB更新 | Rails発行のscoped job/attempt                    | evidence/artifact reference、result event              | technical executionのowner            | deadline/cancelを守り、structured failureをRailsへ返す        |
+| Evidence / Snapshot        | Evidenceは観測根拠、Snapshotは正式commitされた時点のimmutable result                        | current mutable Project stateとの同一視                 | Worker artifact + Rails metadata/validation      | reproducible historical reference                      | committed Snapshotはhistorical record | incomplete artifactを勝手にcurrentへ昇格しない                |
 
 ## 7. One User Action Trace — 「UserがAnalysisを開始する」
 
@@ -379,18 +379,18 @@ FrontendからWorkerを直接呼ぶと、browserがWorker credentialやprovider�
 
 ## 13. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. Overall Architecture explained | `PASS` |
-| 2. Major Layer responsibilities explained | `PASS` |
-| 3. Source of Truth explained | `PASS` |
-| 4. Request/Data Flow explained | `PASS` |
-| 5. Sync/Async distinction explained | `PASS` |
-| 6. Current/Target/Deferred distinguished | `PASS` |
-| 7. Two diagrams included | `PASS` |
+| Criterion                                     | Result |
+| --------------------------------------------- | ------ |
+| 1. Overall Architecture explained             | `PASS` |
+| 2. Major Layer responsibilities explained     | `PASS` |
+| 3. Source of Truth explained                  | `PASS` |
+| 4. Request/Data Flow explained                | `PASS` |
+| 5. Sync/Async distinction explained           | `PASS` |
+| 6. Current/Target/Deferred distinguished      | `PASS` |
+| 7. Two diagrams included                      | `PASS` |
 | 8. Representative repository mapping included | `PASS` |
-| 9. Practice exercises included | `PASS` |
-| 10. Answer/explanation section included | `PASS` |
+| 9. Practice exercises included                | `PASS` |
+| 10. Answer/explanation section included       | `PASS` |
 
 M01 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M02`
@@ -413,4 +413,3 @@ Module status: `COMPLETE / READY_FOR_M02`
 - [AnalysisJob Frontend Boundary](../../architecture/analysis-job-frontend-boundary.md)
 - [Organization-scoped Command Flow](../../architecture/organization-scoped-command-flow.md)
 - [Rails R-1 Foundation](../../rails/01-foundation.md)
-

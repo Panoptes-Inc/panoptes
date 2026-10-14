@@ -58,31 +58,31 @@ Layout / Shell wraps Page Entry
 Preview composes pure surfaces and deterministic fixtures
 ```
 
-| Category | 一言で表すと |
-| --- | --- |
-| Route Entry | SvelteKitのURL/data boundary |
-| Page Entry | Route contextとpage compositionの接続owner |
-| Layout / Shell | route familyで持続するstructural frame |
-| Feature | 一つのuse caseをorchestrateするowner |
-| Composite | cohesiveなpresentation child群のcomposition |
-| UI / Presentation | props中心の表示とlocal interaction |
-| Primitive | semantics-neutralな最小UI contract |
-| Preview | runtimeから切り離されたdeterministic composition |
+| Category          | 一言で表すと                                     |
+| ----------------- | ------------------------------------------------ |
+| Route Entry       | SvelteKitのURL/data boundary                     |
+| Page Entry        | Route contextとpage compositionの接続owner       |
+| Layout / Shell    | route familyで持続するstructural frame           |
+| Feature           | 一つのuse caseをorchestrateするowner             |
+| Composite         | cohesiveなpresentation child群のcomposition      |
+| UI / Presentation | props中心の表示とlocal interaction               |
+| Primitive         | semantics-neutralな最小UI contract               |
+| Preview           | runtimeから切り離されたdeterministic composition |
 
 ## 4. Category contracts
 
 ### 4.1 Contract overview
 
-| Category | Purpose | Owns | Must not own | Allowed dependencies | Typical state | Reuse scope | Representative examples |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Route Entry | URL/data framework boundary | typed route data/params forwarding、entry selection | use-case orchestration、raw fetch、business mapping | generated route types、Page Entry | route dataのみ | 1 URL contract | `src/routes/+page.svelte`、`src/routes/app/+page.svelte` |
-| Page Entry | routeとfeature compositionを接続 | route context注入、page-level composition、必要なcommand entry | raw transport、canonical business rule | Feature、Composite、UI、Primitive | minimal page UI | route family | `MarketingLandingPage`、`PanoptesShellEntryPage` |
-| Layout / Shell | persistent structural frame | Header/nav、family spacing、approved context、children arrangement | page固有content、use-case command、business/domain state | rendered children、UI、Primitive | persistent route-family UI | route family | root/app `+layout.svelte` |
-| Feature | use case owner | controller lifecycle、feature state、view-model、command invocation、child coordination | direct Rails/BFF transport、canonical business rule、他Feature内部state | feature controller/command/mapping、Composite、UI、Primitive | use-case/lifecycle state | owning feature | `PanoptesShellPage`、`SignUpForm` |
-| Composite | cohesive child composition | section order、props adaptation、callback forwarding、local selection | API/transport、command execution、business rule | same-feature Composite、UI、Primitive | local selection/expanded state | feature/domain | `SelfAnalysisOverviewPanel`、`StrategyAnalysisRoadmapPhaseCard` |
-| UI / Presentation | props中心の表示/操作 | formatting、native interaction、a11y、presentation state | API、store、business mutation、canonical formula/threshold | Primitive、presentation helper/type | component-local UI | same semantic contract | `PanoptesTabNav`、`CompetitorAnalysisCompanyCard`、`SignUpBtn` |
-| Primitive | semantics-neutral minimum contract | native wrapper、a11y、Token styling、ephemeral interaction | domain copy/model、Feature/Composite依存、business state | platform/native API、Token | ephemeralのみ | cross-feature candidate | 限定sample内にcanonical正例なし |
-| Preview | deterministic preview | fixed contract、fixture、preview-local state | runtime store/controller、BFF fallback、production mutation | pure Feature surface、Composite、UI、Primitive、Fixture | preview-local | preview only | `AppTopDummy`、`AppResultsDummy` |
+| Category          | Purpose                            | Owns                                                                                    | Must not own                                                            | Allowed dependencies                                         | Typical state                  | Reuse scope             | Representative examples                                         |
+| ----------------- | ---------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------ | ----------------------- | --------------------------------------------------------------- |
+| Route Entry       | URL/data framework boundary        | typed route data/params forwarding、entry selection                                     | use-case orchestration、raw fetch、business mapping                     | generated route types、Page Entry                            | route dataのみ                 | 1 URL contract          | `src/routes/+page.svelte`、`src/routes/app/+page.svelte`        |
+| Page Entry        | routeとfeature compositionを接続   | route context注入、page-level composition、必要なcommand entry                          | raw transport、canonical business rule                                  | Feature、Composite、UI、Primitive                            | minimal page UI                | route family            | `MarketingLandingPage`、`PanoptesShellEntryPage`                |
+| Layout / Shell    | persistent structural frame        | Header/nav、family spacing、approved context、children arrangement                      | page固有content、use-case command、business/domain state                | rendered children、UI、Primitive                             | persistent route-family UI     | route family            | root/app `+layout.svelte`                                       |
+| Feature           | use case owner                     | controller lifecycle、feature state、view-model、command invocation、child coordination | direct Rails/BFF transport、canonical business rule、他Feature内部state | feature controller/command/mapping、Composite、UI、Primitive | use-case/lifecycle state       | owning feature          | `PanoptesShellPage`、`SignUpForm`                               |
+| Composite         | cohesive child composition         | section order、props adaptation、callback forwarding、local selection                   | API/transport、command execution、business rule                         | same-feature Composite、UI、Primitive                        | local selection/expanded state | feature/domain          | `SelfAnalysisOverviewPanel`、`StrategyAnalysisRoadmapPhaseCard` |
+| UI / Presentation | props中心の表示/操作               | formatting、native interaction、a11y、presentation state                                | API、store、business mutation、canonical formula/threshold              | Primitive、presentation helper/type                          | component-local UI             | same semantic contract  | `PanoptesTabNav`、`CompetitorAnalysisCompanyCard`、`SignUpBtn`  |
+| Primitive         | semantics-neutral minimum contract | native wrapper、a11y、Token styling、ephemeral interaction                              | domain copy/model、Feature/Composite依存、business state                | platform/native API、Token                                   | ephemeralのみ                  | cross-feature candidate | 限定sample内にcanonical正例なし                                 |
+| Preview           | deterministic preview              | fixed contract、fixture、preview-local state                                            | runtime store/controller、BFF fallback、production mutation             | pure Feature surface、Composite、UI、Primitive、Fixture      | preview-local                  | preview only            | `AppTopDummy`、`AppResultsDummy`                                |
 
 ### 4.2 なぜ責務を分けるのか
 
@@ -306,13 +306,13 @@ Preview
 
 ## 15. Ambiguous cases
 
-| Component | First impression | Actual responsibility | Final classification | Reasoning |
-| --- | --- | --- | --- | --- |
-| `MarketingLandingPage` | Composite | Marketing route familyのHeader/Hero/page section owner | **Page Entry** | route contextを受け、page全体compositionを所有する |
-| `PanoptesShellEntryPage` | Feature wrapper | route/default inputをShell Featureへ接続 | **Page Entry** | use-case controllerを持たず、Page→Feature boundaryになる |
-| `PanoptesShellPage` | Layout / Shell | controller、複数store、mapping、commands、child coordination | **Feature Orchestrator** | persistent frameではなくanalysis use case lifecycleを所有する |
-| `StrategyAnalysisRoadmapPhaseCard` | UI Card | TaskList/StatusActionsのcohesive compositionとcallback forwarding | **Composite** | commandを実行せず、local selectionとsection compositionに限定 |
-| `SignUpBtn` | Primitive Button | Auth固有default labelとvisual contract | **UI / Presentation** | semantics-neutralではなくSignup/Login contextを持つ |
+| Component                          | First impression | Actual responsibility                                             | Final classification     | Reasoning                                                     |
+| ---------------------------------- | ---------------- | ----------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------- |
+| `MarketingLandingPage`             | Composite        | Marketing route familyのHeader/Hero/page section owner            | **Page Entry**           | route contextを受け、page全体compositionを所有する            |
+| `PanoptesShellEntryPage`           | Feature wrapper  | route/default inputをShell Featureへ接続                          | **Page Entry**           | use-case controllerを持たず、Page→Feature boundaryになる      |
+| `PanoptesShellPage`                | Layout / Shell   | controller、複数store、mapping、commands、child coordination      | **Feature Orchestrator** | persistent frameではなくanalysis use case lifecycleを所有する |
+| `StrategyAnalysisRoadmapPhaseCard` | UI Card          | TaskList/StatusActionsのcohesive compositionとcallback forwarding | **Composite**            | commandを実行せず、local selectionとsection compositionに限定 |
+| `SignUpBtn`                        | Primitive Button | Auth固有default labelとvisual contract                            | **UI / Presentation**    | semantics-neutralではなくSignup/Login contextを持つ           |
 
 ### Domain-specific reusable qualifier
 
@@ -336,36 +336,36 @@ Preview
 
 ## 17. Directory connection
 
-| Category | Canonical placement | Current state |
-| --- | --- | --- |
-| Route Entry | `src/routes/**/+page.svelte` | `CURRENT` |
-| Framework Layout | `src/routes/**/+layout.svelte` | `CURRENT` |
-| Page Entry | `src/lib/features/<feature>/pages` | `TARGET`。現Page Entryの一部は`components`/`ComponentsBase` |
-| Feature | `src/lib/features/<feature>` | `PARTIAL CURRENT`。一部Feature ownerはlegacy location |
-| Reusable Layout/Shell | `src/lib/layouts` | `TARGET`。directory未作成 |
-| Feature-local Composite/UI | `src/lib/features/<feature>/components` | `PARTIAL CURRENT` |
-| Stable cross-feature UI | `src/lib/ui/components` | `TARGET`。directory未作成 |
-| Primitive | `src/lib/ui/primitives` | `TARGET`。directory未作成、canonical正例未確定 |
-| Preview | owning featureの`preview/fixtures`、dev exposureは`src/routes/dev` | `TARGET/PARTIAL`。現行Dummyはlegacy location |
+| Category                   | Canonical placement                                                | Current state                                               |
+| -------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------- |
+| Route Entry                | `src/routes/**/+page.svelte`                                       | `CURRENT`                                                   |
+| Framework Layout           | `src/routes/**/+layout.svelte`                                     | `CURRENT`                                                   |
+| Page Entry                 | `src/lib/features/<feature>/pages`                                 | `TARGET`。現Page Entryの一部は`components`/`ComponentsBase` |
+| Feature                    | `src/lib/features/<feature>`                                       | `PARTIAL CURRENT`。一部Feature ownerはlegacy location       |
+| Reusable Layout/Shell      | `src/lib/layouts`                                                  | `TARGET`。directory未作成                                   |
+| Feature-local Composite/UI | `src/lib/features/<feature>/components`                            | `PARTIAL CURRENT`                                           |
+| Stable cross-feature UI    | `src/lib/ui/components`                                            | `TARGET`。directory未作成                                   |
+| Primitive                  | `src/lib/ui/primitives`                                            | `TARGET`。directory未作成、canonical正例未確定              |
+| Preview                    | owning featureの`preview/fixtures`、dev exposureは`src/routes/dev` | `TARGET/PARTIAL`。現行Dummyはlegacy location                |
 
 DirectoryはTaxonomyを決めない。TaxonomyとBoundaryがplacementを決める。FS-04 targetは承認済みだが、migrationは未完了であり、M03ではfile移動を行わない。
 
 ## 18. Representative code mapping
 
-| Category / case | File | Observed responsibility |
-| --- | --- | --- |
-| Route Entry | `src/routes/+page.svelte` | route dataをMarketing Page Entryへ渡す |
-| Layout | `src/routes/app/+layout.svelte` | persistent Header/spacing/Hero condition/children |
-| Page Entry | `src/lib/features/landing/components/MarketingLandingPage.svelte` | Marketing page composition |
-| Page Entry | `src/lib/components/ComponentsBase/PanoptesShellEntryPage.svelte` | route/default inputをFeatureへ接続 |
-| Feature | `src/lib/components/ComponentsBase/Panoptes/PanoptesShellPage.svelte` | controller/store/command/view-model coordination |
-| Feature | `src/lib/components/ComponentsBase/SignUpForm.svelte` | Signup controller/form lifecycle/submit coordination |
-| Composite | `Self/overview/SelfAnalysisOverviewPanel.svelte` | Summary/Evidence composition |
-| Composite | `Strategy/roadmap/StrategyAnalysisRoadmapPhaseCard.svelte` | task/status child composition、callback forwarding |
-| UI | `Panoptes/shared/PanoptesTabNav.svelte` | props render、accessible native interaction、callback |
-| UI | `Competitor/cards/CompetitorAnalysisCompanyCard.svelte` | domain view-model presentationとintent callback |
-| Primitive boundary | `SignUpBtn.svelte`、`loop/AppLogo.svelte` | smallだがAuth/Brand semanticsがありUI |
-| Preview | `AppTopDummy.svelte`、`AppResultsDummy.svelte` | deterministic preset composition |
+| Category / case    | File                                                                  | Observed responsibility                               |
+| ------------------ | --------------------------------------------------------------------- | ----------------------------------------------------- |
+| Route Entry        | `src/routes/+page.svelte`                                             | route dataをMarketing Page Entryへ渡す                |
+| Layout             | `src/routes/app/+layout.svelte`                                       | persistent Header/spacing/Hero condition/children     |
+| Page Entry         | `src/lib/features/landing/components/MarketingLandingPage.svelte`     | Marketing page composition                            |
+| Page Entry         | `src/lib/components/ComponentsBase/PanoptesShellEntryPage.svelte`     | route/default inputをFeatureへ接続                    |
+| Feature            | `src/lib/components/ComponentsBase/Panoptes/PanoptesShellPage.svelte` | controller/store/command/view-model coordination      |
+| Feature            | `src/lib/components/ComponentsBase/SignUpForm.svelte`                 | Signup controller/form lifecycle/submit coordination  |
+| Composite          | `Self/overview/SelfAnalysisOverviewPanel.svelte`                      | Summary/Evidence composition                          |
+| Composite          | `Strategy/roadmap/StrategyAnalysisRoadmapPhaseCard.svelte`            | task/status child composition、callback forwarding    |
+| UI                 | `Panoptes/shared/PanoptesTabNav.svelte`                               | props render、accessible native interaction、callback |
+| UI                 | `Competitor/cards/CompetitorAnalysisCompanyCard.svelte`               | domain view-model presentationとintent callback       |
+| Primitive boundary | `SignUpBtn.svelte`、`loop/AppLogo.svelte`                             | smallだがAuth/Brand semanticsがありUI                 |
+| Preview            | `AppTopDummy.svelte`、`AppResultsDummy.svelte`                        | deterministic preset composition                      |
 
 確認対象はこの限定sampleであり、全107 Componentの分類結果ではない。
 
@@ -489,18 +489,18 @@ Domain-specific UIも再利用できる。Primitiveにはsemantics-neutralな最
 
 ## 22. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. Taxonomy purpose explained | `PASS` |
-| 2. 8 canonical categories explained | `PASS` |
+| Criterion                                  | Result |
+| ------------------------------------------ | ------ |
+| 1. Taxonomy purpose explained              | `PASS` |
+| 2. 8 canonical categories explained        | `PASS` |
 | 3. responsibilities/prohibitions explained | `PASS` |
-| 4. dependency direction explained | `PASS` |
-| 5. classification heuristic defined | `PASS` |
-| 6. ambiguous cases explained | `PASS` |
-| 7. PanoptesShellPage correction explained | `PASS` |
-| 8. directory mapping explained | `PASS` |
-| 9. representative code mapping included | `PASS` |
-| 10. exercises + answers included | `PASS` |
+| 4. dependency direction explained          | `PASS` |
+| 5. classification heuristic defined        | `PASS` |
+| 6. ambiguous cases explained               | `PASS` |
+| 7. PanoptesShellPage correction explained  | `PASS` |
+| 8. directory mapping explained             | `PASS` |
+| 9. representative code mapping included    | `PASS` |
+| 10. exercises + answers included           | `PASS` |
 
 M03 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M04`
@@ -519,4 +519,3 @@ Module status: `COMPLETE / READY_FOR_M04`
 - [Frontend Structure Policy](../../architecture/frontend-structure-policy.md)
 - [FS-02 Component Taxonomy](../../audit/122-fs02-component-taxonomy.md)
 - [October Frontend Standardization Plan](../../architecture/frontend-standardization-plan.md)
-

@@ -1397,14 +1397,14 @@ PD-04のBackend discoveryは、上記順序とは別に並行開始できる。
 
 ## Frontend Standardization Impact
 
-| Area               | Impact         | Boundary                                                    |
-| ------------------ | -------------- | ----------------------------------------------------------- |
-| Component taxonomy | `NON_BLOCKING` | 5件とも一般taxonomyを妨げない                               |
-| Directory          | `PARTIAL`      | PD-03対象の移動・削除判断は保留                             |
-| Design Token       | `PARTIAL`      | PD-02承認済み尺度/identityを入力。exact tone/token値はPresentationへ |
-| Tailwind           | `NON_BLOCKING` | Product decisionと独立                                      |
-| Responsive         | `NON_BLOCKING` | 一般baselineは進行可。workflow固有画面は決定後に確認        |
-| UI Regulation      | `PARTIAL`      | PD-02/04意味は承認済み。exact UI/copy/accessibilityは後続 |
+| Area               | Impact         | Boundary                                                               |
+| ------------------ | -------------- | ---------------------------------------------------------------------- |
+| Component taxonomy | `NON_BLOCKING` | 5件とも一般taxonomyを妨げない                                          |
+| Directory          | `PARTIAL`      | PD-03対象の移動・削除判断は保留                                        |
+| Design Token       | `PARTIAL`      | PD-02承認済み尺度/identityを入力。exact tone/token値はPresentationへ   |
+| Tailwind           | `NON_BLOCKING` | Product decisionと独立                                                 |
+| Responsive         | `NON_BLOCKING` | 一般baselineは進行可。workflow固有画面は決定後に確認                   |
+| UI Regulation      | `PARTIAL`      | PD-02/04意味は承認済み。exact UI/copy/accessibilityは後続              |
 | Naming             | `PARTIAL`      | App/Marketing roleとAxis identityは承認済み。PD-03と具体的表示名は保留 |
 
 October Standardization全体は`PARTIAL`であり、全面blockではない。generic structure、基礎token、responsive/accessibility baselineは進め、Product意味を含む命名・formula・route lifecycleは本Registerを参照する。

@@ -22,17 +22,17 @@ Prerequisites: `M01`–`M11`
 
 Jobは長時間または非同期で実行される1つのprocessing unitである。
 
-| Concept | Meaning |
-| --- | --- |
-| Job identity | 1つのbusiness executionを識別するID |
-| Lifecycle | 受付からterminal outcomeまでの状態系列 |
-| Status | canonicalな現在状態 |
-| Input | 分析対象、Organization/Project、versioned contract等 |
-| Output | validated Result、error、artifact reference等 |
-| Attempt | 同じJob intentをtechnicalに実行する試行 |
-| Failure | stepまたはJob outcomeの不成立。levelを区別する |
-| Retry | 同じJobのtechnical recovery |
-| Cancellation | 停止要求とcanonical outcomeを含む協調処理 |
+| Concept      | Meaning                                              |
+| ------------ | ---------------------------------------------------- |
+| Job identity | 1つのbusiness executionを識別するID                  |
+| Lifecycle    | 受付からterminal outcomeまでの状態系列               |
+| Status       | canonicalな現在状態                                  |
+| Input        | 分析対象、Organization/Project、versioned contract等 |
+| Output       | validated Result、error、artifact reference等        |
+| Attempt      | 同じJob intentをtechnicalに実行する試行              |
+| Failure      | stepまたはJob outcomeの不成立。levelを区別する       |
+| Retry        | 同じJobのtechnical recovery                          |
+| Cancellation | 停止要求とcanonical outcomeを含む協調処理            |
 
 ```text
 Job != HTTP request
@@ -93,18 +93,18 @@ completed | partially_completed | failed | cancelled | timed_out
 
 ## 5. State meanings
 
-| State | Meaning | Primary execution actor | Canonical transition authority |
-| --- | --- | --- | --- |
-| `queued` | Durableに受付済み、execution待ち | Queue waiting | Rails |
-| `preparing` | URL/policy/attempt等の実行準備 | Worker | Rails accepts fact |
-| `crawling` | HTML/resource取得 | Worker | Rails accepts fact |
-| `capturing` | Chromium/screenshot/evidence取得 | Worker | Rails accepts fact |
-| `internal_analysis` | HTML/DOM/content等の内部分析 | Worker | Rails accepts fact |
-| `awaiting_confirmation` | immutable draft提示後のUser確認待ち | Rails/User interaction | Rails |
-| `visual_analysis` | visual evidence評価 | Worker | Rails accepts fact |
-| `llm_analysis` | insight/strategy候補等のLLM処理 | Worker/integration | Rails accepts fact |
-| `finalizing` | Result整合性、eligibility、Snapshot準備 | Rails | Rails |
-| `completed` | required processingとusable validated Resultが成立 | Rails outcome | Rails |
+| State                   | Meaning                                            | Primary execution actor | Canonical transition authority |
+| ----------------------- | -------------------------------------------------- | ----------------------- | ------------------------------ |
+| `queued`                | Durableに受付済み、execution待ち                   | Queue waiting           | Rails                          |
+| `preparing`             | URL/policy/attempt等の実行準備                     | Worker                  | Rails accepts fact             |
+| `crawling`              | HTML/resource取得                                  | Worker                  | Rails accepts fact             |
+| `capturing`             | Chromium/screenshot/evidence取得                   | Worker                  | Rails accepts fact             |
+| `internal_analysis`     | HTML/DOM/content等の内部分析                       | Worker                  | Rails accepts fact             |
+| `awaiting_confirmation` | immutable draft提示後のUser確認待ち                | Rails/User interaction  | Rails                          |
+| `visual_analysis`       | visual evidence評価                                | Worker                  | Rails accepts fact             |
+| `llm_analysis`          | insight/strategy候補等のLLM処理                    | Worker/integration      | Rails accepts fact             |
+| `finalizing`            | Result整合性、eligibility、Snapshot準備            | Rails                   | Rails                          |
+| `completed`             | required processingとusable validated Resultが成立 | Rails outcome           | Rails                          |
 
 「Primary execution actor」はstate中のtechnical workを示す。Workerがcanonical DB statusを自由に書き換えるという意味ではない。
 
@@ -152,14 +152,14 @@ stateDiagram-v2
 
 ## 7. Request State vs Job State vs Product outcome
 
-| State class | Examples | Owner | Question |
-| --- | --- | --- | --- |
-| HTTP Request State | idle/loading/success/error | Client/Feature | status取得requestがどうなったか |
-| Polling State | stopped/polling/backoff | Feature polling controller | 次のstatus requestをいつ行うか |
-| AnalysisJob State | crawling/visual_analysis/finalizing等 | Rails canonical backend | Analysis executionはどこか |
-| Worker fact | screenshot uploaded、crawl failed等 | Worker reports | technical stepで何が起きたか |
-| Product outcome | completed/partial/failed等 | Rails business decision | usable validated Resultが成立したか |
-| Presentation State | bootstrapping/committing_snapshot等 | Frontend projection | Userへどう見せるか |
+| State class        | Examples                              | Owner                      | Question                            |
+| ------------------ | ------------------------------------- | -------------------------- | ----------------------------------- |
+| HTTP Request State | idle/loading/success/error            | Client/Feature             | status取得requestがどうなったか     |
+| Polling State      | stopped/polling/backoff               | Feature polling controller | 次のstatus requestをいつ行うか      |
+| AnalysisJob State  | crawling/visual_analysis/finalizing等 | Rails canonical backend    | Analysis executionはどこか          |
+| Worker fact        | screenshot uploaded、crawl failed等   | Worker reports             | technical stepで何が起きたか        |
+| Product outcome    | completed/partial/failed等            | Rails business decision    | usable validated Resultが成立したか |
+| Presentation State | bootstrapping/committing_snapshot等   | Frontend projection        | Userへどう見せるか                  |
 
 例:
 
@@ -220,13 +220,13 @@ Phase A-5 state-machine draftには具体的next候補があるが、Production 
 
 ## 10. Terminal outcomes
 
-| Outcome | Meaning | Result usability | Silent rewrite |
-| --- | --- | --- | --- |
-| `completed` | required processingを満たしusable validated Product Result成立 | Full result | terminal |
-| `partially_completed` | usable validated Resultはあるがrequired processingの一部が未完了、limitations明示 | Limited result | failed/completedへ暗黙変換しない |
-| `failed` | valid Product Result不成立 | none | partialへ後付け変更しない |
-| `cancelled` | cancellation policyにより終了 | baselineなし | failedへ統合しない |
-| `timed_out` | defined Job deadline超過 | baselineなし | failedへ統合しない |
+| Outcome               | Meaning                                                                           | Result usability | Silent rewrite                   |
+| --------------------- | --------------------------------------------------------------------------------- | ---------------- | -------------------------------- |
+| `completed`           | required processingを満たしusable validated Product Result成立                    | Full result      | terminal                         |
+| `partially_completed` | usable validated Resultはあるがrequired processingの一部が未完了、limitations明示 | Limited result   | failed/completedへ暗黙変換しない |
+| `failed`              | valid Product Result不成立                                                        | none             | partialへ後付け変更しない        |
+| `cancelled`           | cancellation policyにより終了                                                     | baselineなし     | failedへ統合しない               |
+| `timed_out`           | defined Job deadline超過                                                          | baselineなし     | failedへ統合しない               |
 
 Terminal outcomesはUI labelの違いだけではない。Snapshot eligibility、reanalysis、usage、audit、support diagnosisに影響するbusiness contractである。
 
@@ -263,26 +263,26 @@ Cancel buttonを押した瞬間にBrowser→Workerまで同期停止するとは
 
 ## 13. Timeout
 
-| Timeout | Meaning | Owner/outcome |
-| --- | --- | --- |
-| HTTP request timeout | status API等のresponse待ちが期限超過 | Client/BFF technical error。Job outcomeではない |
-| Polling controller timeout | 1回のpoll request raceがtimeout | Frontend backoff/continue候補 |
-| Worker step timeout | crawl/Chromium/LLM等のstep deadline | Worker fact、retry policy input |
-| Attempt timeout | 1 technical attemptのdeadline | Queue/Worker orchestration input |
-| AnalysisJob business timeout | 全体deadlineを超えたcanonical outcome | Rails `timed_out` |
+| Timeout                      | Meaning                               | Owner/outcome                                   |
+| ---------------------------- | ------------------------------------- | ----------------------------------------------- |
+| HTTP request timeout         | status API等のresponse待ちが期限超過  | Client/BFF technical error。Job outcomeではない |
+| Polling controller timeout   | 1回のpoll request raceがtimeout       | Frontend backoff/continue候補                   |
+| Worker step timeout          | crawl/Chromium/LLM等のstep deadline   | Worker fact、retry policy input                 |
+| Attempt timeout              | 1 technical attemptのdeadline         | Queue/Worker orchestration input                |
+| AnalysisJob business timeout | 全体deadlineを超えたcanonical outcome | Rails `timed_out`                               |
 
 CURRENT polling controllerのdefault request timeoutは30秒で、timeout時はbackoffしpollを続ける。これはJobを`timed_out`へ変更する処理ではない。
 
 ## 14. Retry vs Reanalysis
 
-| Dimension | Retry | Reanalysis |
-| --- | --- | --- |
-| Intent | same business analysis intent | new business analysis |
-| Job identity | same Job concept | new AnalysisJob |
-| Attempt | new/repeated technical attempt | first attempt of new Job |
-| Trigger | transient technical failure | User/business request |
-| Result/history | existing intentを完遂 | new Result/new lineage |
-| Snapshot | same Jobのeligible outcome | eligibleならnew Snapshot |
+| Dimension      | Retry                          | Reanalysis               |
+| -------------- | ------------------------------ | ------------------------ |
+| Intent         | same business analysis intent  | new business analysis    |
+| Job identity   | same Job concept               | new AnalysisJob          |
+| Attempt        | new/repeated technical attempt | first attempt of new Job |
+| Trigger        | transient technical failure    | User/business request    |
+| Result/history | existing intentを完遂          | new Result/new lineage   |
+| Snapshot       | same Jobのeligible outcome     | eligibleならnew Snapshot |
 
 ### Retry vs Reanalysis diagram
 
@@ -305,13 +305,13 @@ Frontend method名`retryAnalysis`はCURRENTで`reanalyzeCurrentProject`へ接続
 
 PD-04承認済みbaseline:
 
-| Job outcome | Snapshot eligibility | Current/Strategy behavior |
-| --- | --- | --- |
-| `completed` | `CAN_CREATE` | policy-driven current promotion可。Strategyはvalidation後eligible |
+| Job outcome           | Snapshot eligibility           | Current/Strategy behavior                                                                              |
+| --------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `completed`           | `CAN_CREATE`                   | policy-driven current promotion可。Strategyはvalidation後eligible                                      |
 | `partially_completed` | `CONDITIONAL` Limited Snapshot | automatic current promotionなし。v1 Strategy=`EVIDENCE_ONLY`、Formal Sourceへauto/manual promotionなし |
-| `failed` | Formal Snapshot不可 | artifactとProduct Snapshotを分離 |
-| `cancelled` | Formal Snapshot不可 | currentへcommitしない |
-| `timed_out` | Formal Snapshot不可 | currentへcommitしない |
+| `failed`              | Formal Snapshot不可            | artifactとProduct Snapshotを分離                                                                       |
+| `cancelled`           | Formal Snapshot不可            | currentへcommitしない                                                                                  |
+| `timed_out`           | Formal Snapshot不可            | currentへcommitしない                                                                                  |
 
 Partial Snapshotはlimitations、completeness、lineageを保持し、Full Resultと同じbaselineへ見せかけない。Exact threshold/schema/retention/controlled exceptionはDEFERRED。
 
@@ -321,12 +321,12 @@ Phase A-5 `analysis-job-state-machine.md`は`partially_completed`を「committed
 
 ## 16. Evidence, artifact, Result, Job, Snapshot
 
-| Concept | Meaning | Does not prove |
-| --- | --- | --- |
-| Evidence/artifact | HTML、screenshot、extraction、model output等のtechnical/business material | Job completion、Product usability |
-| AnalysisJob | execution/business processing container | immutable historical Product record |
-| Result | validated Product output | automatic Snapshot/current/Strategy eligibility |
-| Snapshot | immutable historical Product record | latest/current/Strategy sourceとの同一性 |
+| Concept           | Meaning                                                                   | Does not prove                                  |
+| ----------------- | ------------------------------------------------------------------------- | ----------------------------------------------- |
+| Evidence/artifact | HTML、screenshot、extraction、model output等のtechnical/business material | Job completion、Product usability               |
+| AnalysisJob       | execution/business processing container                                   | immutable historical Product record             |
+| Result            | validated Product output                                                  | automatic Snapshot/current/Strategy eligibility |
+| Snapshot          | immutable historical Product record                                       | latest/current/Strategy sourceとの同一性        |
 
 ```text
 artifact exists != Job completed
@@ -355,17 +355,17 @@ User-facing errorにはsafe code/message、retryability、affected phase等を�
 
 ## 18. Rails vs Worker ownership
 
-| Concern | Rails | Worker |
-| --- | --- | --- |
-| Job creation/identity | Owns | Receives assigned identity |
-| Authorization | Owns | Does not decide User permission |
-| Canonical lifecycle | Owns transition acceptance | Reports technical facts |
-| crawl/capture/analysis | Orchestrates requirement | Executes |
-| Technical retry execution | Defines accepted policy boundary | Performs attempt |
-| Product Result usability | Owns | Supplies facts/artifacts |
-| Terminal outcome | Owns | Must not self-commit |
-| Snapshot eligibility/commit | Owns | Uploads/references artifact |
-| Usage/audit | Owns business decision | Reports measurable facts |
+| Concern                     | Rails                            | Worker                          |
+| --------------------------- | -------------------------------- | ------------------------------- |
+| Job creation/identity       | Owns                             | Receives assigned identity      |
+| Authorization               | Owns                             | Does not decide User permission |
+| Canonical lifecycle         | Owns transition acceptance       | Reports technical facts         |
+| crawl/capture/analysis      | Orchestrates requirement         | Executes                        |
+| Technical retry execution   | Defines accepted policy boundary | Performs attempt                |
+| Product Result usability    | Owns                             | Supplies facts/artifacts        |
+| Terminal outcome            | Owns                             | Must not self-commit            |
+| Snapshot eligibility/commit | Owns                             | Uploads/references artifact     |
+| Usage/audit                 | Owns business decision           | Reports measurable facts        |
 
 Rails ownershipは「Rails processがcrawlする」という意味ではない。Worker ownershipは「WorkerがDB business stateを直接決める」という意味ではない。
 
@@ -381,16 +381,16 @@ Failed/cancelled/timed_out/partialのUsage扱いは、technical step数だけで
 
 ## 20. CURRENT / TARGET / DEFERRED
 
-| Area | CURRENT | TARGET | DEFERRED |
-| --- | --- | --- | --- |
-| Lifecycle contract | canonical state set、OpenAPI schema、adapter types | Rails-enforced transition state machine | exact persistence/concurrency implementation |
-| Frontend mapping | canonical adapter、terminal helper、polling/runtime projection | Canonical BFF response connection | legacy migration completion |
-| Polling | timer/overlap/timeout/backoff/stop logic | Organization/Job/attempt/sequence verified polling | SSE/WebSocket/Realtime decision |
-| Business client | Organization read works; Analysis client fails closed 503 | Project/AnalysisJob endpoints | Production Rails/Queue/Worker |
-| Rails Job | no model/service/routes | creation、transition、outcome、Snapshot/Usage | schema/request specs/outbox |
-| Worker | no production worker implementation found in scoped check | crawl/capture/analysis fact producer | runtime/provider/queue details |
-| Partial | PD-04 logical contract approved、Frontend recognizes status | Rails eligibility + Limited Snapshot | threshold/schema/promotion exception |
-| Retry/Reanalysis | Frontend reanalysis action/mock behavior | same-Job attempt vs new-Job lineage | Queue retry/idempotency details |
+| Area               | CURRENT                                                        | TARGET                                             | DEFERRED                                     |
+| ------------------ | -------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------- |
+| Lifecycle contract | canonical state set、OpenAPI schema、adapter types             | Rails-enforced transition state machine            | exact persistence/concurrency implementation |
+| Frontend mapping   | canonical adapter、terminal helper、polling/runtime projection | Canonical BFF response connection                  | legacy migration completion                  |
+| Polling            | timer/overlap/timeout/backoff/stop logic                       | Organization/Job/attempt/sequence verified polling | SSE/WebSocket/Realtime decision              |
+| Business client    | Organization read works; Analysis client fails closed 503      | Project/AnalysisJob endpoints                      | Production Rails/Queue/Worker                |
+| Rails Job          | no model/service/routes                                        | creation、transition、outcome、Snapshot/Usage      | schema/request specs/outbox                  |
+| Worker             | no production worker implementation found in scoped check      | crawl/capture/analysis fact producer               | runtime/provider/queue details               |
+| Partial            | PD-04 logical contract approved、Frontend recognizes status    | Rails eligibility + Limited Snapshot               | threshold/schema/promotion exception         |
+| Retry/Reanalysis   | Frontend reanalysis action/mock behavior                       | same-Job attempt vs new-Job lineage                | Queue retry/idempotency details              |
 
 Approved lifecycle contractはProduction implementation completeを意味しない。
 
@@ -398,20 +398,20 @@ Approved lifecycle contractはProduction implementation completeを意味しな�
 
 以下は限定確認した12例であり、repo-wide Job/Worker監査ではない。
 
-| Source | Lifecycle role | Owner | State role | Status / PD relation |
-| --- | --- | --- | --- | --- |
-| `docs/product/product-decision-register.md` PD-04 | Partial/Snapshot/reanalysis/usage contract | Product | terminal outcome policy | `APPROVED`; implementation deferred |
-| `docs/api/analysis-job-state-machine.md` | state/transition/progress draft | Architecture/API | canonical lifecycle draft | state input; Snapshot wording needs PD-04 sync |
-| `docs/api/openapi-draft.yaml` AnalysisJob schemas | wire state/Job shape | API contract | 14-state enum | `DRAFT / TARGET` |
-| `docs/architecture/analysis-job-frontend-boundary.md` | canonical→runtime mapping rules | Frontend architecture | adapter/terminal boundary | `CURRENT boundary`; BFF connection deferred |
-| `src/lib/features/analysis-job/types.ts` | canonical/runtime types | Frontend Feature | state set/runtime model | `CURRENT adapter contract` |
-| `src/lib/features/analysis-job/mapping/analysis-job-status.ts` | terminal/status mapping | Frontend Feature | canonical→runtime classification | `CURRENT` |
-| `src/lib/features/analysis-job/adapter/analysis-job-adapter.ts` | response validation/safe mapping | Frontend Feature | terminal/partial/failure projection | `CURRENT`; fail-safe unknown handling |
-| `src/lib/panoptes/polling/analysis-polling-controller.ts` | polling mechanics | Frontend Feature | timer/overlap/timeout/stop | `CURRENT`; no business transition |
-| `src/lib/panoptes/actions/analysis.ts` | analysis intent/poll coordination | Frontend Feature | create/confirm/reanalysis/projection | `CURRENT legacy/mock flow` |
-| `src/lib/panoptes/domain/runtime-progress.ts` | stale/monotonic/runtime projection | Frontend domain adapter | terminal reason/store update | `CURRENT` |
-| `src/lib/panoptes/stores/runtime.ts` | request/polling presentation projection | Frontend store | non-canonical runtime state | `CURRENT` |
-| `src/lib/panoptes/api/unavailable-canonical-business-client.ts` | fail-closed Production boundary | Frontend Client | no Job mutation/read | `CURRENT 503`; backend `TARGET` |
+| Source                                                          | Lifecycle role                             | Owner                   | State role                           | Status / PD relation                           |
+| --------------------------------------------------------------- | ------------------------------------------ | ----------------------- | ------------------------------------ | ---------------------------------------------- |
+| `docs/product/product-decision-register.md` PD-04               | Partial/Snapshot/reanalysis/usage contract | Product                 | terminal outcome policy              | `APPROVED`; implementation deferred            |
+| `docs/api/analysis-job-state-machine.md`                        | state/transition/progress draft            | Architecture/API        | canonical lifecycle draft            | state input; Snapshot wording needs PD-04 sync |
+| `docs/api/openapi-draft.yaml` AnalysisJob schemas               | wire state/Job shape                       | API contract            | 14-state enum                        | `DRAFT / TARGET`                               |
+| `docs/architecture/analysis-job-frontend-boundary.md`           | canonical→runtime mapping rules            | Frontend architecture   | adapter/terminal boundary            | `CURRENT boundary`; BFF connection deferred    |
+| `src/lib/features/analysis-job/types.ts`                        | canonical/runtime types                    | Frontend Feature        | state set/runtime model              | `CURRENT adapter contract`                     |
+| `src/lib/features/analysis-job/mapping/analysis-job-status.ts`  | terminal/status mapping                    | Frontend Feature        | canonical→runtime classification     | `CURRENT`                                      |
+| `src/lib/features/analysis-job/adapter/analysis-job-adapter.ts` | response validation/safe mapping           | Frontend Feature        | terminal/partial/failure projection  | `CURRENT`; fail-safe unknown handling          |
+| `src/lib/panoptes/polling/analysis-polling-controller.ts`       | polling mechanics                          | Frontend Feature        | timer/overlap/timeout/stop           | `CURRENT`; no business transition              |
+| `src/lib/panoptes/actions/analysis.ts`                          | analysis intent/poll coordination          | Frontend Feature        | create/confirm/reanalysis/projection | `CURRENT legacy/mock flow`                     |
+| `src/lib/panoptes/domain/runtime-progress.ts`                   | stale/monotonic/runtime projection         | Frontend domain adapter | terminal reason/store update         | `CURRENT`                                      |
+| `src/lib/panoptes/stores/runtime.ts`                            | request/polling presentation projection    | Frontend store          | non-canonical runtime state          | `CURRENT`                                      |
+| `src/lib/panoptes/api/unavailable-canonical-business-client.ts` | fail-closed Production boundary            | Frontend Client         | no Job mutation/read                 | `CURRENT 503`; backend `TARGET`                |
 
 Scoped checkではRails AnalysisJob model/service/routeとProduction Worker representationは存在しないため、架空のmappingを追加しない。
 
@@ -602,18 +602,18 @@ Workerは1 attemptのtechnical factsとartifactsを知るが、actor/Organizatio
 
 ## 26. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. Job fundamentals explained | `PASS` |
-| 2. canonical AnalysisJob lifecycle explained | `PASS` |
-| 3. request/job/product state distinction explained | `PASS` |
-| 4. terminal outcomes explained | `PASS` |
-| 5. partially_completed explained | `PASS` |
-| 6. Rails/Worker transition ownership explained | `PASS` |
-| 7. retry/reanalysis distinction explained | `PASS` |
-| 8. Snapshot eligibility explained | `PASS` |
+| Criterion                                                | Result |
+| -------------------------------------------------------- | ------ |
+| 1. Job fundamentals explained                            | `PASS` |
+| 2. canonical AnalysisJob lifecycle explained             | `PASS` |
+| 3. request/job/product state distinction explained       | `PASS` |
+| 4. terminal outcomes explained                           | `PASS` |
+| 5. partially_completed explained                         | `PASS` |
+| 6. Rails/Worker transition ownership explained           | `PASS` |
+| 7. retry/reanalysis distinction explained                | `PASS` |
+| 8. Snapshot eligibility explained                        | `PASS` |
 | 9. representative repository mapping + diagrams included | `PASS` |
-| 10. exercises + answers included | `PASS` |
+| 10. exercises + answers included                         | `PASS` |
 
 Authoring DoD: `10 / 10 PASS`。
 

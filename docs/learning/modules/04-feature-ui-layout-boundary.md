@@ -38,15 +38,15 @@ Componentを小さくすること自体は目的ではない。100行でも複�
 
 ## 3. Canonical boundary at a glance
 
-| Concern | Feature | UI / Presentation | Layout / Shell |
-| --- | --- | --- | --- |
-| Composition | use-case child coordination | props-based render / local composition | persistent chrome / children arrangement |
-| State | feature lifecycle、request/mutation state | presentation/transient state | route-family chrome/context state |
-| Controller | create / own / invoke | import・ownしない | feature controllerをownしない |
-| Command | typed use caseとしてinvoke | typed callbackでintentを返す | feature commandをexecuteしない |
-| Mapping | server/domain→view model | display formattingのみ | route/context shapingのみ |
-| Loading/error | request lifecycle、retry/cancel intent | supplied stateを表示 | global navigation/session shellのみ |
-| Business logic | Rails resultをorchestrate | 所有しない | 所有しない |
+| Concern        | Feature                                   | UI / Presentation                      | Layout / Shell                           |
+| -------------- | ----------------------------------------- | -------------------------------------- | ---------------------------------------- |
+| Composition    | use-case child coordination               | props-based render / local composition | persistent chrome / children arrangement |
+| State          | feature lifecycle、request/mutation state | presentation/transient state           | route-family chrome/context state        |
+| Controller     | create / own / invoke                     | import・ownしない                      | feature controllerをownしない            |
+| Command        | typed use caseとしてinvoke                | typed callbackでintentを返す           | feature commandをexecuteしない           |
+| Mapping        | server/domain→view model                  | display formattingのみ                 | route/context shapingのみ                |
+| Loading/error  | request lifecycle、retry/cancel intent    | supplied stateを表示                   | global navigation/session shellのみ      |
+| Business logic | Rails resultをorchestrate                 | 所有しない                             | 所有しない                               |
 
 ```text
 Route Entry -> Page Entry -> Feature -> Composite -> UI -> Primitive
@@ -142,25 +142,25 @@ Headerは常にLayout所有ではない。App Headerはroute-family persistent�
 
 ### 7.1 Four state classes
 
-| State class | Canonical owner | Frontend holder / mutation path | Examples |
-| --- | --- | --- | --- |
-| Canonical / Server State | Rails + persisted backend | Client responseをFeature/controller/storeがprojectionとして保持。Command→Client→BFF→Railsでmutation | Project、AnalysisJob、Snapshot、Role、workflow、canonical score |
-| Feature State | Feature controller/store、単一ownerならFeature component | Feature action/controllerだけがmutation | polling、bootstrap、request status、selected project workflow |
-| Presentation State | UI/Compositeまたはpure view-model | props/derived/local state。canonical stateを変更しない | formatted percentage、tone、selected visual、render mode |
-| Transient State | interactionに最も近いUI/Composite/Page | localをdefault。複数child coordination時だけFeatureへlift | modal open、hover/focus、expanded、draft input |
+| State class              | Canonical owner                                          | Frontend holder / mutation path                                                                     | Examples                                                        |
+| ------------------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Canonical / Server State | Rails + persisted backend                                | Client responseをFeature/controller/storeがprojectionとして保持。Command→Client→BFF→Railsでmutation | Project、AnalysisJob、Snapshot、Role、workflow、canonical score |
+| Feature State            | Feature controller/store、単一ownerならFeature component | Feature action/controllerだけがmutation                                                             | polling、bootstrap、request status、selected project workflow   |
+| Presentation State       | UI/Compositeまたはpure view-model                        | props/derived/local state。canonical stateを変更しない                                              | formatted percentage、tone、selected visual、render mode        |
+| Transient State          | interactionに最も近いUI/Composite/Page                   | localをdefault。複数child coordination時だけFeatureへlift                                           | modal open、hover/focus、expanded、draft input                  |
 
 ### 7.2 Panoptes examples
 
-| State | Owner | Reasoning |
-| --- | --- | --- |
-| selected tab | nearest presentation composition。現行Shellでは複数surfaceを切り替えるFeature-level local state | canonical business stateではなくrender selection |
-| modal open | modal trigger/nearest composition。複数childから制御する場合だけFeatureへlift | transient interaction |
-| analysis result / Snapshot | Rails/DBがcanonical owner。Feature/storeはdisplay projection | reload・multi-client・historyに耐えるauthorityが必要 |
-| analysis request loading | Feature controller/action | async use case lifecycle、retry/cancelと結び付く |
-| spinner visibility | UIがFeatureのloading stateからderive | visual representationのみ |
-| current Organization membership | Railsがcanonical。SvelteKit serverがverified active selectionを配布 | Client selectionをauthorization authorityにしない |
-| validation message | UIは表示、Feature/controllerはclient validationとserver error mappingを調整 | message表示とvalidation outcomeを分離 |
-| Job progress | Railsがcanonical progress、Feature runtime storeがprojection、UIがbar/text表示 | server transitionをFrontendで捏造しない |
+| State                           | Owner                                                                                           | Reasoning                                            |
+| ------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| selected tab                    | nearest presentation composition。現行Shellでは複数surfaceを切り替えるFeature-level local state | canonical business stateではなくrender selection     |
+| modal open                      | modal trigger/nearest composition。複数childから制御する場合だけFeatureへlift                   | transient interaction                                |
+| analysis result / Snapshot      | Rails/DBがcanonical owner。Feature/storeはdisplay projection                                    | reload・multi-client・historyに耐えるauthorityが必要 |
+| analysis request loading        | Feature controller/action                                                                       | async use case lifecycle、retry/cancelと結び付く     |
+| spinner visibility              | UIがFeatureのloading stateからderive                                                            | visual representationのみ                            |
+| current Organization membership | Railsがcanonical。SvelteKit serverがverified active selectionを配布                             | Client selectionをauthorization authorityにしない    |
+| validation message              | UIは表示、Feature/controllerはclient validationとserver error mappingを調整                     | message表示とvalidation outcomeを分離                |
+| Job progress                    | Railsがcanonical progress、Feature runtime storeがprojection、UIがbar/text表示                  | server transitionをFrontendで捏造しない              |
 
 Stateを持つだけではFeatureにならない。Modal openはUI、Header compact stateはLayout/UI、request statusはFeature、Job statusはRails authorityである。
 
@@ -239,12 +239,12 @@ UIが直接store mutation/API callを行う場合、Step 4と5が一つになり
 
 ## 10. Page / Compositeとの境界
 
-| Owner | Coordinationの単位 | Example | Must not become |
-| --- | --- | --- | --- |
-| Page Entry | route固有section order、Feature assembly、Header/Hero where page-owned | `MarketingLandingPage` | use-case controller、raw transport |
-| Feature | use case、request/mutation、controller、view model | `PanoptesShellPage`、`SignUpForm` | Rails rule、global shell |
-| Composite | cohesive presentation child群、callback forwarding | `PanoptesShellMainSurface`、Roadmap Phase Card | command/API owner |
-| Layout | route-family persistent frame/context/children | App `+layout.svelte` | Feature lifecycle |
+| Owner      | Coordinationの単位                                                     | Example                                        | Must not become                    |
+| ---------- | ---------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------- |
+| Page Entry | route固有section order、Feature assembly、Header/Hero where page-owned | `MarketingLandingPage`                         | use-case controller、raw transport |
+| Feature    | use case、request/mutation、controller、view model                     | `PanoptesShellPage`、`SignUpForm`              | Rails rule、global shell           |
+| Composite  | cohesive presentation child群、callback forwarding                     | `PanoptesShellMainSurface`、Roadmap Phase Card | command/API owner                  |
+| Layout     | route-family persistent frame/context/children                         | App `+layout.svelte`                           | Feature lifecycle                  |
 
 Pageへuse-case orchestrationを詰めると、URLとbusiness interactionが密結合し、別routeから同じFeatureを使えなくなる。CompositeをFeature化すると、presentation childがtransport/state mutationへ依存し、props/callback contractが崩れる。
 
@@ -252,37 +252,37 @@ Pageへuse-case orchestrationを詰めると、URLとbusiness interactionが密�
 
 ## 11. Representative repository cases
 
-| Case | Classification | Owns | Does not own | Dependencies | State owner |
-| --- | --- | --- | --- | --- | --- |
-| `src/routes/app/+layout.svelte` | Layout | App Header、spacing、Top Hero condition、children | analysis command/controller | Header/Hero/UI、route data | route-family presentation |
-| `MarketingLandingPage.svelte` | Page Entry | Marketing Header/Hero section composition | Signup/analysis use-case lifecycle | page components/UI | minimal page state |
-| `PanoptesShellPage.svelte` | Feature Orchestrator | controller、stores projection、view model、command callbacks | Rails rule、global navigation | controller/mapping/Composite/UI | Feature + lifted presentation state |
-| `panoptes-shell-controller-adapter.ts` | Feature controller adapter | dependency wiring、organization validation、Feature actions | markup/CSS/raw Product copy | commands/actions/client interfaces | Feature lifecycle mutation path |
-| `SignUpForm.svelte` | Feature | controller、form/use-case state、submit/resend、navigation、cleanup | server authorization、generic field rendering details | Signup controller/UI children | Feature form state |
-| `PanoptesShellMainSurface.svelte` | Composite | render branch、props/callback forwarding | controller、store、API | Analysis/Snapshot UI surfaces | supplied presentation state only |
-| `PanoptesAnalysisSurface.svelte` | Composite / presentation | analysis step composition、callback forwarding | analysis command、Job transition | frame/step UI | supplied runtime projection |
-| `StrategyAnalysisRoadmapPhaseCard.svelte` | Composite | task/status child composition、selected visual、callback forwarding | task command、business workflow | Strategy UI children | local presentation projection |
-| `PanoptesTabNav.svelte` | UI / Presentation | accessible tab-like buttons、active styling、onChange intent | tab workflow/store mutation | props/native buttons | supplied/local presentation |
+| Case                                      | Classification             | Owns                                                                | Does not own                                          | Dependencies                       | State owner                         |
+| ----------------------------------------- | -------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------- | ---------------------------------- | ----------------------------------- |
+| `src/routes/app/+layout.svelte`           | Layout                     | App Header、spacing、Top Hero condition、children                   | analysis command/controller                           | Header/Hero/UI、route data         | route-family presentation           |
+| `MarketingLandingPage.svelte`             | Page Entry                 | Marketing Header/Hero section composition                           | Signup/analysis use-case lifecycle                    | page components/UI                 | minimal page state                  |
+| `PanoptesShellPage.svelte`                | Feature Orchestrator       | controller、stores projection、view model、command callbacks        | Rails rule、global navigation                         | controller/mapping/Composite/UI    | Feature + lifted presentation state |
+| `panoptes-shell-controller-adapter.ts`    | Feature controller adapter | dependency wiring、organization validation、Feature actions         | markup/CSS/raw Product copy                           | commands/actions/client interfaces | Feature lifecycle mutation path     |
+| `SignUpForm.svelte`                       | Feature                    | controller、form/use-case state、submit/resend、navigation、cleanup | server authorization、generic field rendering details | Signup controller/UI children      | Feature form state                  |
+| `PanoptesShellMainSurface.svelte`         | Composite                  | render branch、props/callback forwarding                            | controller、store、API                                | Analysis/Snapshot UI surfaces      | supplied presentation state only    |
+| `PanoptesAnalysisSurface.svelte`          | Composite / presentation   | analysis step composition、callback forwarding                      | analysis command、Job transition                      | frame/step UI                      | supplied runtime projection         |
+| `StrategyAnalysisRoadmapPhaseCard.svelte` | Composite                  | task/status child composition、selected visual、callback forwarding | task command、business workflow                       | Strategy UI children               | local presentation projection       |
+| `PanoptesTabNav.svelte`                   | UI / Presentation          | accessible tab-like buttons、active styling、onChange intent        | tab workflow/store mutation                           | props/native buttons               | supplied/local presentation         |
 
 これは限定sampleであり、全Component Boundary auditではない。
 
 ## 12. Boundary violation patterns
 
-| Violation | Why problematic | Correct owner | Refactoring direction |
-| --- | --- | --- | --- |
-| UI → API: Card/Button内で`fetch` | presentationがtransport、loading/error、authへ結合 | Feature Command + Client | UIは`onSelect/onSubmit`、Featureがcommand invoke |
-| UI → Feature Store Mutation | mutation入口が分散し、invariant/stale guardを迂回 | Feature Controller/Action | UIはtyped payloadをcallback。Ownerがstore mutation |
-| Layout → Feature Command | route family mount/navigationがuse case side effectを起こす | Feature | Layoutはcontext/childrenを渡し、Page/Featureがcommand開始 |
-| Page → Business Rule | URL componentがeligibility/formulaの正本になる | Rails | PageはFeature assembly、Rails decisionをFeature経由で表示 |
-| Feature → Rails Rule Duplication | BackendとFrontendが異なる結果を出す | Rails canonical rule | Featureはserver resultをorchestrateし、display mappingだけ行う |
-| Composite → Use-case Owner | reusable sectionがcontroller/API/storeへ依存 | Feature | Compositeへview model + callbacksを渡し、side effectを上へ移す |
+| Violation                        | Why problematic                                             | Correct owner             | Refactoring direction                                          |
+| -------------------------------- | ----------------------------------------------------------- | ------------------------- | -------------------------------------------------------------- |
+| UI → API: Card/Button内で`fetch` | presentationがtransport、loading/error、authへ結合          | Feature Command + Client  | UIは`onSelect/onSubmit`、Featureがcommand invoke               |
+| UI → Feature Store Mutation      | mutation入口が分散し、invariant/stale guardを迂回           | Feature Controller/Action | UIはtyped payloadをcallback。Ownerがstore mutation             |
+| Layout → Feature Command         | route family mount/navigationがuse case side effectを起こす | Feature                   | Layoutはcontext/childrenを渡し、Page/Featureがcommand開始      |
+| Page → Business Rule             | URL componentがeligibility/formulaの正本になる              | Rails                     | PageはFeature assembly、Rails decisionをFeature経由で表示      |
+| Feature → Rails Rule Duplication | BackendとFrontendが異なる結果を出す                         | Rails canonical rule      | Featureはserver resultをorchestrateし、display mappingだけ行う |
+| Composite → Use-case Owner       | reusable sectionがcontroller/API/storeへ依存                | Feature                   | Compositeへview model + callbacksを渡し、side effectを上へ移す |
 
 ### Example: UI → API
 
 ```ts
 // violation: presentation buttonがtransportを所有
 async function retry() {
-  await fetch('/api/panoptes/v1/jobs/retry', { method: 'POST' });
+	await fetch('/api/panoptes/v1/jobs/retry', { method: 'POST' });
 }
 ```
 
@@ -408,7 +408,7 @@ FeatureはRails resultをorchestrateする。Canonical business decisionはRails
 ```ts
 // A: UI Card
 async function onClick() {
-  await fetch('/api/panoptes/v1/projects/1/reanalyze', { method: 'POST' });
+	await fetch('/api/panoptes/v1/projects/1/reanalyze', { method: 'POST' });
 }
 ```
 
@@ -513,18 +513,18 @@ UIがCommandを直接呼ぶと、presentation componentがrequest state、retry�
 
 ## 19. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. Boundary purpose explained | `PASS` |
-| 2. Feature responsibility explained | `PASS` |
-| 3. UI responsibility explained | `PASS` |
-| 4. Layout responsibility explained | `PASS` |
-| 5. State ownership explained | `PASS` |
-| 6. Controller/Command ownership explained | `PASS` |
-| 7. Data Down / Callback Up explained | `PASS` |
-| 8. Boundary violation patterns explained | `PASS` |
+| Criterion                                     | Result |
+| --------------------------------------------- | ------ |
+| 1. Boundary purpose explained                 | `PASS` |
+| 2. Feature responsibility explained           | `PASS` |
+| 3. UI responsibility explained                | `PASS` |
+| 4. Layout responsibility explained            | `PASS` |
+| 5. State ownership explained                  | `PASS` |
+| 6. Controller/Command ownership explained     | `PASS` |
+| 7. Data Down / Callback Up explained          | `PASS` |
+| 8. Boundary violation patterns explained      | `PASS` |
 | 9. Representative repository mapping included | `PASS` |
-| 10. Exercises + answers included | `PASS` |
+| 10. Exercises + answers included              | `PASS` |
 
 M04 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M05`
@@ -544,4 +544,3 @@ Module status: `COMPLETE / READY_FOR_M05`
 - [Frontend Structure Policy](../../architecture/frontend-structure-policy.md)
 - [Panoptes Shell Flow](../../architecture/panoptes-shell-flow.md)
 - [Frontend Route Ownership](../../architecture/frontend-route-ownership.md)
-

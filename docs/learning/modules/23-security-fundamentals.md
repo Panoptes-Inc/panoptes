@@ -24,11 +24,11 @@ Prerequisites: `M01`–`M22`（direct curriculum dependencies: `M07`–`M15`, `M
 
 Securityは、次の性質を守るためのcontrolの組合せである。
 
-| Property | Meaning in Panoptes |
-| --- | --- |
+| Property        | Meaning in Panoptes                                                        |
+| --------------- | -------------------------------------------------------------------------- |
 | Confidentiality | Organization data、Session、Evidence、Secret等を権限のない主体へ漏らさない |
-| Integrity | Job、Snapshot、Score、Membership、Audit等を不正・重複・改ざんから守る |
-| Availability | API、Worker、Analysisをabuseやresource exhaustionから守り利用可能にする |
+| Integrity       | Job、Snapshot、Score、Membership、Audit等を不正・重複・改ざんから守る      |
+| Availability    | API、Worker、Analysisをabuseやresource exhaustionから守り利用可能にする    |
 
 ```text
 Security != Login only
@@ -234,13 +234,13 @@ Svelteのdefault escapingは重要なcontrolだが、FrameworkだけでXSSが完
 
 ## 13. Input validation by boundary
 
-| Layer | Validation responsibility |
-| --- | --- |
-| Frontend | UX、required/format、immediate feedback。Security enforcementではない |
-| BFF | method/path/context、Session presence、transport shape、explicit proxy boundary |
-| Rails | schema/application validation、Authorization、Business Rule、state transition |
-| PostgreSQL | type、FK、unique/check、transaction等のdurable integrity |
-| Worker | URL/content/size/type/timeout、artifact/result shape、technical provenance |
+| Layer      | Validation responsibility                                                       |
+| ---------- | ------------------------------------------------------------------------------- |
+| Frontend   | UX、required/format、immediate feedback。Security enforcementではない           |
+| BFF        | method/path/context、Session presence、transport shape、explicit proxy boundary |
+| Rails      | schema/application validation、Authorization、Business Rule、state transition   |
+| PostgreSQL | type、FK、unique/check、transaction等のdurable integrity                        |
+| Worker     | URL/content/size/type/timeout、artifact/result shape、technical provenance      |
 
 一度validateした値も、別Trust Boundaryでは受信側contractへ再検証する。
 
@@ -428,11 +428,11 @@ Retry/duplicate deliveryへのIdempotencyはReliabilityだけでなくIntegrity�
 
 ## 25. Logging, Audit, and Lineage
 
-| Concept | Question | Examples |
-| --- | --- | --- |
-| Logging | Systemがどう動いたか | request ID、error class、latency、technical event |
-| Audit | 誰が何をいつどの対象へ行ったか | role change、important mutation、privileged action |
-| Lineage | 何から何が作られたか | Evidence→Observation→Result→Snapshot |
+| Concept | Question                       | Examples                                           |
+| ------- | ------------------------------ | -------------------------------------------------- |
+| Logging | Systemがどう動いたか           | request ID、error class、latency、technical event  |
+| Audit   | 誰が何をいつどの対象へ行ったか | role change、important mutation、privileged action |
+| Lineage | 何から何が作られたか           | Evidence→Observation→Result→Snapshot               |
 
 Logへpassword、raw credential、access token、unnecessary personal/sensitive dataを出さない。Rails CURRENTではauthorization、cookie、password系、email、secret、token、JWT、key、OTP、SSN、card security code等をparameter filtering対象としている。
 
@@ -516,12 +516,12 @@ Browser request with project_id
 
 ## 31. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | Supabase server session context、SvelteKit route/BFF guard、safe return path policy、explicit BFF endpoints、Bearer forwarding、Rails JWT independent verification、User mapping、active Organization Membership/Role scope、safe BFF error、OpenAPI Bearer scheme、Rails sensitive parameter filteringがある。 |
-| CURRENT caveat | CURRENT endpoints/controlは限定範囲で、Production AnalysisJob/Worker/Artifact/Queue全体のSecurity implementationやformal reviewを証明しない。BFF route guardはRails resource authorizationの代替ではない。 |
-| TARGET | Resource-derived authorization、Production Worker isolation/egress/resource limits、private Artifact access、Queue producer/consumer/integrity、central Secret management、redacted structured logging、Security Audit、rate/abuse control。 |
-| DEFERRED | SSO/Passkey、full threat modeling、penetration test、formal security review、Infrastructure-specific hardening、full retention/data classification、Production Worker/Queue/Artifact controls、dependency scanner policy。 |
+| Classification | Confirmed scope                                                                                                                                                                                                                                                                                                 |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT        | Supabase server session context、SvelteKit route/BFF guard、safe return path policy、explicit BFF endpoints、Bearer forwarding、Rails JWT independent verification、User mapping、active Organization Membership/Role scope、safe BFF error、OpenAPI Bearer scheme、Rails sensitive parameter filteringがある。 |
+| CURRENT caveat | CURRENT endpoints/controlは限定範囲で、Production AnalysisJob/Worker/Artifact/Queue全体のSecurity implementationやformal reviewを証明しない。BFF route guardはRails resource authorizationの代替ではない。                                                                                                      |
+| TARGET         | Resource-derived authorization、Production Worker isolation/egress/resource limits、private Artifact access、Queue producer/consumer/integrity、central Secret management、redacted structured logging、Security Audit、rate/abuse control。                                                                    |
+| DEFERRED       | SSO/Passkey、full threat modeling、penetration test、formal security review、Infrastructure-specific hardening、full retention/data classification、Production Worker/Queue/Artifact controls、dependency scanner policy。                                                                                      |
 
 Security Moduleの完成はProduction Security Readinessを意味しない。
 
@@ -529,39 +529,39 @@ Security Moduleの完成はProduction Security Readinessを意味しない。
 
 Repo-wide Security auditではなく、12 representative sourcesを限定確認した。
 
-| Source | Trust boundary / Asset | Confirmed control | Owner / Status |
-| --- | --- | --- | --- |
-| `src/hooks.server.ts` | Browser→SvelteKit、Session/route | auth context、route policy、401/403、private no-store | BFF CURRENT |
-| `src/lib/server/auth/policy.ts` | Route/Organization/System role | public/protected policy、active-membership、fail-closed decision | BFF CURRENT |
-| `src/lib/server/auth/session.ts` | Session/logout | provider sign-out + local cookie cleanup boundary | BFF CURRENT |
-| `src/lib/auth/redirect.ts` | Browser redirect input | safe return destination policy | Frontend/BFF CURRENT |
-| `src/lib/server/rails/client.ts` | BFF→Rails、access token/API errors | Session identity match、Bearer forwarding、timeout、safe error、active-org mismatch deny | BFF CURRENT |
-| `rails/app/controllers/concerns/authentication.rb` | Request→Rails identity | strict Bearer extraction、JWT verifier、Current User mapping | Rails CURRENT |
-| `rails/app/services/auth/supabase_jwt_verifier.rb` | External token→Rails | algorithm/kid/signature/issuer/audience/time/claim/subject validation | Rails CURRENT |
-| `rails/app/controllers/concerns/organization_authorization.rb` | User→Organization resource | active Membership/Organization scoped query、role check | Rails CURRENT |
-| `rails/config/initializers/filter_parameter_logging.rb` | Logs / Sensitive data | credential/PII-related parameter filtering | Rails CURRENT |
-| `docs/api/openapi-draft.yaml` | API contract | global Bearer JWT scheme、public health exception | Target/Current contract evidence |
-| [M14 Worker / Chromium / Collection](./14-python-worker-chromium-collection.md) | Worker→External Web | isolation/SSRF/resource/artifact boundaries documented | TARGET; runtime not implemented |
-| [Product Decision Register](../../product/product-decision-register.md) | Product authorization/data semantics | approved identity/Organization/Result decisions | Canonical decisions; implementation varies |
+| Source                                                                          | Trust boundary / Asset               | Confirmed control                                                                        | Owner / Status                             |
+| ------------------------------------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `src/hooks.server.ts`                                                           | Browser→SvelteKit、Session/route     | auth context、route policy、401/403、private no-store                                    | BFF CURRENT                                |
+| `src/lib/server/auth/policy.ts`                                                 | Route/Organization/System role       | public/protected policy、active-membership、fail-closed decision                         | BFF CURRENT                                |
+| `src/lib/server/auth/session.ts`                                                | Session/logout                       | provider sign-out + local cookie cleanup boundary                                        | BFF CURRENT                                |
+| `src/lib/auth/redirect.ts`                                                      | Browser redirect input               | safe return destination policy                                                           | Frontend/BFF CURRENT                       |
+| `src/lib/server/rails/client.ts`                                                | BFF→Rails、access token/API errors   | Session identity match、Bearer forwarding、timeout、safe error、active-org mismatch deny | BFF CURRENT                                |
+| `rails/app/controllers/concerns/authentication.rb`                              | Request→Rails identity               | strict Bearer extraction、JWT verifier、Current User mapping                             | Rails CURRENT                              |
+| `rails/app/services/auth/supabase_jwt_verifier.rb`                              | External token→Rails                 | algorithm/kid/signature/issuer/audience/time/claim/subject validation                    | Rails CURRENT                              |
+| `rails/app/controllers/concerns/organization_authorization.rb`                  | User→Organization resource           | active Membership/Organization scoped query、role check                                  | Rails CURRENT                              |
+| `rails/config/initializers/filter_parameter_logging.rb`                         | Logs / Sensitive data                | credential/PII-related parameter filtering                                               | Rails CURRENT                              |
+| `docs/api/openapi-draft.yaml`                                                   | API contract                         | global Bearer JWT scheme、public health exception                                        | Target/Current contract evidence           |
+| [M14 Worker / Chromium / Collection](./14-python-worker-chromium-collection.md) | Worker→External Web                  | isolation/SSRF/resource/artifact boundaries documented                                   | TARGET; runtime not implemented            |
+| [Product Decision Register](../../product/product-decision-register.md)         | Product authorization/data semantics | approved identity/Organization/Result decisions                                          | Canonical decisions; implementation varies |
 
 ## 33. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| Login = Authorization | identityとresource permissionは別 |
-| Hidden button = Security | Server-side enforcementが必要 |
-| BFFを通る = trusted | Railsが独立検証する |
-| URL ID = permission proof | resource-derived authorizationが必要 |
-| FK = Authorization | relation integrityでありRequester permissionではない |
-| TLS = Authorization | transport protectionとaccess controlは別 |
-| Encryption = Access Control | encrypted dataでもauthorized response判定が必要 |
-| Framework = XSS完全防止 | unsafe HTML/URL/third-party境界は残る |
-| Queue message = Business Truth | Rails state/identity検証が必要 |
-| Worker環境はtrusted | External Webへ接触する強いboundary |
-| Screenshot/HTMLは無害 | untrusted content/artifactとして扱う |
-| Loggingは多いほど安全 | Secret/PII leakageを避ける |
-| SecurityはBackendだけ | Browser/BFF/Rails/DB/Worker/Operations全体 |
-| Client validation = enforcement | UXでありRails/DB validationを代替しない |
+| Misunderstanding                | Correction                                           |
+| ------------------------------- | ---------------------------------------------------- |
+| Login = Authorization           | identityとresource permissionは別                    |
+| Hidden button = Security        | Server-side enforcementが必要                        |
+| BFFを通る = trusted             | Railsが独立検証する                                  |
+| URL ID = permission proof       | resource-derived authorizationが必要                 |
+| FK = Authorization              | relation integrityでありRequester permissionではない |
+| TLS = Authorization             | transport protectionとaccess controlは別             |
+| Encryption = Access Control     | encrypted dataでもauthorized response判定が必要      |
+| Framework = XSS完全防止         | unsafe HTML/URL/third-party境界は残る                |
+| Queue message = Business Truth  | Rails state/identity検証が必要                       |
+| Worker環境はtrusted             | External Webへ接触する強いboundary                   |
+| Screenshot/HTMLは無害           | untrusted content/artifactとして扱う                 |
+| Loggingは多いほど安全           | Secret/PII leakageを避ける                           |
+| SecurityはBackendだけ           | Browser/BFF/Rails/DB/Worker/Operations全体           |
+| Client validation = enforcement | UXでありRails/DB validationを代替しない              |
 
 ## 34. Decision heuristic
 
@@ -679,18 +679,18 @@ Destination/redirectを検証しprivate networkを防ぎ、timeout/size/CPU/memo
 
 ## 37. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Security fundamentals explained | `PASS` |
-| 2 | Asset/Threat/Trust Boundary explained | `PASS` |
-| 3 | Defense in Depth explained | `PASS` |
-| 4 | Authentication/Authorization boundary explained | `PASS` |
-| 5 | Session/API/Tenant security explained | `PASS` |
-| 6 | Secret/Data protection explained | `PASS` |
-| 7 | Worker/External Web security explained | `PASS` |
-| 8 | Logging/Audit/Supply Chain explained | `PASS` |
-| 9 | Repository mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                       | Result |
+| --: | ----------------------------------------------- | ------ |
+|   1 | Security fundamentals explained                 | `PASS` |
+|   2 | Asset/Threat/Trust Boundary explained           | `PASS` |
+|   3 | Defense in Depth explained                      | `PASS` |
+|   4 | Authentication/Authorization boundary explained | `PASS` |
+|   5 | Session/API/Tenant security explained           | `PASS` |
+|   6 | Secret/Data protection explained                | `PASS` |
+|   7 | Worker/External Web security explained          | `PASS` |
+|   8 | Logging/Audit/Supply Chain explained            | `PASS` |
+|   9 | Repository mapping + two diagrams included      | `PASS` |
+|  10 | Exercises + answers included                    | `PASS` |
 
 M23 authoring result: `10 / 10 PASS`。教材完成はProduction Security Readiness、formal threat model、penetration test、Infrastructure/Worker hardeningの完成を意味しない。
 

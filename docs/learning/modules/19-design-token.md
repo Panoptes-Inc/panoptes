@@ -118,8 +118,12 @@ Primary textをneutral-900からneutral-800へ変更するとする。
 Raw直参照の場合:
 
 ```css
-.title { color: var(--p-raw-color-neutral-900); }
-.body  { color: var(--p-raw-color-neutral-900); }
+.title {
+	color: var(--p-raw-color-neutral-900);
+}
+.body {
+	color: var(--p-raw-color-neutral-900);
+}
 ```
 
 Component側が「この値はprimary text」という意味を持たないため、変更対象の探索が必要になる。
@@ -128,10 +132,12 @@ Semantic経由の場合:
 
 ```css
 :root {
-  --p-color-text-primary: var(--p-raw-color-neutral-900);
+	--p-color-text-primary: var(--p-raw-color-neutral-900);
 }
 
-.title { color: var(--p-color-text-primary); }
+.title {
+	color: var(--p-color-text-primary);
+}
 ```
 
 Semantic mappingをneutral-800へ変更すれば、roleを維持したまま値を更新できる。変更にはvisual/contrast validationが必要であり、Token化は無検証変更を許可する仕組みではない。
@@ -140,18 +146,18 @@ Semantic mappingをneutral-800へ変更すれば、roleを維持したまま値�
 
 FS-05で承認済みのCategoryは次の10種である。指示文中の「9 Category」という記載より、Primary Standardの列挙とContractを優先する。
 
-| Category | Owns | Important boundary |
-| --- | --- | --- |
-| Color | brand/neutral foundation、text、surface、border、action、status | HexをProduct meaningにしない |
-| Typography | family、size、weight、line-height、letter-spacing | DOM heading levelとvisual roleを分離 |
-| Spacing | margin、padding、gapのrhythm | Sizingと混同しない |
-| Sizing | control/icon/avatar/container/max-size | 全px値やintrinsic geometryをToken化しない |
-| Radius | control、surface、pill/fullのshape role | 値ではなく用途で命名 |
-| Border | width、style、semantic border color | focus/stateと責務を分離 |
-| Shadow | elevation、focus/interaction補助 | art direction固有effectは例外可 |
-| Z-index | named layer | 任意数値競争を作らない |
-| Breakpoint | responsive adaptation threshold | device categoryではない |
-| Motion | common duration/easing、reduced-motion relation | 固有timelineを無理に共通化しない |
+| Category   | Owns                                                            | Important boundary                        |
+| ---------- | --------------------------------------------------------------- | ----------------------------------------- |
+| Color      | brand/neutral foundation、text、surface、border、action、status | HexをProduct meaningにしない              |
+| Typography | family、size、weight、line-height、letter-spacing               | DOM heading levelとvisual roleを分離      |
+| Spacing    | margin、padding、gapのrhythm                                    | Sizingと混同しない                        |
+| Sizing     | control/icon/avatar/container/max-size                          | 全px値やintrinsic geometryをToken化しない |
+| Radius     | control、surface、pill/fullのshape role                         | 値ではなく用途で命名                      |
+| Border     | width、style、semantic border color                             | focus/stateと責務を分離                   |
+| Shadow     | elevation、focus/interaction補助                                | art direction固有effectは例外可           |
+| Z-index    | named layer                                                     | 任意数値競争を作らない                    |
+| Breakpoint | responsive adaptation threshold                                 | device categoryではない                   |
+| Motion     | common duration/easing、reduced-motion relation                 | 固有timelineを無理に共通化しない          |
 
 必要なcontractだけをToken化する。「値が存在する」ことと「Token Categoryへ登録すべき」ことは同義ではない。
 
@@ -217,14 +223,14 @@ z-index: 999999;
 
 FS-07で承認されたBreakpoint Contract:
 
-| Name | Value | Semantic use |
-| --- | ---: | --- |
-| Base | `<640px` | base/mobile-first behavior |
-| `sm` | `640px` | compact spacing/control/grid enhancement |
-| `md` | `768px` | medium composition、form/modal、1→2 columns |
-| `lg` | `1024px` | navigation、sidebar、major region split |
-| `xl` | `1280px` | wide grid、dense analysis、desktop spacing |
-| `2xl` | `1536px` | wide analytics density only |
+| Name  |    Value | Semantic use                                |
+| ----- | -------: | ------------------------------------------- |
+| Base  | `<640px` | base/mobile-first behavior                  |
+| `sm`  |  `640px` | compact spacing/control/grid enhancement    |
+| `md`  |  `768px` | medium composition、form/modal、1→2 columns |
+| `lg`  | `1024px` | navigation、sidebar、major region split     |
+| `xl`  | `1280px` | wide grid、dense analysis、desktop spacing  |
+| `2xl` | `1536px` | wide analytics density only                 |
 
 Breakpointはmobile/tablet/desktopという端末分類ではなく、layoutが適応を必要とするthresholdである。既存`720px`等をclosest Tokenへ機械変換しない。
 
@@ -243,14 +249,14 @@ Tokenがあるだけでreduced-motion対応が完了するわけではなく、C
 
 ## 16. Component usage boundary
 
-| Owner | Default usage |
-| --- | --- |
-| Shared UI / Primitive | Semantic Tokenをdefaultとする。Raw direct useは記録された例外のみ |
-| Composite | Semantic appearance + composition styling |
-| Feature UI | Semantic Token + feature-local composition。Product stateをpresentation mapping後にroleへ接続 |
-| Layout / Page | surface、spacing、container、named layer、Breakpoint Contract |
-| Preview | Productionと同じsemantic contract。独自paletteを正本化しない |
-| Data visualization / SVG | text/surface/statusはSemantic。algorithmic geometryや固有gradientはlocal exception可 |
+| Owner                    | Default usage                                                                                 |
+| ------------------------ | --------------------------------------------------------------------------------------------- |
+| Shared UI / Primitive    | Semantic Tokenをdefaultとする。Raw direct useは記録された例外のみ                             |
+| Composite                | Semantic appearance + composition styling                                                     |
+| Feature UI               | Semantic Token + feature-local composition。Product stateをpresentation mapping後にroleへ接続 |
+| Layout / Page            | surface、spacing、container、named layer、Breakpoint Contract                                 |
+| Preview                  | Productionと同じsemantic contract。独自paletteを正本化しない                                  |
+| Data visualization / SVG | text/surface/statusはSemantic。algorithmic geometryや固有gradientはlocal exception可          |
 
 Feature固有のvisual needでも、まずSemantic Tokenで表現できるか確認する。Product固有意味をgeneric Tokenへ混ぜない。
 
@@ -330,13 +336,13 @@ FS-05/06が許容する主な例外:
 
 ## 23. Token evolution and compatibility
 
-| Change class | Meaning | Required handling |
-| --- | --- | --- |
-| Additive | 新role/scaleを追加 | naming/owner/reuse needを確認 |
-| Raw value change | foundation値変更 | affected Semantic rolesとvisual impactを検証 |
-| Semantic reference change | roleは維持して参照Rawを変更 | owner approval、visual/contrast validation |
-| Semantic rename/removal | public contract変更 | consumer migration、期限付きalias、削除条件 |
-| Semantic meaning change | role自体が変化 | 既存Tokenを再利用せず新Token + migration |
+| Change class              | Meaning                     | Required handling                            |
+| ------------------------- | --------------------------- | -------------------------------------------- |
+| Additive                  | 新role/scaleを追加          | naming/owner/reuse needを確認                |
+| Raw value change          | foundation値変更            | affected Semantic rolesとvisual impactを検証 |
+| Semantic reference change | roleは維持して参照Rawを変更 | owner approval、visual/contrast validation   |
+| Semantic rename/removal   | public contract変更         | consumer migration、期限付きalias、削除条件  |
+| Semantic meaning change   | role自体が変化              | 既存Tokenを再利用せず新Token + migration     |
 
 Contract versionは文書metadataで追跡し、Token名へ`v1`を埋め込まない。Exact deprecation toolingは未決定のため新設しない。
 
@@ -362,10 +368,10 @@ Before:
 
 ```css
 .example-card {
-  color: #2d2d2d;
-  background: #ffffff;
-  padding: 16px;
-  border-radius: 16px;
+	color: #2d2d2d;
+	background: #ffffff;
+	padding: 16px;
+	border-radius: 16px;
 }
 ```
 
@@ -373,24 +379,24 @@ Target direction:
 
 ```css
 :root {
-  /* illustrative Raw layer */
-  --p-raw-color-neutral-900: #2d2d2d;
-  --p-raw-color-neutral-0: #ffffff;
-  --p-raw-spacing-4: 16px;
-  --p-raw-radius-4: 16px;
+	/* illustrative Raw layer */
+	--p-raw-color-neutral-900: #2d2d2d;
+	--p-raw-color-neutral-0: #ffffff;
+	--p-raw-spacing-4: 16px;
+	--p-raw-radius-4: 16px;
 
-  /* illustrative Semantic layer */
-  --p-color-text-primary: var(--p-raw-color-neutral-900);
-  --p-color-surface-default: var(--p-raw-color-neutral-0);
-  --p-space-component-md: var(--p-raw-spacing-4);
-  --p-radius-surface-md: var(--p-raw-radius-4);
+	/* illustrative Semantic layer */
+	--p-color-text-primary: var(--p-raw-color-neutral-900);
+	--p-color-surface-default: var(--p-raw-color-neutral-0);
+	--p-space-component-md: var(--p-raw-spacing-4);
+	--p-radius-surface-md: var(--p-raw-radius-4);
 }
 
 .example-card {
-  color: var(--p-color-text-primary);
-  background: var(--p-color-surface-default);
-  padding: var(--p-space-component-md);
-  border-radius: var(--p-radius-surface-md);
+	color: var(--p-color-text-primary);
+	background: var(--p-color-surface-default);
+	padding: var(--p-space-component-md);
+	border-radius: var(--p-radius-surface-md);
 }
 ```
 
@@ -398,12 +404,12 @@ Target direction:
 
 ## 26. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope |
-| --- | --- |
-| CURRENT | `src/app.css`、Svelte `<style>`、component-local CSS、hardcoded Hex/px/shadow/z-index/transition、既存media queryがある。 |
-| CURRENT caveat | `src/lib/ui/tokens.css`は未実装。Tailwind dependency/configも未導入。既存CSS variableや反復値があってもCanonical Token Contract実装済みとは言えない。 |
-| TARGET | `src/lib/ui/tokens.css`を単一runtime SoTとし、Raw→Semantic→Componentを適用。TailwindはSemantic Token adapter/consumerとする。 |
-| DEFERRED | minimal Token値実装、full migration、legacy cleanup、Tailwind connection、visual regression/accessibility verification、exact TS adapter/generator/deprecation tooling。 |
+| Classification | Confirmed scope                                                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| CURRENT        | `src/app.css`、Svelte `<style>`、component-local CSS、hardcoded Hex/px/shadow/z-index/transition、既存media queryがある。                                                |
+| CURRENT caveat | `src/lib/ui/tokens.css`は未実装。Tailwind dependency/configも未導入。既存CSS variableや反復値があってもCanonical Token Contract実装済みとは言えない。                    |
+| TARGET         | `src/lib/ui/tokens.css`を単一runtime SoTとし、Raw→Semantic→Componentを適用。TailwindはSemantic Token adapter/consumerとする。                                            |
+| DEFERRED       | minimal Token値実装、full migration、legacy cleanup、Tailwind connection、visual regression/accessibility verification、exact TS adapter/generator/deprecation tooling。 |
 
 Target SoTはImplementation Completeを意味しない。
 
@@ -411,35 +417,35 @@ Target SoTはImplementation Completeを意味しない。
 
 全CSS監査ではなく、FS-05で限定確認済みの10 examplesを教材上で再利用した。
 
-| Current source | Current styling evidence | Token / exception interpretation | Migration status |
-| --- | --- | --- | --- |
-| `src/app.css` | page background、global font | surface/font Semantic candidate | CURRENT hardcoded; TARGET token consumer |
-| `PanoptesSiteHeader.svelte` | brand gradient、surface、pill、transition、z-index | color/radius/motion/layer candidates | touch-and-migrate |
-| `LandingHeroPrimarySection.svelte` | surface、16px radius、complex shadow | surface/radius candidate; shadow exception review | no redesign |
-| `LandingHeroSecondarySection.svelte` | repeated surface/radius/shadow | repeated Semantic candidate | validate parity first |
-| `PanoptesShellMainSurface.svelte` | gap、minimum height | spacing candidate + feature sizing exception | owner review |
-| `SignUpBtn.svelte` | gradient、control height、pill、hover shadow、transition | action/control/type/motion candidates | Shared UI priority after SoT |
-| `SignUpFields.svelte` | input height、radius、text、focus ring | form/state Semantic candidates | Shared UI priority after SoT |
-| `PanoptesToastStack.svelte` | status border/surface/shadow、z-index 120 | status/elevation/named layer candidates | owner review |
-| `src/routes/app/+layout.svelte` | z-index 79、gap、720px media query | layer/spacing/breakpoint migration evidence | do not mechanically map 720px |
-| `AppLogo.svelte` | intrinsic/responsive `min()` sizing | asset/component sizing exception candidate | may remain local |
+| Current source                       | Current styling evidence                                 | Token / exception interpretation                  | Migration status                         |
+| ------------------------------------ | -------------------------------------------------------- | ------------------------------------------------- | ---------------------------------------- |
+| `src/app.css`                        | page background、global font                             | surface/font Semantic candidate                   | CURRENT hardcoded; TARGET token consumer |
+| `PanoptesSiteHeader.svelte`          | brand gradient、surface、pill、transition、z-index       | color/radius/motion/layer candidates              | touch-and-migrate                        |
+| `LandingHeroPrimarySection.svelte`   | surface、16px radius、complex shadow                     | surface/radius candidate; shadow exception review | no redesign                              |
+| `LandingHeroSecondarySection.svelte` | repeated surface/radius/shadow                           | repeated Semantic candidate                       | validate parity first                    |
+| `PanoptesShellMainSurface.svelte`    | gap、minimum height                                      | spacing candidate + feature sizing exception      | owner review                             |
+| `SignUpBtn.svelte`                   | gradient、control height、pill、hover shadow、transition | action/control/type/motion candidates             | Shared UI priority after SoT             |
+| `SignUpFields.svelte`                | input height、radius、text、focus ring                   | form/state Semantic candidates                    | Shared UI priority after SoT             |
+| `PanoptesToastStack.svelte`          | status border/surface/shadow、z-index 120                | status/elevation/named layer candidates           | owner review                             |
+| `src/routes/app/+layout.svelte`      | z-index 79、gap、720px media query                       | layer/spacing/breakpoint migration evidence       | do not mechanically map 720px            |
+| `AppLogo.svelte`                     | intrinsic/responsive `min()` sizing                      | asset/component sizing exception candidate        | may remain local                         |
 
 このsampleはToken Foundationが適用可能であることを示すが、全repositoryの準拠や値の頻度分布を証明しない。
 
 ## 28. Common misunderstandings
 
-| Misunderstanding | Correction |
-| --- | --- |
-| Token = CSS Variable | TokenはDesign Contract、CSS variableは実装手段 |
-| Raw = Semantic | Rawは値のfoundation、SemanticはUI role |
-| ComponentはRawを使う | defaultはSemantic consumer |
-| Tailwind = Token SoT | Tailwindはconsumer/adapter layer |
-| hardcoded valueは常に禁止 | 記録された例外を許容 |
-| Breakpointはdevice名 | layout adaptation threshold |
-| Product stateはColor Tokenが決める | Business meaningはProduct/Feature Contract |
-| TokenがあればAccessibility完了 | actual verificationが必要 |
-| 2箇所で同じ値ならToken | 意味と安定したreuse contractが必要 |
-| Target `tokens.css`は実装済み | 承認済みpathだがCURRENTでは未実装 |
+| Misunderstanding                   | Correction                                     |
+| ---------------------------------- | ---------------------------------------------- |
+| Token = CSS Variable               | TokenはDesign Contract、CSS variableは実装手段 |
+| Raw = Semantic                     | Rawは値のfoundation、SemanticはUI role         |
+| ComponentはRawを使う               | defaultはSemantic consumer                     |
+| Tailwind = Token SoT               | Tailwindはconsumer/adapter layer               |
+| hardcoded valueは常に禁止          | 記録された例外を許容                           |
+| Breakpointはdevice名               | layout adaptation threshold                    |
+| Product stateはColor Tokenが決める | Business meaningはProduct/Feature Contract     |
+| TokenがあればAccessibility完了     | actual verificationが必要                      |
+| 2箇所で同じ値ならToken             | 意味と安定したreuse contractが必要             |
+| Target `tokens.css`は実装済み      | 承認済みpathだがCURRENTでは未実装              |
 
 ## 29. Decision heuristic
 
@@ -539,18 +545,18 @@ Rawはpalette/scaleを安定して管理し、SemanticはUI roleをpublic contra
 
 ## 32. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Design Token purpose explained | `PASS` |
-| 2 | Raw Token explained | `PASS` |
-| 3 | Semantic Token explained | `PASS` |
-| 4 | Raw→Semantic→Component explained | `PASS` |
-| 5 | Canonical categories explained | `PASS` |
-| 6 | Tailwind boundary explained | `PASS` |
-| 7 | Responsive/Motion relation explained | `PASS` |
-| 8 | Exception/migration model explained | `PASS` |
-| 9 | Repository mapping + two diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                  | Result |
+| --: | ------------------------------------------ | ------ |
+|   1 | Design Token purpose explained             | `PASS` |
+|   2 | Raw Token explained                        | `PASS` |
+|   3 | Semantic Token explained                   | `PASS` |
+|   4 | Raw→Semantic→Component explained           | `PASS` |
+|   5 | Canonical categories explained             | `PASS` |
+|   6 | Tailwind boundary explained                | `PASS` |
+|   7 | Responsive/Motion relation explained       | `PASS` |
+|   8 | Exception/migration model explained        | `PASS` |
+|   9 | Repository mapping + two diagrams included | `PASS` |
+|  10 | Exercises + answers included               | `PASS` |
 
 M19 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、`tokens.css`、Tailwind、Source migration、visual/accessibility verificationの完成判定ではない。
 

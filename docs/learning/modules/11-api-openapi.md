@@ -21,29 +21,29 @@ Prerequisites: `M01`–`M10`
 
 APIはsystem間の明示的なcontractである。
 
-| Term | Meaning |
-| --- | --- |
-| Client | APIを呼び出すconsumer |
-| Server | requestを受けcontractに従ってresponseを返す側 |
-| Endpoint | methodとpathで識別される入口 |
-| Request | path/query/header/body/auth contextを含む入力 |
-| Response | status/header/bodyを含む結果 |
-| Method | request intentのHTTP vocabulary |
-| Status | transport/application outcomeの分類 |
-| Body | structured payload。PanoptesではJSONが基本 |
-| Header | media type、credential、request ID等のmetadata |
+| Term     | Meaning                                        |
+| -------- | ---------------------------------------------- |
+| Client   | APIを呼び出すconsumer                          |
+| Server   | requestを受けcontractに従ってresponseを返す側  |
+| Endpoint | methodとpathで識別される入口                   |
+| Request  | path/query/header/body/auth contextを含む入力  |
+| Response | status/header/bodyを含む結果                   |
+| Method   | request intentのHTTP vocabulary                |
+| Status   | transport/application outcomeの分類            |
+| Body     | structured payload。PanoptesではJSONが基本     |
+| Header   | media type、credential、request ID等のmetadata |
 
 同じURLでもGETとPOSTは別operationになり得る。Body shape、required field、error、authorization、semantic meaningまで含めてcontractである。
 
 ## 3. HTTP fundamentals
 
-| Method | General meaning | Safe | Idempotent | Panoptes context |
-| --- | --- | --- | --- | --- |
-| GET | resource/read modelを取得 | Yes | Yes | CURRENT 5 read endpoint |
-| POST | command、作成、action | No | defaultではNo | TARGET Analysis作成・confirm・cancel |
-| PUT | resource/selectionを全体的・決定的に設定 | No | Yes by intent | draft Strategy selection |
-| PATCH | resourceの一部を変更 | No | operation次第 | draft Roadmap task更新 |
-| DELETE | resourceを削除 | No | Yes by intent | CURRENT/draftに代表operationなし |
+| Method | General meaning                          | Safe | Idempotent    | Panoptes context                     |
+| ------ | ---------------------------------------- | ---- | ------------- | ------------------------------------ |
+| GET    | resource/read modelを取得                | Yes  | Yes           | CURRENT 5 read endpoint              |
+| POST   | command、作成、action                    | No   | defaultではNo | TARGET Analysis作成・confirm・cancel |
+| PUT    | resource/selectionを全体的・決定的に設定 | No   | Yes by intent | draft Strategy selection             |
+| PATCH  | resourceの一部を変更                     | No   | operation次第 | draft Roadmap task更新               |
+| DELETE | resourceを削除                           | No   | Yes by intent | CURRENT/draftに代表operationなし     |
 
 Safeは「server stateを変更する目的ではない」、Idempotentは「同じrequestを複数回行っても意図した最終効果が同じ」という概念である。POSTもIdempotency-Keyやbusiness identityにより安全なreplay contractを設計できるため、`POST = 必ず非Idempotent`ではない。
 
@@ -95,13 +95,13 @@ CURRENT Rails routesは`health`、`me`、Organizations list/detail、current Mem
 
 Request contractは入力場所と意味を分ける。
 
-| Input | Example | Meaning |
-| --- | --- | --- |
-| Path parameter | `organization_id` | resource hierarchy/canonical scope |
-| Query parameter | `page[cursor]`, `page[limit]` | draft collection navigation |
-| Header | Authorization、Request/Correlation ID | credential/trace/transport metadata |
-| Body | Project name、target URL | mutation payload |
-| Session context | Supabase server session | BFF credential source。body fieldではない |
+| Input           | Example                               | Meaning                                   |
+| --------------- | ------------------------------------- | ----------------------------------------- |
+| Path parameter  | `organization_id`                     | resource hierarchy/canonical scope        |
+| Query parameter | `page[cursor]`, `page[limit]`         | draft collection navigation               |
+| Header          | Authorization、Request/Correlation ID | credential/trace/transport metadata       |
+| Body            | Project name、target URL              | mutation payload                          |
+| Session context | Supabase server session               | BFF credential source。body fieldではない |
 
 各fieldにはrequired/optional、type、allowed value、nullable、semantic meaningが必要である。`organization_id`がUUID stringであるだけでは、actorがそのOrganizationへアクセス可能とは限らない。
 
@@ -120,11 +120,11 @@ CURRENT Rails success envelope:
 
 ```json
 {
-  "data": {},
-  "meta": {
-    "request_id": "...",
-    "correlation_id": "..."
-  }
+	"data": {},
+	"meta": {
+		"request_id": "...",
+		"correlation_id": "..."
+	}
 }
 ```
 
@@ -144,21 +144,21 @@ Database schema != API schema != Frontend view model
 
 ## 8. Status code contract
 
-| Status | Concept | Panoptes usage |
-| ---: | --- | --- |
-| 200 | read/update成功、replay成功 | CURRENT GET、Target update |
-| 201 | 同期的resource作成 | future candidate |
-| 202 | 非同期operation受付 | Target AnalysisJob create/cancel。完了ではない |
-| 204 | bodyなし成功 | future cancel/archive候補 |
-| 400 | malformed request/header/path mismatch | CURRENT missing parameter mapping等 |
-| 401 | unauthenticated/invalid token | CURRENT BFF/Rails |
-| 403 | authenticatedだがpermission不足 | CURRENT role/context cases |
-| 404 | not found/cross-tenant concealment | CURRENT Organization scope cases |
-| 409 | current stateとのconflict | Target stale lock/idempotency/invalid transition |
-| 422 | syntactically validだがvalidation不成立 | CURRENT RecordInvalid mapping |
-| 429 | rate limit | Target。Retry-Afterを使用 |
-| 500 | internal failure | CURRENT safe Rails handler |
-| 502/503/504 | upstream/service/timeout category | 503はCURRENT BFF upstream error。詳細はcontract依存 |
+|      Status | Concept                                 | Panoptes usage                                      |
+| ----------: | --------------------------------------- | --------------------------------------------------- |
+|         200 | read/update成功、replay成功             | CURRENT GET、Target update                          |
+|         201 | 同期的resource作成                      | future candidate                                    |
+|         202 | 非同期operation受付                     | Target AnalysisJob create/cancel。完了ではない      |
+|         204 | bodyなし成功                            | future cancel/archive候補                           |
+|         400 | malformed request/header/path mismatch  | CURRENT missing parameter mapping等                 |
+|         401 | unauthenticated/invalid token           | CURRENT BFF/Rails                                   |
+|         403 | authenticatedだがpermission不足         | CURRENT role/context cases                          |
+|         404 | not found/cross-tenant concealment      | CURRENT Organization scope cases                    |
+|         409 | current stateとのconflict               | Target stale lock/idempotency/invalid transition    |
+|         422 | syntactically validだがvalidation不成立 | CURRENT RecordInvalid mapping                       |
+|         429 | rate limit                              | Target。Retry-Afterを使用                           |
+|         500 | internal failure                        | CURRENT safe Rails handler                          |
+| 502/503/504 | upstream/service/timeout category       | 503はCURRENT BFF upstream error。詳細はcontract依存 |
 
 `202`はjob完了を意味しない。`200`でもpayload内に独自failure flagを埋めて全errorを成功扱いにしてはいけない。HTTP statusとmachine-readable error codeを両方使う。
 
@@ -168,16 +168,16 @@ CURRENT Rails/OpenAPI shape:
 
 ```json
 {
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "This action is not permitted.",
-    "details": {},
-    "retryable": false
-  },
-  "meta": {
-    "request_id": "...",
-    "correlation_id": "..."
-  }
+	"error": {
+		"code": "FORBIDDEN",
+		"message": "This action is not permitted.",
+		"details": {},
+		"retryable": false
+	},
+	"meta": {
+		"request_id": "...",
+		"correlation_id": "..."
+	}
 }
 ```
 
@@ -195,14 +195,14 @@ Business errorとtechnical errorを分ける。Permission不足、invalid transi
 
 ## 10. Validation layers
 
-| Layer | Owns | Must not be mistaken for |
-| --- | --- | --- |
-| Frontend | UX feedback、input assistance | canonical business validation |
-| Client | response envelope/resource assertion | server authority |
-| BFF | method/path/content/session/context/size等 | eligibility/state transition |
-| OpenAPI/schema validation | wire shape/type/required/enum | full business correctness |
-| Rails | business/application validation、authorization | mere transport parsing |
-| PostgreSQL | integrity constraints | application authorization |
+| Layer                     | Owns                                           | Must not be mistaken for      |
+| ------------------------- | ---------------------------------------------- | ----------------------------- |
+| Frontend                  | UX feedback、input assistance                  | canonical business validation |
+| Client                    | response envelope/resource assertion           | server authority              |
+| BFF                       | method/path/content/session/context/size等     | eligibility/state transition  |
+| OpenAPI/schema validation | wire shape/type/required/enum                  | full business correctness     |
+| Rails                     | business/application validation、authorization | mere transport parsing        |
+| PostgreSQL                | integrity constraints                          | application authorization     |
 
 OpenAPIにrequired fieldがあることと、現在のplan/resource stateでoperation可能であることは別である。
 
@@ -223,13 +223,13 @@ CURRENT Rails `/api/v1/health`はauthentication before_actionをskipする。一
 
 ## 12. Client / Command / BFF / Rails contract
 
-| Layer | Owns | Does not own |
-| --- | --- | --- |
-| Command/query intent | use-case input/output、User intent | HTTP/session/raw response |
-| Frontend Client | BFF path/method、serialization、timeout/abort、response assertion | canonical rule/session truth |
-| SvelteKit BFF | Browser-facing endpoint、session/token、safe forwarding、transport adaptation | business outcome/state transition |
-| Rails API | business resource/operation contract、status/error response | Browser-local presentation |
-| OpenAPI | machine-readable wire contract | runtime implementation itself |
+| Layer                | Owns                                                                          | Does not own                      |
+| -------------------- | ----------------------------------------------------------------------------- | --------------------------------- |
+| Command/query intent | use-case input/output、User intent                                            | HTTP/session/raw response         |
+| Frontend Client      | BFF path/method、serialization、timeout/abort、response assertion             | canonical rule/session truth      |
+| SvelteKit BFF        | Browser-facing endpoint、session/token、safe forwarding、transport adaptation | business outcome/state transition |
+| Rails API            | business resource/operation contract、status/error response                   | Browser-local presentation        |
+| OpenAPI              | machine-readable wire contract                                                | runtime implementation itself     |
 
 BFFとRailsが1:1 proxyになる場合もあるが、常に同じではない。BFFはFrontend向けにcamelCase view modelへmappingしたり、複数readをcompositionしたりできる。ただし403を200へ変更する、PartialをCompletedへ意味変更する等のbusiness reinterpretationはしない。
 
@@ -239,16 +239,16 @@ CURRENT `canonical-bff-client.ts`はsame-origin BFFだけを呼び、timeout/abo
 
 OpenAPIはHTTP API contractをmachine-readableに記述する仕様である。
 
-| Element | Meaning |
-| --- | --- |
-| `paths` | endpoint paths |
-| operation (`get`, `post`等) | methodごとのcontract |
-| `parameters` | path/query/header input |
-| `requestBody` | body content/schema |
-| `responses` | statusごとのresponse |
-| `schemas` | reusable data shape |
-| `security` / `securitySchemes` | credential requirement |
-| `operationId` | operationのstable unique identifier |
+| Element                        | Meaning                             |
+| ------------------------------ | ----------------------------------- |
+| `paths`                        | endpoint paths                      |
+| operation (`get`, `post`等)    | methodごとのcontract                |
+| `parameters`                   | path/query/header input             |
+| `requestBody`                  | body content/schema                 |
+| `responses`                    | statusごとのresponse                |
+| `schemas`                      | reusable data shape                 |
+| `security` / `securitySchemes` | credential requirement              |
+| `operationId`                  | operationのstable unique identifier |
 
 Panoptes fileはOpenAPI `3.1.0`、API version `1.0.0-draft`。placeholder server URLを持つためdeployment hostの証拠にはならない。
 
@@ -319,15 +319,15 @@ Panoptes boundary:
 
 Path `v1`はbackward-incompatible contract changeを管理するboundary。すべてのfield追加でv2へ上げるわけではない。
 
-| Change | Typical compatibility |
-| --- | --- |
+| Change                  | Typical compatibility                           |
+| ----------------------- | ----------------------------------------------- |
 | optional additive field | 多くの場合compatible。ただしstrict parserを確認 |
-| required field追加 | existing request consumerにはbreaking |
-| enum value追加 | exhaustive consumerにはbreaking risk |
-| field removal/rename | breaking |
-| type変更 | breaking |
-| semantic meaning変更 | shape不変でもbreaking |
-| endpoint removal | breaking |
+| required field追加      | existing request consumerにはbreaking           |
+| enum value追加          | exhaustive consumerにはbreaking risk            |
+| field removal/rename    | breaking                                        |
+| type変更                | breaking                                        |
+| semantic meaning変更    | shape不変でもbreaking                           |
+| endpoint removal        | breaking                                        |
 
 安全な方向はRails/OpenAPIでadditive deploy、BFF/UI対応、deprecation期間、最後にold field removal。Frontend/Backendが常にatomic deployされるとは仮定しない。
 
@@ -370,16 +370,16 @@ CURRENT BFF/Railsにはproduction Analysis mutation/idempotency storeがない�
 
 ## 21. CURRENT / TARGET / DEFERRED
 
-| Area | CURRENT | TARGET | DEFERRED |
-| --- | --- | --- | --- |
-| Rails surface | 5 GET: health/me/organizations/detail/membership | Organization-scoped business API | Project/Job/Snapshot/Strategy/Usage implementation |
-| BFF surface | corresponding 5 same-origin GET routes | explicit Browser-facing business endpoints | mutation/CSRF/body limit contracts |
-| Client | typed/asserted Organization boundary reads | generated/validated transport types + mapper | generator selection/migration |
-| Response/error | `{data,meta}` / `{error,meta}` CURRENT | schema-tested stable envelopes | prose error-example drift resolution |
-| OpenAPI | 3.1 draft、18 operations/18 unique IDs | wire contract source + CI validation | implementation/request spec completion |
-| Pagination | draft Project cursor contract | stable authorized collection reads | implementation/tuning |
-| Idempotency | design draft | durable command replay contract | DB/outbox/retention implementation |
-| Versioning | `/api/panoptes/v1` and `/api/v1` | additive v1 compatibility | breaking diff CI/migration policy execution |
+| Area           | CURRENT                                          | TARGET                                       | DEFERRED                                           |
+| -------------- | ------------------------------------------------ | -------------------------------------------- | -------------------------------------------------- |
+| Rails surface  | 5 GET: health/me/organizations/detail/membership | Organization-scoped business API             | Project/Job/Snapshot/Strategy/Usage implementation |
+| BFF surface    | corresponding 5 same-origin GET routes           | explicit Browser-facing business endpoints   | mutation/CSRF/body limit contracts                 |
+| Client         | typed/asserted Organization boundary reads       | generated/validated transport types + mapper | generator selection/migration                      |
+| Response/error | `{data,meta}` / `{error,meta}` CURRENT           | schema-tested stable envelopes               | prose error-example drift resolution               |
+| OpenAPI        | 3.1 draft、18 operations/18 unique IDs           | wire contract source + CI validation         | implementation/request spec completion             |
+| Pagination     | draft Project cursor contract                    | stable authorized collection reads           | implementation/tuning                              |
+| Idempotency    | design draft                                     | durable command replay contract              | DB/outbox/retention implementation                 |
+| Versioning     | `/api/panoptes/v1` and `/api/v1`                 | additive v1 compatibility                    | breaking diff CI/migration policy execution        |
 
 ## 22. Contract trace — CURRENT Organization detail
 
@@ -410,20 +410,20 @@ PanoptesShell controller dependency
 
 以下は限定確認した12例であり、全endpoint/OpenAPI operation監査ではない。
 
-| Source | Method/contract | Request | Response | Auth/owner | Status |
-| --- | --- | --- | --- | --- | --- |
-| `docs/api/openapi-draft.yaml` | 18 operation machine-readable draft | parameters/body/security | schemas/responses | wire contract draft | `CURRENT document / mixed TARGET` |
-| `docs/api/panoptes-api-v1.md` | v1 prose contract | headers/body/conventions | envelope/status/error | Rails contract design | `DRAFT; known error-example drift` |
-| `docs/architecture/api-boundary.md` | Browser/BFF/Rails trust boundary | same-origin/Bearer/org path | safe mapped response | layer owners | `TARGET design + CURRENT subset` |
-| `rails/config/routes.rb` | 5 GET route mappings | path params | controller dispatch | Rails | `CURRENT` |
-| `rails/app/controllers/application_controller.rb` | shared API envelope/error | request context/errors | `{data,meta}` / `{error,meta}` | Rails | `CURRENT` |
-| `rails/app/controllers/api/v1/organizations_controller.rb` | GET list/detail | authenticated user/org ID | Organization envelope | Rails business read | `CURRENT` |
-| `rails/app/errors/api_error.rb` | machine error vocabulary | error condition | code/status/details/retryable | Rails | `CURRENT` |
-| `src/lib/panoptes/api/canonical-bff-client.ts` | 5 GET Browser client | typed IDs/AbortSignal | asserted data/PanoptesApiError | Frontend transport | `CURRENT` |
-| `src/routes/api/panoptes/v1/organizations/+server.ts` | GET Organization list BFF | session request | Rails response | BFF/Rails | `CURRENT` |
-| `src/routes/api/panoptes/v1/organizations/[organization_id]/+server.ts` | GET Organization detail BFF | path org ID | Rails response | active-org guard + Rails | `CURRENT` |
-| `src/lib/server/rails/client.ts` | safe GET proxy | server session/internal path | preserved upstream/safe 503 | BFF transport | `CURRENT read-only` |
-| `src/lib/features/organization/organization-boundary.ts` | Feature boundary query | active Organization ID | Organization + Membership or safe error | Feature consumer | `CURRENT` |
+| Source                                                                  | Method/contract                     | Request                      | Response                                | Auth/owner               | Status                             |
+| ----------------------------------------------------------------------- | ----------------------------------- | ---------------------------- | --------------------------------------- | ------------------------ | ---------------------------------- |
+| `docs/api/openapi-draft.yaml`                                           | 18 operation machine-readable draft | parameters/body/security     | schemas/responses                       | wire contract draft      | `CURRENT document / mixed TARGET`  |
+| `docs/api/panoptes-api-v1.md`                                           | v1 prose contract                   | headers/body/conventions     | envelope/status/error                   | Rails contract design    | `DRAFT; known error-example drift` |
+| `docs/architecture/api-boundary.md`                                     | Browser/BFF/Rails trust boundary    | same-origin/Bearer/org path  | safe mapped response                    | layer owners             | `TARGET design + CURRENT subset`   |
+| `rails/config/routes.rb`                                                | 5 GET route mappings                | path params                  | controller dispatch                     | Rails                    | `CURRENT`                          |
+| `rails/app/controllers/application_controller.rb`                       | shared API envelope/error           | request context/errors       | `{data,meta}` / `{error,meta}`          | Rails                    | `CURRENT`                          |
+| `rails/app/controllers/api/v1/organizations_controller.rb`              | GET list/detail                     | authenticated user/org ID    | Organization envelope                   | Rails business read      | `CURRENT`                          |
+| `rails/app/errors/api_error.rb`                                         | machine error vocabulary            | error condition              | code/status/details/retryable           | Rails                    | `CURRENT`                          |
+| `src/lib/panoptes/api/canonical-bff-client.ts`                          | 5 GET Browser client                | typed IDs/AbortSignal        | asserted data/PanoptesApiError          | Frontend transport       | `CURRENT`                          |
+| `src/routes/api/panoptes/v1/organizations/+server.ts`                   | GET Organization list BFF           | session request              | Rails response                          | BFF/Rails                | `CURRENT`                          |
+| `src/routes/api/panoptes/v1/organizations/[organization_id]/+server.ts` | GET Organization detail BFF         | path org ID                  | Rails response                          | active-org guard + Rails | `CURRENT`                          |
+| `src/lib/server/rails/client.ts`                                        | safe GET proxy                      | server session/internal path | preserved upstream/safe 503             | BFF transport            | `CURRENT read-only`                |
+| `src/lib/features/organization/organization-boundary.ts`                | Feature boundary query              | active Organization ID       | Organization + Membership or safe error | Feature consumer         | `CURRENT`                          |
 
 ## 24. Common misunderstandings
 
@@ -637,18 +637,18 @@ Errors:
 
 ## 28. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. API fundamentals explained | `PASS` |
-| 2. HTTP contract explained | `PASS` |
-| 3. Panoptes API architecture explained | `PASS` |
-| 4. request/response/status/error explained | `PASS` |
-| 5. validation/auth boundary explained | `PASS` |
-| 6. BFF/Rails/Client contract explained | `PASS` |
-| 7. OpenAPI fundamentals explained | `PASS` |
-| 8. versioning/compatibility explained | `PASS` |
+| Criterion                                     | Result |
+| --------------------------------------------- | ------ |
+| 1. API fundamentals explained                 | `PASS` |
+| 2. HTTP contract explained                    | `PASS` |
+| 3. Panoptes API architecture explained        | `PASS` |
+| 4. request/response/status/error explained    | `PASS` |
+| 5. validation/auth boundary explained         | `PASS` |
+| 6. BFF/Rails/Client contract explained        | `PASS` |
+| 7. OpenAPI fundamentals explained             | `PASS` |
+| 8. versioning/compatibility explained         | `PASS` |
 | 9. representative repository mapping included | `PASS` |
-| 10. exercises + answers included | `PASS` |
+| 10. exercises + answers included              | `PASS` |
 
 Authoring DoD: `10 / 10 PASS`。
 

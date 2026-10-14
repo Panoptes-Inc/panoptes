@@ -35,11 +35,11 @@ InfrastructureはApplication Architectureそのものではない。Cloud produc
 
 ## 3. Three decision layers
 
-| Layer | Decides | Panoptes example |
-| --- | --- | --- |
-| Application Contract | Business meaning、API、authorization、state/invariant | `partially_completed`の意味、Rails-owned authorization |
-| Infrastructure Requirement | Runtime、durability、network、capacity、recovery requirement | durable queue、private DB、long-running Worker |
-| Cloud Implementation | Product、region、instance/service configuration | 特定managed DB/queue/compute product |
+| Layer                      | Decides                                                      | Panoptes example                                       |
+| -------------------------- | ------------------------------------------------------------ | ------------------------------------------------------ |
+| Application Contract       | Business meaning、API、authorization、state/invariant        | `partially_completed`の意味、Rails-owned authorization |
+| Infrastructure Requirement | Runtime、durability、network、capacity、recovery requirement | durable queue、private DB、long-running Worker         |
+| Cloud Implementation       | Product、region、instance/service configuration              | 特定managed DB/queue/compute product                   |
 
 Queue productが変わっても`AnalysisJob != Queue Message`である。Queueがat-least-once deliveryを持つ必要性はArchitecture requirementになり得るが、どのqueue serviceを選ぶかはInfrastructure/Cloud selectionである。
 
@@ -60,18 +60,18 @@ ApplicationからInfrastructure requirementを導き、Cloud optionがrequiremen
 
 ## 5. Panoptes runtime units
 
-| Runtime unit | Primary responsibility | Runtime character |
-| --- | --- | --- |
-| Browser / Client | UI、local interaction | untrusted public client |
-| SvelteKit Web/BFF | rendering、session、proxy/orchestration | request-driven compute |
-| Rails API | canonical business/authz/state transition | request-driven business service |
-| PostgreSQL | persistent business data/invariant | stateful durable service |
-| Queue | delivery、buffering、redelivery | durable async transport |
-| Python Worker | collection/technical analysis | long-running background compute |
-| Chromium | untrusted page rendering | resource-heavy isolated process |
-| Artifact Storage | HTML/Screenshot/large artifact | durable object/blob storage |
-| External Web/LLM | external dependency | outside trust/control boundary |
-| Observability platform | log/metric/alert/tracing backend | operational support plane |
+| Runtime unit           | Primary responsibility                    | Runtime character               |
+| ---------------------- | ----------------------------------------- | ------------------------------- |
+| Browser / Client       | UI、local interaction                     | untrusted public client         |
+| SvelteKit Web/BFF      | rendering、session、proxy/orchestration   | request-driven compute          |
+| Rails API              | canonical business/authz/state transition | request-driven business service |
+| PostgreSQL             | persistent business data/invariant        | stateful durable service        |
+| Queue                  | delivery、buffering、redelivery           | durable async transport         |
+| Python Worker          | collection/technical analysis             | long-running background compute |
+| Chromium               | untrusted page rendering                  | resource-heavy isolated process |
+| Artifact Storage       | HTML/Screenshot/large artifact            | durable object/blob storage     |
+| External Web/LLM       | external dependency                       | outside trust/control boundary  |
+| Observability platform | log/metric/alert/tracing backend          | operational support plane       |
 
 ## 6. Infrastructure boundary map
 
@@ -342,12 +342,12 @@ Managed DBでもbackup policy、restore test、region/failover、connection、ac
 
 ## 24. Backup, Restore, HA, and DR
 
-| Concept | Purpose |
-| --- | --- |
-| Backup | Data lossに備えたcopy |
-| Restore | Backupから実際に復元するability/procedure |
-| High Availability | 通常障害中もservice継続を高める |
-| Disaster Recovery | 大規模障害後にservice/dataを復旧する |
+| Concept           | Purpose                                   |
+| ----------------- | ----------------------------------------- |
+| Backup            | Data lossに備えたcopy                     |
+| Restore           | Backupから実際に復元するability/procedure |
+| High Availability | 通常障害中もservice継続を高める           |
+| Disaster Recovery | 大規模障害後にservice/dataを復旧する      |
 
 BackupはHAではなく、HAはDRでもない。Backupが存在してもrestoreできなければrecovery guaranteeにならない。
 
@@ -548,20 +548,20 @@ CURRENT evidenceはlocal/development/build/test configurationを含む。Product
 
 ## 38. Representative repository mapping
 
-| Representative | Application responsibility | Infrastructure dependency | Status / portability implication |
-| --- | --- | --- | --- |
-| `svelte.config.js` | SvelteKit Web/BFF | Runtime adapter | `CURRENT` adapter-auto; provider未固定 |
-| `.env.example` | Frontend/Auth/BFF configuration boundary | Environment/Secret injection | `CURRENT`; public/server separation |
-| `package.json` | Web build/runtime scripts | Node/build environment | `CURRENT`; deploy platform非規定 |
-| `rails/config/database.yml` | Rails persistence access | PostgreSQL/connection/env | `CURRENT`; DB product host非固定 |
-| `rails/config/environments/production.rb` | Rails production behavior | TLS proxy/log/cache/runtime | `CURRENT`; topology未固定 |
-| `rails/Dockerfile` | Rails deployable process | OCI/container-capable runtime | `CURRENT`; orchestrator非規定 |
-| `rails/compose.yaml` | Local Rails/PostgreSQL composition | Docker network/volume/health | `CURRENT` development evidence only |
-| `rails/.env.example` | Rails DB/JWT/log config | Secret/config injection | `CURRENT`; secret store非規定 |
-| `.github/workflows/quality.yml` | Frontend quality verification | CI runner | `CURRENT`; CDではない |
-| `.github/workflows/rails-quality.yml` | Rails/PostgreSQL quality verification | CI service/container | `CURRENT`; Production topologyではない |
-| `docs/learning/modules/14-python-worker-chromium-collection.md` | Worker technical contract | Python/Chromium runtime | Architecture `TARGET` |
-| `docs/learning/modules/25-logging-monitoring-audit.md` | Observability signal semantics | telemetry platform | Contract `TARGET`; vendor `DEFERRED` |
+| Representative                                                  | Application responsibility               | Infrastructure dependency     | Status / portability implication       |
+| --------------------------------------------------------------- | ---------------------------------------- | ----------------------------- | -------------------------------------- |
+| `svelte.config.js`                                              | SvelteKit Web/BFF                        | Runtime adapter               | `CURRENT` adapter-auto; provider未固定 |
+| `.env.example`                                                  | Frontend/Auth/BFF configuration boundary | Environment/Secret injection  | `CURRENT`; public/server separation    |
+| `package.json`                                                  | Web build/runtime scripts                | Node/build environment        | `CURRENT`; deploy platform非規定       |
+| `rails/config/database.yml`                                     | Rails persistence access                 | PostgreSQL/connection/env     | `CURRENT`; DB product host非固定       |
+| `rails/config/environments/production.rb`                       | Rails production behavior                | TLS proxy/log/cache/runtime   | `CURRENT`; topology未固定              |
+| `rails/Dockerfile`                                              | Rails deployable process                 | OCI/container-capable runtime | `CURRENT`; orchestrator非規定          |
+| `rails/compose.yaml`                                            | Local Rails/PostgreSQL composition       | Docker network/volume/health  | `CURRENT` development evidence only    |
+| `rails/.env.example`                                            | Rails DB/JWT/log config                  | Secret/config injection       | `CURRENT`; secret store非規定          |
+| `.github/workflows/quality.yml`                                 | Frontend quality verification            | CI runner                     | `CURRENT`; CDではない                  |
+| `.github/workflows/rails-quality.yml`                           | Rails/PostgreSQL quality verification    | CI service/container          | `CURRENT`; Production topologyではない |
+| `docs/learning/modules/14-python-worker-chromium-collection.md` | Worker technical contract                | Python/Chromium runtime       | Architecture `TARGET`                  |
+| `docs/learning/modules/25-logging-monitoring-audit.md`          | Observability signal semantics           | telemetry platform            | Contract `TARGET`; vendor `DEFERRED`   |
 
 ## 39. Common misunderstandings
 
@@ -698,18 +698,18 @@ Business semanticsをApplication Contractへ固定し、runtime requirementとPr
 
 ## 43. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Infrastructure fundamentals explained | `PASS` |
-| 2 | Application/Infrastructure/Cloud boundary explained | `PASS` |
-| 3 | Compute/network/runtime explained | `PASS` |
-| 4 | DB/Queue/Worker/Storage boundary explained | `PASS` |
-| 5 | Scaling explained | `PASS` |
-| 6 | Availability/backup/recovery explained | `PASS` |
-| 7 | Environment/deployment boundary explained | `PASS` |
-| 8 | Portability/security/cost trade-offs explained | `PASS` |
-| 9 | Repository mapping + diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                           | Result |
+| --: | --------------------------------------------------- | ------ |
+|   1 | Infrastructure fundamentals explained               | `PASS` |
+|   2 | Application/Infrastructure/Cloud boundary explained | `PASS` |
+|   3 | Compute/network/runtime explained                   | `PASS` |
+|   4 | DB/Queue/Worker/Storage boundary explained          | `PASS` |
+|   5 | Scaling explained                                   | `PASS` |
+|   6 | Availability/backup/recovery explained              | `PASS` |
+|   7 | Environment/deployment boundary explained           | `PASS` |
+|   8 | Portability/security/cost trade-offs explained      | `PASS` |
+|   9 | Repository mapping + diagrams included              | `PASS` |
+|  10 | Exercises + answers included                        | `PASS` |
 
 M26 authoring result: `10 / 10 PASS`。教材完成はCloud選定、Infrastructure/Deployment構築、Production readiness、Cost/Capacity/Recovery設計の完了を意味しない。
 
@@ -732,4 +732,3 @@ M27ではPayment/Billing/Entitlement、Webhook authenticity/idempotency、CRM bo
 - [M24 Testing / CI/CD](./24-testing-cicd.md)
 - [M25 Logging / Monitoring / Audit](./25-logging-monitoring-audit.md)
 - [Panoptes Technical Bootcamp](../panoptes-technical-bootcamp.md)
-

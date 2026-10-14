@@ -39,17 +39,17 @@ Testの価値は件数ではなく、次の問いへ答えられるかで決ま�
 
 ## 3. What tests protect
 
-| Protected concern | Panoptes example | Primary test candidate |
-| --- | --- | --- |
-| Behavior | Button callback、polling停止 | Unit / Component |
-| Business rule | 許可されたJob transition | Rails Unit / Integration |
-| API contract | Request/response/status/operationId | Contract |
-| State transition | terminal後の不正遷移拒否 | Unit + DB Integration |
-| Data integrity | FK、uniqueness、transaction | DB Integration |
-| UI behavior | Loading/Failed/Partial表示 | Component + focused E2E |
-| Authorization | wrong organizationの拒否 | Rails Integration + critical E2E |
-| Idempotency | duplicate requestで副作用1回 | Integration |
-| Regression | 過去Bugの再発防止 | EscapeしたLayerに最も近いTest |
+| Protected concern | Panoptes example                    | Primary test candidate           |
+| ----------------- | ----------------------------------- | -------------------------------- |
+| Behavior          | Button callback、polling停止        | Unit / Component                 |
+| Business rule     | 許可されたJob transition            | Rails Unit / Integration         |
+| API contract      | Request/response/status/operationId | Contract                         |
+| State transition  | terminal後の不正遷移拒否            | Unit + DB Integration            |
+| Data integrity    | FK、uniqueness、transaction         | DB Integration                   |
+| UI behavior       | Loading/Failed/Partial表示          | Component + focused E2E          |
+| Authorization     | wrong organizationの拒否            | Rails Integration + critical E2E |
+| Idempotency       | duplicate requestで副作用1回        | Integration                      |
+| Regression        | 過去Bugの再発防止                   | EscapeしたLayerに最も近いTest    |
 
 一つのTestが全Concernを守る必要はない。むしろ「何を守るTestか」を狭く説明できる方がfailureを診断しやすい。
 
@@ -153,15 +153,15 @@ E2Eは実環境に近い一方、遅く、failure原因が広く、setupも高�
 
 ## 10. Static, build, type, and lint checks
 
-| Check | Detects | Does not prove |
-| --- | --- | --- |
-| Type / Svelte check | shape mismatch、nullable misuse、template/type error | Runtime business correctness |
-| Lint | suspicious pattern、code/policy consistency | Behavior correctness |
-| Format check | deterministic formatting | Quality or security |
-| OpenAPI validation | document shape、required metadata、local ref等 | Runtime implementationとの完全一致 |
-| Build | Production bundle生成可能性 | User flow / business rule correctness |
-| Secret boundary check | 定義されたclient exposure pattern | 全Secret漏洩が不存在 |
-| Static security scan | 既知pattern / rule match | Security completion |
+| Check                 | Detects                                              | Does not prove                        |
+| --------------------- | ---------------------------------------------------- | ------------------------------------- |
+| Type / Svelte check   | shape mismatch、nullable misuse、template/type error | Runtime business correctness          |
+| Lint                  | suspicious pattern、code/policy consistency          | Behavior correctness                  |
+| Format check          | deterministic formatting                             | Quality or security                   |
+| OpenAPI validation    | document shape、required metadata、local ref等       | Runtime implementationとの完全一致    |
+| Build                 | Production bundle生成可能性                          | User flow / business rule correctness |
+| Secret boundary check | 定義されたclient exposure pattern                    | 全Secret漏洩が不存在                  |
+| Static security scan  | 既知pattern / rule match                             | Security completion                   |
 
 `Build PASS`、`Type PASS`、`Lint PASS`は有用なEvidenceだが、相互の代替ではない。
 
@@ -284,11 +284,11 @@ Isolationは現実をすべてMockする意味ではない。重要Integration�
 
 ## 19. Mock, Stub, Fake, and over-mocking
 
-| Double | Main purpose |
-| --- | --- |
-| Mock | 呼出し回数・引数などinteraction expectation |
-| Stub | controlled responseを返す |
-| Fake | 簡略化したworking implementation |
+| Double | Main purpose                                |
+| ------ | ------------------------------------------- |
+| Mock   | 呼出し回数・引数などinteraction expectation |
+| Stub   | controlled responseを返す                   |
+| Fake   | 簡略化したworking implementation            |
 
 Libraryごとの用語差はあるためRepositoryのAPIを優先する。Mockを増やすほど品質が高くなるわけではない。すべての境界をMockすると、Productionでは成立しないInterface同士がTest内だけで一致し得る。
 
@@ -409,31 +409,31 @@ Private implementation detailだけを固定するTestはrefactor耐性が低い
 
 ## 27. Testing by layer
 
-| Layer | Owns tests for | Must not claim |
-| --- | --- | --- |
-| Frontend UI | render、props、callback、UI state、a11yの自動検出可能部分 | Rails business authorization |
-| Feature / Controller | state transition request、mapping、command coordination | DB durability |
-| SvelteKit BFF | session/context、proxy、status/error、timeout | Canonical business decision |
-| Rails | business rule、authorization、transaction、canonical transition | Browser visual behavior |
-| PostgreSQL | constraint、relation、uniqueness、atomic persistence | User journey |
-| Worker | technical collection/parser/artifact/failure behavior | Product business truth |
-| Cross-layer | OpenAPI/queue/result contract、critical E2E | 全caseのexhaustive proof |
+| Layer                | Owns tests for                                                  | Must not claim               |
+| -------------------- | --------------------------------------------------------------- | ---------------------------- |
+| Frontend UI          | render、props、callback、UI state、a11yの自動検出可能部分       | Rails business authorization |
+| Feature / Controller | state transition request、mapping、command coordination         | DB durability                |
+| SvelteKit BFF        | session/context、proxy、status/error、timeout                   | Canonical business decision  |
+| Rails                | business rule、authorization、transaction、canonical transition | Browser visual behavior      |
+| PostgreSQL           | constraint、relation、uniqueness、atomic persistence            | User journey                 |
+| Worker               | technical collection/parser/artifact/failure behavior           | Product business truth       |
+| Cross-layer          | OpenAPI/queue/result contract、critical E2E                     | 全caseのexhaustive proof     |
 
 ## 28. Change-to-test matrix
 
-| Change | Minimum candidate | Why |
-| --- | --- | --- |
-| UI label/callback | Component/static | Presentation contractに近い |
-| UI Product state mapping | Unit + Component | Meaningとrenderの両方を守る |
-| Authorization rule | Rails auth Unit/Integration + critical E2E | Canonical denyとjourneyを確認 |
-| OpenAPI response | Validator + Contract + frontend adapter | Producer/consumer driftを防ぐ |
-| BFF timeout/error | BFF Integration | HTTP/session boundaryを守る |
-| Formula logic | Formula Unit + version/eligibility | deterministic invariantを局所化 |
-| Queue retry | Async Integration + Idempotency | duplicate deliveryの副作用を確認 |
-| AnalysisJob transition | Rails Unit/DB Integration | Canonical lifecycleを守る |
-| Snapshot schema/projection | Immutability/Lineage Contract | Historical truthを守る |
-| DB migration | Migration/compatibility Integration | deploy前後のschema共存を確認 |
-| Fixed escaped bug | Reproduction Regression + relevant layer | 再発防止を明示 |
+| Change                     | Minimum candidate                          | Why                              |
+| -------------------------- | ------------------------------------------ | -------------------------------- |
+| UI label/callback          | Component/static                           | Presentation contractに近い      |
+| UI Product state mapping   | Unit + Component                           | Meaningとrenderの両方を守る      |
+| Authorization rule         | Rails auth Unit/Integration + critical E2E | Canonical denyとjourneyを確認    |
+| OpenAPI response           | Validator + Contract + frontend adapter    | Producer/consumer driftを防ぐ    |
+| BFF timeout/error          | BFF Integration                            | HTTP/session boundaryを守る      |
+| Formula logic              | Formula Unit + version/eligibility         | deterministic invariantを局所化  |
+| Queue retry                | Async Integration + Idempotency            | duplicate deliveryの副作用を確認 |
+| AnalysisJob transition     | Rails Unit/DB Integration                  | Canonical lifecycleを守る        |
+| Snapshot schema/projection | Immutability/Lineage Contract              | Historical truthを守る           |
+| DB migration               | Migration/compatibility Integration        | deploy前後のschema共存を確認     |
+| Fixed escaped bug          | Reproduction Regression + relevant layer   | 再発防止を明示                   |
 
 ## 29. Worked example: cross-tenant Snapshot deep-link
 
@@ -484,20 +484,20 @@ Bug: Organization AのUserが、URLへOrganization BのSnapshot IDを入れる�
 
 ## 31. Representative repository mapping
 
-| Representative | Test/check type | Protected contract | Scope / status |
-| --- | --- | --- | --- |
-| `package.json` | Command composition | Local check/test/quality entry | `CURRENT` |
-| `vitest.config.js` | Test configuration | Unit location、Node env、alias/stub | `CURRENT` |
-| `.github/workflows/quality.yml` | CI | Frontend static/test/build/smoke sequence | `CURRENT` |
-| `.github/workflows/rails-quality.yml` | CI / Security | Rails+PostgreSQL、lint、security/dependency check | `CURRENT` |
-| `scripts/validate-openapi.mjs` | Static contract | OpenAPI 3.1、path、operationId、response、ref | `CURRENT` |
-| `tests/unit/api-contract.test.ts` | Contract-oriented Unit | OpenAPI IDs、mock client surface/shape | `CURRENT` |
-| `tests/unit/auth-guard.test.ts` | Unit | route policy、mock boundary、safe return URL | `CURRENT` |
-| `tests/unit/rails-bff.test.ts` | BFF Integration-style Unit | token/context forwarding、status、timeout、scope | `CURRENT` |
-| `tests/unit/organization-scoped-bff-client.test.ts` | Contract/Feature Unit | envelope、HTTP mapping、explicit Organization | `CURRENT` |
-| `tests/unit/analysis-job-adapter.test.ts` | Unit | canonical state mapping、terminal/polling behavior | `CURRENT` |
-| `rails/test/integration/api_v1_boundary_test.rb` | Rails Integration | auth、Membership/Role、Organization isolation | `CURRENT` |
-| `rails/test/integration/openapi_contract_test.rb` | Contract | implemented Rails readsとOpenAPI route | `CURRENT` |
+| Representative                                      | Test/check type            | Protected contract                                 | Scope / status |
+| --------------------------------------------------- | -------------------------- | -------------------------------------------------- | -------------- |
+| `package.json`                                      | Command composition        | Local check/test/quality entry                     | `CURRENT`      |
+| `vitest.config.js`                                  | Test configuration         | Unit location、Node env、alias/stub                | `CURRENT`      |
+| `.github/workflows/quality.yml`                     | CI                         | Frontend static/test/build/smoke sequence          | `CURRENT`      |
+| `.github/workflows/rails-quality.yml`               | CI / Security              | Rails+PostgreSQL、lint、security/dependency check  | `CURRENT`      |
+| `scripts/validate-openapi.mjs`                      | Static contract            | OpenAPI 3.1、path、operationId、response、ref      | `CURRENT`      |
+| `tests/unit/api-contract.test.ts`                   | Contract-oriented Unit     | OpenAPI IDs、mock client surface/shape             | `CURRENT`      |
+| `tests/unit/auth-guard.test.ts`                     | Unit                       | route policy、mock boundary、safe return URL       | `CURRENT`      |
+| `tests/unit/rails-bff.test.ts`                      | BFF Integration-style Unit | token/context forwarding、status、timeout、scope   | `CURRENT`      |
+| `tests/unit/organization-scoped-bff-client.test.ts` | Contract/Feature Unit      | envelope、HTTP mapping、explicit Organization      | `CURRENT`      |
+| `tests/unit/analysis-job-adapter.test.ts`           | Unit                       | canonical state mapping、terminal/polling behavior | `CURRENT`      |
+| `rails/test/integration/api_v1_boundary_test.rb`    | Rails Integration          | auth、Membership/Role、Organization isolation      | `CURRENT`      |
+| `rails/test/integration/openapi_contract_test.rb`   | Contract                   | implemented Rails readsとOpenAPI route             | `CURRENT`      |
 
 補助確認として、`rails/test/models/identity_boundary_test.rb`はSupabase subject identityとrole/status invariantを、`rails/test/services/auth/supabase_jwt_verifier_test.rb`はJWT/JWKS failure behaviorを守る。
 
@@ -648,18 +648,18 @@ Retry assertionはfailure後にmessageが再処理されること。Idempotency 
 
 ## 36. Completion criteria
 
-| # | Criterion | Result |
-| ---: | --- | --- |
-| 1 | Testing fundamentals explained | `PASS` |
-| 2 | Unit/Integration/Contract distinction explained | `PASS` |
-| 3 | Component/E2E distinction explained | `PASS` |
-| 4 | Static/build/type/lint explained | `PASS` |
-| 5 | Auth/Async/Formula/Snapshot testing explained | `PASS` |
-| 6 | Regression/Flaky/Isolation explained | `PASS` |
-| 7 | CI explained | `PASS` |
-| 8 | CD/Deployment gate explained | `PASS` |
-| 9 | Repository mapping + diagrams included | `PASS` |
-| 10 | Exercises + answers included | `PASS` |
+|   # | Criterion                                       | Result |
+| --: | ----------------------------------------------- | ------ |
+|   1 | Testing fundamentals explained                  | `PASS` |
+|   2 | Unit/Integration/Contract distinction explained | `PASS` |
+|   3 | Component/E2E distinction explained             | `PASS` |
+|   4 | Static/build/type/lint explained                | `PASS` |
+|   5 | Auth/Async/Formula/Snapshot testing explained   | `PASS` |
+|   6 | Regression/Flaky/Isolation explained            | `PASS` |
+|   7 | CI explained                                    | `PASS` |
+|   8 | CD/Deployment gate explained                    | `PASS` |
+|   9 | Repository mapping + diagrams included          | `PASS` |
+|  10 | Exercises + answers included                    | `PASS` |
 
 M24 authoring result: `10 / 10 PASS`。教材完成はTest実行、CI/CD運用、Production readiness、Deployment automationの完成を意味しない。
 
@@ -681,4 +681,3 @@ M25ではstructured logging、correlation、metrics、tracing、alert、incident
 - [M22 UI Regulation / Accessibility](./22-ui-regulation-accessibility.md)
 - [M23 Security Fundamentals](./23-security-fundamentals.md)
 - [Panoptes Technical Bootcamp](../panoptes-technical-bootcamp.md)
-

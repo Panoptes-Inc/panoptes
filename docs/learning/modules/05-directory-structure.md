@@ -22,14 +22,14 @@ Primary standards: [Frontend Structure Policy](../../architecture/frontend-struc
 
 Directory Structureは「fileを綺麗なfolderへ並べる作業」ではない。設計上の責務を、codeを探す人とdependencyを張る人の双方へ見える形にする仕組みである。
 
-| Purpose | Directoryが支えること |
-| --- | --- |
+| Purpose              | Directoryが支えること                                                          |
+| -------------------- | ------------------------------------------------------------------------------ |
 | Ownership visibility | そのfileがroute、use case、structure、presentationのどれを所有するか推測できる |
-| Dependency control | 下位presentationから上位Featureへ逆importする等の越境を見つけやすくする |
-| Discoverability | 変更理由から関係fileを探せる |
-| Change locality | 一つのuse caseの変更をFeature内へ閉じ込める |
-| Reuse boundary | Feature-localとstable shared contractを区別する |
-| Migration safety | current placementとtarget placementの差を追跡し、段階的に移す |
+| Dependency control   | 下位presentationから上位Featureへ逆importする等の越境を見つけやすくする        |
+| Discoverability      | 変更理由から関係fileを探せる                                                   |
+| Change locality      | 一つのuse caseの変更をFeature内へ閉じ込める                                    |
+| Reuse boundary       | Feature-localとstable shared contractを区別する                                |
+| Migration safety     | current placementとtarget placementの差を追跡し、段階的に移す                  |
 
 Folder名だけを整えても、UIがFeature storeを直接mutateしたり、Featureがroute fileへ依存したりすれば境界は改善しない。先にM03のTaxonomyとM04のownershipを判断し、その結果をplacementへ写像する。
 
@@ -66,17 +66,17 @@ src/
 
 ### Taxonomyとの対応
 
-| Taxonomy | Canonical placement |
-| --- | --- |
-| Route Entry | `src/routes/**/+page.svelte`, `+server.ts`等 |
-| Framework Layout | `src/routes/**/+layout.svelte` |
-| Page Entry | `src/lib/features/<feature>/pages` |
-| Feature | `src/lib/features/<feature>` |
-| Feature-local Composite / UI | owning featureの`components/` |
-| Reusable Layout / Shell | `src/lib/layouts` |
-| Stable cross-feature UI | `src/lib/ui/components` |
-| Primitive | `src/lib/ui/primitives` |
-| Preview / Fixture | owning featureの`preview/`, `fixtures/`。URL exposureは`src/routes/dev`等 |
+| Taxonomy                     | Canonical placement                                                       |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| Route Entry                  | `src/routes/**/+page.svelte`, `+server.ts`等                              |
+| Framework Layout             | `src/routes/**/+layout.svelte`                                            |
+| Page Entry                   | `src/lib/features/<feature>/pages`                                        |
+| Feature                      | `src/lib/features/<feature>`                                              |
+| Feature-local Composite / UI | owning featureの`components/`                                             |
+| Reusable Layout / Shell      | `src/lib/layouts`                                                         |
+| Stable cross-feature UI      | `src/lib/ui/components`                                                   |
+| Primitive                    | `src/lib/ui/primitives`                                                   |
+| Preview / Fixture            | owning featureの`preview/`, `fixtures/`。URL exposureは`src/routes/dev`等 |
 
 `Domain-specific reusable`はdirectoryではない。Feature、Composite、UI等へ付けるReuse Scope Qualifierである。
 
@@ -124,15 +124,15 @@ Route fileからPage Entryを分けることで、SvelteKit固有のURL boundary
 
 Featureは一つのuse caseまたは変更理由を閉じ込める。必要に応じて次を配置する。
 
-| Location | Responsibility |
-| --- | --- |
-| `components/` | Feature orchestrator、feature-local Composite/UI |
-| `controller/` | lifecycle、async coordination、cleanup、state transition |
-| `commands/` | typed use-case invocation |
-| `state/` | feature-owned state/store |
-| `mapping/` | domain/API modelからdisplay-safe view modelへのpure mapping |
-| `types.ts` | Feature contract |
-| `preview/`, `fixtures/` | deterministic previewと入力 |
+| Location                | Responsibility                                              |
+| ----------------------- | ----------------------------------------------------------- |
+| `components/`           | Feature orchestrator、feature-local Composite/UI            |
+| `controller/`           | lifecycle、async coordination、cleanup、state transition    |
+| `commands/`             | typed use-case invocation                                   |
+| `state/`                | feature-owned state/store                                   |
+| `mapping/`              | domain/API modelからdisplay-safe view modelへのpure mapping |
+| `types.ts`              | Feature contract                                            |
+| `preview/`, `fixtures/` | deterministic previewと入力                                 |
 
 Exact subdirectoryは責務がある場合だけ使う。たとえば`src/lib/features/panoptes-shell/controller/`は既にcontroller ownershipを表している。これを「標準形を揃えるため」に別folderへ再移動する必要はない。
 
@@ -251,10 +251,10 @@ Everything exportはinternal dependencyをpublic化し、deep dependencyを隠�
 
 ## 8. CURRENT / TARGET / DEFERRED MIGRATION
 
-| Label | Meaning |
-| --- | --- |
-| `CURRENT` | 現Repositoryで実在し、現在importされる配置・実装 |
-| `TARGET` | FS-04で承認済みのcanonical placement/方向 |
+| Label                | Meaning                                                  |
+| -------------------- | -------------------------------------------------------- |
+| `CURRENT`            | 現Repositoryで実在し、現在importされる配置・実装         |
+| `TARGET`             | FS-04で承認済みのcanonical placement/方向                |
 | `DEFERRED MIGRATION` | Targetは決まっているが、移動・consumer更新・検証が未実施 |
 
 Target directoryがまだ存在しなくても設計未決定とは限らない。現在、`src/lib/layouts`、`src/lib/ui/components`、`src/lib/ui/primitives`は未作成だが、canonical targetは承認済みである。一方、個々のcomponentがShared/Primitiveへ昇格できるかはcontract evidenceが必要で、target categoryまで自動確定するわけではない。
@@ -287,19 +287,19 @@ Product Decision / preservation constraint > routine directory migration
 
 以下は教材作成時に限定確認した11 fileであり、全Repository再分類ではない。Target pathは承認済みruleの適用先を示し、実際の移動承認や詳細migration planではない。
 
-| Current path | Taxonomy / responsibility | Target placement | Status |
-| --- | --- | --- | --- |
-| `src/routes/+page.svelte` | Route Entry。route dataをMarketing Pageへ渡す | 同じ`src/routes/+page.svelte` | `CURRENT = TARGET` |
-| `src/routes/app/+layout.svelte` | Framework Layout。App Header、Hero condition、children arrangement | 同じ`src/routes/app/+layout.svelte` | `CURRENT = TARGET` |
-| `src/lib/features/landing/components/MarketingLandingPage.svelte` | Page Entry。Marketing Header/Hero composition | `src/lib/features/landing/pages/MarketingLandingPage.svelte` | `DEFERRED MIGRATION` |
-| `src/lib/components/ComponentsBase/PanoptesShellEntryPage.svelte` | Page Entry。default/route inputをShell Featureへ接続 | `src/lib/features/panoptes-shell/pages/PanoptesShellEntryPage.svelte` | `LEGACY / DEFERRED MIGRATION` |
-| `src/lib/components/ComponentsBase/Panoptes/PanoptesShellPage.svelte` | Feature Orchestrator。controller/store/view-model/callback owner | `src/lib/features/panoptes-shell/components/PanoptesShellPage.svelte` | `LEGACY / DEFERRED MIGRATION` |
-| `src/lib/features/panoptes-shell/controller/panoptes-shell-controller-adapter.ts` | Feature controller adapter。dependency wiringとFeature action接続 | 同じFeature `controller/` | `CURRENT = TARGET` |
-| `src/lib/components/ComponentsBase/SignUpForm.svelte` | Signup Feature。controller、submit/resend、form lifecycle | `src/lib/features/auth/signup/components/SignUpForm.svelte` | `LEGACY / DEFERRED MIGRATION` |
-| `src/lib/components/ComponentsBase/Strategy/roadmap/StrategyAnalysisRoadmapPhaseCard.svelte` | Strategy domain-specific Composite | `src/lib/features/strategy/components/StrategyAnalysisRoadmapPhaseCard.svelte` | `LEGACY / DEFERRED MIGRATION` |
-| `src/lib/components/ComponentsBase/Competitor/cards/CompetitorAnalysisCompanyCard.svelte` | Competitor domain-specific UI | `src/lib/features/competitor/components/CompetitorAnalysisCompanyCard.svelte` | `LEGACY / DEFERRED MIGRATION` |
-| `src/lib/components/ComponentsBase/Panoptes/shared/PanoptesTabNav.svelte` | callback-driven UIだがPanoptes固有contract | owning `panoptes-shell/components/`をdefault候補とし、cross-feature evidence後のみ`ui/components` | `CLASSIFICATION BEFORE MIGRATION` |
-| `src/lib/components/ComponentsBase/Strategy/rail/StrategyAnalysisPlanRail.svelte` / `StrategyAnalysisPlanRailCard.svelte` | Strategy presentation。PD-03保護対象 | 再審査までtarget moveを確定しない | `PRESERVED / DEFERRED` |
+| Current path                                                                                                              | Taxonomy / responsibility                                          | Target placement                                                                                  | Status                            |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | --------------------------------- |
+| `src/routes/+page.svelte`                                                                                                 | Route Entry。route dataをMarketing Pageへ渡す                      | 同じ`src/routes/+page.svelte`                                                                     | `CURRENT = TARGET`                |
+| `src/routes/app/+layout.svelte`                                                                                           | Framework Layout。App Header、Hero condition、children arrangement | 同じ`src/routes/app/+layout.svelte`                                                               | `CURRENT = TARGET`                |
+| `src/lib/features/landing/components/MarketingLandingPage.svelte`                                                         | Page Entry。Marketing Header/Hero composition                      | `src/lib/features/landing/pages/MarketingLandingPage.svelte`                                      | `DEFERRED MIGRATION`              |
+| `src/lib/components/ComponentsBase/PanoptesShellEntryPage.svelte`                                                         | Page Entry。default/route inputをShell Featureへ接続               | `src/lib/features/panoptes-shell/pages/PanoptesShellEntryPage.svelte`                             | `LEGACY / DEFERRED MIGRATION`     |
+| `src/lib/components/ComponentsBase/Panoptes/PanoptesShellPage.svelte`                                                     | Feature Orchestrator。controller/store/view-model/callback owner   | `src/lib/features/panoptes-shell/components/PanoptesShellPage.svelte`                             | `LEGACY / DEFERRED MIGRATION`     |
+| `src/lib/features/panoptes-shell/controller/panoptes-shell-controller-adapter.ts`                                         | Feature controller adapter。dependency wiringとFeature action接続  | 同じFeature `controller/`                                                                         | `CURRENT = TARGET`                |
+| `src/lib/components/ComponentsBase/SignUpForm.svelte`                                                                     | Signup Feature。controller、submit/resend、form lifecycle          | `src/lib/features/auth/signup/components/SignUpForm.svelte`                                       | `LEGACY / DEFERRED MIGRATION`     |
+| `src/lib/components/ComponentsBase/Strategy/roadmap/StrategyAnalysisRoadmapPhaseCard.svelte`                              | Strategy domain-specific Composite                                 | `src/lib/features/strategy/components/StrategyAnalysisRoadmapPhaseCard.svelte`                    | `LEGACY / DEFERRED MIGRATION`     |
+| `src/lib/components/ComponentsBase/Competitor/cards/CompetitorAnalysisCompanyCard.svelte`                                 | Competitor domain-specific UI                                      | `src/lib/features/competitor/components/CompetitorAnalysisCompanyCard.svelte`                     | `LEGACY / DEFERRED MIGRATION`     |
+| `src/lib/components/ComponentsBase/Panoptes/shared/PanoptesTabNav.svelte`                                                 | callback-driven UIだがPanoptes固有contract                         | owning `panoptes-shell/components/`をdefault候補とし、cross-feature evidence後のみ`ui/components` | `CLASSIFICATION BEFORE MIGRATION` |
+| `src/lib/components/ComponentsBase/Strategy/rail/StrategyAnalysisPlanRail.svelte` / `StrategyAnalysisPlanRailCard.svelte` | Strategy presentation。PD-03保護対象                               | 再審査までtarget moveを確定しない                                                                 | `PRESERVED / DEFERRED`            |
 
 この表から分かるのは、「Target modelがある」と「全fileの最終移動が承認済み」は別という点である。特にShared昇格とPD-03は追加evidenceまたはProduct Decisionを要する。
 
@@ -457,18 +457,18 @@ PD-03のようなpreservation constraintが優先する。Architecture policyは
 
 ## 15. Completion Criteria
 
-| Criterion | Result |
-| --- | --- |
-| 1. Directory purpose explained | `PASS` |
-| 2. Canonical target structure explained | `PASS` |
-| 3. Route/Page/Feature placement explained | `PASS` |
-| 4. Layout/UI/Primitive placement explained | `PASS` |
-| 5. Feature-local vs Shared rule explained | `PASS` |
-| 6. Dependency and import rules explained | `PASS` |
-| 7. index.ts/barrel rule explained | `PASS` |
+| Criterion                                         | Result |
+| ------------------------------------------------- | ------ |
+| 1. Directory purpose explained                    | `PASS` |
+| 2. Canonical target structure explained           | `PASS` |
+| 3. Route/Page/Feature placement explained         | `PASS` |
+| 4. Layout/UI/Primitive placement explained        | `PASS` |
+| 5. Feature-local vs Shared rule explained         | `PASS` |
+| 6. Dependency and import rules explained          | `PASS` |
+| 7. index.ts/barrel rule explained                 | `PASS` |
 | 8. Current/Target/Migration distinction explained | `PASS` |
-| 9. Representative mapping included | `PASS` |
-| 10. Exercises + answers included | `PASS` |
+| 9. Representative mapping included                | `PASS` |
+| 10. Exercises + answers included                  | `PASS` |
 
 M05 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M06`
