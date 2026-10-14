@@ -1,33 +1,71 @@
 import { dev } from '$app/environment';
-import type { Handle } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
+import { error, json, redirect, type Handle } from '@sveltejs/kit';
+import {
+	evaluateRouteAccess,
+	isMockAuthScenario,
+	MockAuthAdapter,
+	routeAccessPolicy,
+	shouldUseMockAuth,
+	SupabaseAuthAdapter
+} from '$lib/server/auth';
+import { createSupabaseServerClient } from '$lib/server/supabase';
 
-const contentSecurityPolicy = [
-	"default-src 'self'",
-	"base-uri 'self'",
-	"form-action 'self'",
-	"frame-ancestors 'none'",
-	"script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
-	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-	"img-src 'self' data: blob: https://challenges.cloudflare.com",
-	"font-src 'self' data: https://fonts.gstatic.com",
-	"connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
-	"frame-src 'self' https://challenges.cloudflare.com"
-].join('; ');
+const supabaseAuth = new SupabaseAuthAdapter();
 
-export const handle: Handle = async ({ event, resolve }) => {
-	const response = await resolve(event);
+async function resolveRequestAuth(event: Parameters<Handle>[0]['event']) {
+	const mockEnabled = env.PANOPTES_ENABLE_MOCK_AUTH === 'true';
+	const scenario = env.PANOPTES_MOCK_AUTH_SCENARIO ?? '';
 
-	response.headers.set('X-Content-Type-Options', 'nosniff');
-	response.headers.set('X-Frame-Options', 'DENY');
-	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-	response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-
-	if (!dev) {
-		response.headers.set('Content-Security-Policy', contentSecurityPolicy);
+	if (
+		shouldUseMockAuth({ isDevelopment: dev, enabled: mockEnabled }) &&
+		isMockAuthScenario(scenario)
+	) {
+		return new MockAuthAdapter(scenario).resolve(event);
 	}
 
-	if (!dev && event.url.protocol === 'https:') {
-		response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+	return supabaseAuth.resolve(event);
+}
+
+export const handle: Handle = async ({ event, resolve }) => {
+	event.locals.supabase = createSupabaseServerClient(event);
+	event.locals.auth = await resolveRequestAuth(event);
+
+	const policy = routeAccessPolicy(event.route.id, event.url.pathname);
+	const decision = evaluateRouteAccess({
+		context: event.locals.auth,
+		policy,
+		isDevelopment: dev
+	});
+	const isApiRequest = event.url.pathname === '/api' || event.url.pathname.startsWith('/api/');
+
+	if (decision.outcome === 'not-found') error(404, 'Not found');
+	if (decision.outcome === 'deny') {
+		if (isApiRequest) return json({ error: 'forbidden' }, { status: 403 });
+		error(403, 'You do not have permission to access this resource');
+	}
+	if (decision.outcome === 'redirect') {
+		if (isApiRequest) {
+			const status = decision.location === '/login' ? 401 : 403;
+			return json(
+				{ error: status === 401 ? 'unauthorized' : 'organization_membership_required' },
+				{ status }
+			);
+		}
+
+		const returnTo = encodeURIComponent(`${event.url.pathname}${event.url.search}`);
+		redirect(303, `${decision.location}?returnTo=${returnTo}`);
+	}
+
+	const response = await resolve(event, {
+		filterSerializedResponseHeaders(name) {
+			return name === 'content-range' || name === 'x-supabase-api-version';
+		}
+	});
+
+	if (policy.authentication === 'required' || event.locals.auth.user) {
+		response.headers.set('cache-control', 'private, no-store');
+		response.headers.set('pragma', 'no-cache');
 	}
 
 	return response;

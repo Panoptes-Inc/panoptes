@@ -1,0 +1,673 @@
+Panoptes Strategic Engine Complete Specification v1.0
+作成日: 2026-03-11
+
+Purpose
+Panoptesの中核であるStrategic Engineの完全仕様。
+本仕様は、Internal / Visual 観測結果を統合し、
+業界構造、自社差分、優先度、戦略カード、30/60/90日プランの骨格までを
+一貫して生成するためのロジックを定義する。
+
+本仕様の役割
+・観測結果を戦略スコアへ変換する
+・競合比較と業界構造推定を行う
+・自社の改善余地を算出する
+・優先施策を生成する
+・戦略OSとして一貫した再現性を持たせる
+
+重要原則
+・LLMに計算させない
+・LLMは意味理解と文章化のみ
+・計算はEngine側で実行
+・全タブは同一snapshotを参照
+・計算式は再分析で再現可能であること
+
+--------------------------------------------------
+1. Strategic Engineの位置づけ
+--------------------------------------------------
+
+Panoptes全体構造
+
+Crawler
+↓
+Observation Bundle
+↓
+AI Understanding Layer
+↓
+Strategic Engine
+↓
+UI / Snapshot / Strategy / Feed
+
+Strategic Engineは
+「観測された事実を戦略へ変換する装置」
+である。
+
+--------------------------------------------------
+2. 入力データ
+--------------------------------------------------
+
+Engine入力は Observation Bundle である。
+
+Observation Bundleに含むもの
+
+site_info
+page_list
+page_type_map
+page_role_map
+internal_observations
+visual_observations
+flow_summary
+diff_summary
+confidence_inputs
+benchmark_context
+
+各ページごとに最低限必要な入力
+
+Internal
+・title
+・h1 / h2 / h3
+・CTA
+・form
+・faq
+・pricing
+・compare
+・trust block
+・case block
+・section order
+・internal links
+・nav / footer
+
+Visual
+・hierarchy clarity
+・CTA saliency
+・layout density
+・visual noise
+・trust visibility
+・proof visibility
+・compare visibility
+・decision support visibility
+
+--------------------------------------------------
+3. 戦略評価軸（固定）
+--------------------------------------------------
+
+Panoptesの戦略評価は6軸固定。
+
+A1 価値訴求
+A2 情報階層
+A3 導線強度
+A4 信頼構造
+A5 差別化明確性
+A6 意思決定支援
+
+Internal / Visual 両方を同じ6軸にマップする。
+
+--------------------------------------------------
+4. Submetric構造
+--------------------------------------------------
+
+各軸は複数のsubmetricで構成する。
+submetricは 0.0 - 1.0 で評価する。
+取得不能なものは null 許容。
+
+A1 価値訴求
+・hero_value_clarity
+・problem_solution_alignment
+・benefit_specificity
+・offer_visibility
+
+A2 情報階層
+・heading_structure_clarity
+・section_order_logic
+・nav_information_clarity
+・content_grouping_coherence
+
+A3 導線強度
+・primary_cta_presence
+・cta_progression_logic
+・internal_navigation_strength
+・conversion_path_visibility
+
+A4 信頼構造
+・social_proof_presence
+・case_evidence_strength
+・brand_identity_trust
+・faq_objection_handling
+
+A5 差別化明確性
+・unique_claim_clarity
+・competitive_position_signal
+・message_distinctiveness
+・comparison_support
+
+A6 意思決定支援
+・pricing_visibility
+・compare_support
+・decision_friction_reduction
+・conversion_readiness
+
+--------------------------------------------------
+5. Layer別スコア
+--------------------------------------------------
+
+各軸について Internal と Visual を別々に計算する。
+
+I_i = Internal axis score
+V_i = Visual axis score
+
+計算方法
+axisScore = 100 * weighted_mean(valid_submetrics)
+
+weighted_mean は null を除外して計算する。
+
+例
+I_1 = 100 * weighted_mean(
+  hero_value_clarity,
+  problem_solution_alignment,
+  benefit_specificity,
+  offer_visibility
+)
+
+同様に V_1 も Visual観測値から計算。
+
+--------------------------------------------------
+6. Layer総合スコア
+--------------------------------------------------
+
+Internal総合
+I = Σ(a_axis[i] * I_i)
+
+Visual総合
+V = Σ(a_axis[i] * V_i)
+
+初期軸重み（合計1.0）
+A1 価値訴求         0.19
+A2 情報階層         0.16
+A3 導線強度         0.18
+A4 信頼構造         0.16
+A5 差別化明確性     0.15
+A6 意思決定支援     0.16
+
+--------------------------------------------------
+7. 総合スコア T
+--------------------------------------------------
+
+Panoptesは Internal と Visual を単純平均しない。
+調和平均を用いる。
+
+T = 1 / ((0.6 / I) + (0.4 / V))
+
+理由
+・片方だけ高いサイトを過大評価しない
+・構造と見た目の両方が必要だから
+
+--------------------------------------------------
+8. Confidence調整
+--------------------------------------------------
+
+各レイヤーには confidence を持たせる。
+
+c_internal
+c_visual
+c_benchmark
+
+範囲
+0.0 - 1.0
+
+T_adj =
+T * (0.90 + 0.10 * min(c_internal, c_visual))
+
+目的
+・観測不足時の過信を防ぐ
+・視覚取得失敗時のスコア暴れを抑える
+
+--------------------------------------------------
+9. Coherence補正
+--------------------------------------------------
+
+Panoptesは整合性を見る。
+
+Coherence項目
+C1 NAV coherence
+C2 DECISION coherence
+C3 MESSAGE coherence
+
+各0.0 - 1.0
+
+Coherence_avg = mean(C1, C2, C3)
+
+最終スコア
+T_final = T_adj + 5 * (Coherence_avg - 0.5)
+
+補正幅
+-2.5 〜 +2.5
+
+目的
+・構造は強いのに伝達がブレるケースを補正
+・見た目は良いが意思決定が繋がらないケースを補正
+
+--------------------------------------------------
+10. Self / Competitor / Industry 比較
+--------------------------------------------------
+
+各対象に対して以下を計算する
+
+I_i
+V_i
+S_i = 0.6 * I_i + 0.4 * V_i
+
+Selfと競合群から業界ベンチマークを作る。
+
+Industry_Max_i = max competitor S_i
+Industry_Avg_i = mean competitor S_i
+Avg_best_i = 業界上位群平均（デフォルト上位30%）
+
+--------------------------------------------------
+11. 業界差分
+--------------------------------------------------
+
+自社差分
+
+Delta_Industry_i = Self_S_i - Avg_best_i
+Gap_to_Leader_i = Self_S_i - Industry_Max_i
+
+これにより
+・業界上位平均との差
+・業界トップとの差
+を同時に見る。
+
+--------------------------------------------------
+12. Opportunity計算
+--------------------------------------------------
+
+Opportunity_i は
+「市場における戦略余地」を示す。
+
+基本発想
+・業界全体で弱い軸ほど余地がある
+・分散が大きい軸は競争余地がある
+・上位群がすでに飽和している軸は余地が低い
+
+初期式
+Opportunity_i =
+0.45 * normalize(100 - Industry_Avg_i)
++ 0.35 * normalize(axis_variance_i)
++ 0.20 * normalize(100 - Avg_best_i)
+
+出力
+0 - 100
+
+--------------------------------------------------
+13. Priority計算
+--------------------------------------------------
+
+Priority_i は
+「今どの軸を改善すべきか」を示す。
+
+初期式
+
+Priority_i =
+0.50 * normalize(-Delta_Industry_i)
++ 0.30 * normalize(Opportunity_i)
++ 0.20 * a_axis[i]
+
+解釈
+・業界上位との差が大きいほど優先
+・市場余地が高いほど優先
+・もともと重要度の高い軸を少し優遇
+
+出力
+0 - 100
+
+--------------------------------------------------
+14. Flow評価
+--------------------------------------------------
+
+Panoptesは導線を単体ページではなく流れで見る。
+
+Flow inputs
+・likely_primary_paths
+・path_length
+・stage_coverage
+・trust_before_conversion
+・compare_before_decide
+・price_too_early
+・proof_too_late
+
+Flow score項目
+F1 stage completeness
+F2 trust timing
+F3 compare timing
+F4 CTA progression
+
+これらを A3 導線強度 / A6 意思決定支援 / coherence に反映する。
+
+--------------------------------------------------
+15. 市場タイプ推定
+--------------------------------------------------
+
+市場タイプは競合群の構造から推定する。
+
+主要ラベル例
+・成熟市場
+・成長市場
+・分散市場
+・集中市場
+・比較検討型
+・ブランド主導型
+・価格比較型
+・信頼主導型
+
+推定材料
+・競合分布
+・軸平均
+・分散
+・pricing/faq/compare/case構造
+・CTA密度
+・差別化の強さ
+
+このラベルは narrative と industry tab に表示するが、
+Engine側では tags として保持する。
+
+--------------------------------------------------
+16. 型分布推定
+--------------------------------------------------
+
+型分布は競合ごとの構造プロファイルから推定する。
+
+基本型例
+・平均優位型
+・構造優位型
+・訴求特化型
+・信頼特化型
+・価格決断型
+・比較検討型
+
+cluster_input
+・6軸スコア
+・coherence
+・flow score
+・page composition
+
+出力
+・distribution ratios
+・dominant type
+・fragmentation level
+
+--------------------------------------------------
+17. Competitive Position Map
+--------------------------------------------------
+
+市場ポジションは2軸マップで表現可能。
+
+候補軸
+X = 差別化明確性 + 価値訴求
+Y = 信頼構造 + 意思決定支援
+
+Self / Competitors を配置。
+industry tab のポジションマップに利用。
+
+--------------------------------------------------
+18. Flags
+--------------------------------------------------
+
+Engineは説明のための flags を生成する。
+
+初期flag例
+BRAND_UNFORMED
+OVER_DESIGNED_UNDER_CONVERTING
+HARVEST_BIASED
+UNIQUE_BUT_UNCLEAR
+PROOF_TOO_LATE
+CTA_TOO_EARLY
+COMPARE_MISSING
+PRICE_DECISION_GAP
+
+flagは narrative 生成で活用。
+
+--------------------------------------------------
+19. Strength / Issue 抽出
+--------------------------------------------------
+
+自社分析で表示する
+強みTOP3
+課題TOP3
+は以下のルールで決める。
+
+強み
+・Self_S_i が高い
+・かつ confidence が一定以上
+・かつ coherence矛盾が少ない
+
+課題
+・Priority_i が高い
+・または Gap_to_Leader_i が大きい
+・または重大flagあり
+
+--------------------------------------------------
+20. Strategy Card Generation
+--------------------------------------------------
+
+戦略カードは Priority上位から生成する。
+基本は3件。
+
+Card 1 = Priority 1位
+Card 2 = Priority 2位
+Card 3 = Priority 3位
+
+各カード構成
+・戦略意図
+・根拠
+・具体アクション
+・期待インパクト
+
+カードテンプレート例
+
+A3 導線強度
+→ 回遊導線の再設計
+
+A4 信頼構造
+→ 信頼接点の拡張
+
+A5 差別化明確性
+→ 差別化メッセージの明確化
+
+A6 意思決定支援
+→ 比較検討支援の整備
+
+--------------------------------------------------
+21. 30/60/90日プラン骨格
+--------------------------------------------------
+
+選択された戦略カードから roadmap を自動生成する。
+
+30日
+・基礎整備
+・情報整理
+・導線修正
+・証拠配置
+
+60日
+・拡張
+・比較支援
+・運用改善
+・ナラティブ整理
+
+90日
+・最適化
+・再分析
+・勝ち筋固定
+・テーマ再設定
+
+出力
+plan_30
+plan_60
+plan_90
+
+--------------------------------------------------
+22. Snapshot保存
+--------------------------------------------------
+
+同一分析世界を保つため、
+Strategic Engineの出力は snapshot に保存する。
+
+保存対象
+・I / V / T / T_adj / T_final
+・I_i / V_i / S_i
+・Industry_Avg_i
+・Industry_Max_i
+・Avg_best_i
+・Delta_Industry_i
+・Gap_to_Leader_i
+・Opportunity_i
+・Priority_i
+・flags
+・strengths
+・issues
+・strategy cards
+・roadmap skeleton
+・confidence
+・coherence
+・market type / type distribution / position map data
+
+--------------------------------------------------
+23. Confidence Rules
+--------------------------------------------------
+
+confidenceは最低以下から計算する。
+
+c_internal
+・取得ページ数
+・必須ページ種別のカバー率
+・missing field率
+
+c_visual
+・スクリーンショット取得成功率
+・対象ページ数
+・cropped evidenceの有無
+
+c_benchmark
+・競合数
+・競合ページ取得成功率
+・分布の安定性
+
+confidenceは narrative にも反映する。
+confidenceが低い場合は断定を弱める。
+
+--------------------------------------------------
+24. Narrative Rules
+--------------------------------------------------
+
+LLMに渡すのは計算済み事実のみ。
+
+LLM入力例
+・6軸スコア
+・delta
+・priority
+・flags
+・market tags
+・strengths
+・issues
+・strategy cards raw payload
+
+LLM出力
+・AI総評
+・短文洞察
+・業界評価文章
+・自社評価文章
+・戦略カード文面
+・30/60/90文章
+
+禁止
+・数値再計算
+・外部データ補完
+・売上 / 市場シェア推定
+
+--------------------------------------------------
+25. PanoAIへの接続
+--------------------------------------------------
+
+PanoAIは snapshot を前提に会話する。
+
+PanoAIは
+・現在snapshot
+・過去snapshot
+・project roadmap
+・selected actions
+を読み込む。
+
+これにより
+「前回との差」
+「選んだ戦略の進捗」
+を会話できる。
+
+--------------------------------------------------
+26. Engine Outputs for UI
+--------------------------------------------------
+
+競合タブ
+・competitor cards
+・selected competitor detail
+・AI総評
+・勝ち筋仮説
+
+業界タブ
+・市場タイプ
+・業界評価
+・型分布
+・ポジションマップ
+・機会分析
+
+自社タブ
+・総合スコア
+・6軸バー
+・強み
+・課題
+・優先施策3件
+・技術基礎チェック
+・導線評価
+
+戦略タブ
+・戦略適合指数
+・構造リスク
+・改善余地
+・current theme
+・30/60/90
+・project tasks
+
+--------------------------------------------------
+27. Engine Versioning
+--------------------------------------------------
+
+Engine出力には version を持たせる。
+
+例
+engine_version = "strategic_engine_v1_0"
+
+理由
+・再分析時の互換性
+・計算ロジック変更時の比較
+・将来の研究用
+
+--------------------------------------------------
+28. 最終原則
+--------------------------------------------------
+
+Panoptes Strategic Engineは
+
+観測事実
+↓
+数学的変換
+↓
+戦略意味
+↓
+意思決定支援
+
+を一貫して行う。
+
+AIは意味を与えるが、
+Engineが一貫性を保証する。
+
+Panoptesは
+「AIが答えを出すツール」ではなく
+「戦略の地図と優先順位を生成するOS」
+である。

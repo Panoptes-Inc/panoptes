@@ -1,0 +1,1411 @@
+# Panoptes Frontend State Machine / Store Design v3.3 Complete
+
+## 0. Purpose
+
+This document defines the frontend state machine and store architecture for Panoptes MVP v3.3.
+
+Goals:
+
+* keep UI behavior stable under async analysis
+* prevent stale job responses from corrupting current project state
+* ensure the center white panel auto-advances only on server-confirmed milestones
+* preserve old snapshot while reanalysis runs
+* avoid project-switch, retry, and create-flow race conditions
+* provide deterministic rendering states for all major surfaces
+
+This document assumes alignment with:
+
+* Panoptes Master Spec v3.3 Stability Hardened
+* DB Migration v3.3 Complete
+* Types / Zod v3.3 Complete
+* API Contract v3.3 Complete
+
+---
+
+## 1. Core Principles
+
+### 1.1 Single source of truth
+
+Frontend must not invent analysis completion state.
+Visible progress transitions must derive from server-confirmed job state.
+
+### 1.2 Latest job wins
+
+For a given project, only the latest analysis job may mutate active analysis UI state.
+
+### 1.3 White panel stays mounted
+
+The center white panel container must remain mounted during flow progression.
+Only its internal content may transition.
+
+### 1.4 Old snapshot is stable
+
+When reanalysis starts, existing ready snapshot remains visible until new snapshot commit succeeds.
+
+### 1.5 Project selection is explicit
+
+Creating a new analysis flow must not implicitly destroy the last stable selected project view unless create succeeds and explicit state transition rules are satisfied.
+
+### 1.6 Progress is monotonic
+
+Visible step must never move backward unless user explicitly restarts analysis with a newly created job.
+
+### 1.7 Failure is local
+
+Failure in one project or one job must not destabilize other project UI surfaces.
+
+---
+
+## 2. Frontend Store Topology
+
+## 2.1 Store overview
+
+Recommended store split:
+
+* `sessionUiStore`
+* `projectCollectionStore`
+* `projectDetailStore`
+* `analysisRuntimeStore`
+* `strategyUiStore`
+* `networkStore`
+* `notificationStore`
+
+---
+
+## 2.2 sessionUiStore
+
+Purpose:
+Global UI shell state, current route-level selections, modal state.
+
+Fields:
+
+```ts
+type SessionUiStore = {
+  selectedProjectId: string | null;
+  lastStableSelectedProjectId: string | null;
+
+  createFlowOpen: boolean;
+  createFlowStatus: 'idle' | 'editing' | 'submitting' | 'failed';
+
+  projectSwitchStatus: 'idle' | 'switching' | 'failed';
+
+  rightPanelMode: 'project_list' | 'task_detail' | 'compact';
+  mainSurfaceMode: 'dashboard' | 'analysis_flow' | 'snapshot_view';
+
+  globalBlockingAction:
+    | null
+    | 'creating_project'
+    | 'switching_project'
+    | 'committing_snapshot';
+
+  pendingNavigationIntent:
+    | null
+    | {
+        type: 'select_project';
+        projectId: string;
+      };
+};
+```
+
+Rules:
+
+* `selectedProjectId` is current rendering target.
+* `lastStableSelectedProjectId` updates only after successful project detail hydration.
+* project switch in progress must not wipe rendered content immediately.
+* while `projectSwitchStatus='switching'`, current stable view remains rendered.
+
+---
+
+## 2.3 projectCollectionStore
+
+Purpose:
+List-level data for project list in strategy tab.
+
+```ts
+type ProjectSummary = {
+  id: string;
+  orgId: string;
+  targetUrl: string;
+  displayName: string | null;
+
+  latestAnalysisJobId: string | null;
+  currentSnapshotId: string | null;
+
+  latestJobStatus:
+    | 'queued'
+    | 'running'
+    | 'waiting_for_inference_confirmation'
+    | 'completed'
+    | 'failed'
+    | 'cancelled'
+    | null;
+
+  latestVisibleStep:
+    | 'target_scan'
+    | 'inference_review'
+    | 'competitor_analysis'
+    | 'industry_analysis'
+    | 'strategy_synthesis'
+    | null;
+
+  projectDisplayState: 'empty' | 'analyzing' | 'failed' | 'ready';
+
+  updatedAt: string;
+};
+```
+
+Store shape:
+
+```ts
+type ProjectCollectionStore = {
+  items: ProjectSummary[];
+  fetchStatus: 'idle' | 'loading' | 'refreshing' | 'failed';
+  fetchedAt: string | null;
+};
+```
+
+Rules:
+
+* project list may refresh independently of project detail.
+* list refresh must not clear existing items before replacement payload arrives.
+* if fetch fails, last successful list remains visible.
+
+---
+
+## 2.4 projectDetailStore
+
+Purpose:
+Selected project detailed state.
+
+```ts
+type ProjectDetailStore = {
+  projectId: string | null;
+
+  hydrationStatus: 'idle' | 'loading' | 'ready' | 'failed';
+
+  project: {
+    id: string;
+    orgId: string;
+    targetUrl: string;
+    displayName: string | null;
+    latestAnalysisJobId: string | null;
+    currentSnapshotId: string | null;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+
+  currentSnapshot: SnapshotPayload | null;
+  lastStableSnapshot: SnapshotPayload | null;
+
+  latestAnalysisJob: AnalysisJob | null;
+
+  derivedDisplayState: 'empty' | 'analyzing' | 'failed' | 'ready';
+
+  error:
+    | null
+    | {
+        code: string;
+        message: string;
+      };
+};
+```
+
+Rules:
+
+* `currentSnapshot` is current official snapshot if available.
+* `lastStableSnapshot` persists across reanalysis.
+* if reanalysis starts and `currentSnapshot` exists, UI continues rendering `lastStableSnapshot`.
+* `derivedDisplayState` must be derived, not manually set arbitrarily.
+
+---
+
+## 2.5 analysisRuntimeStore
+
+Purpose:
+Ephemeral analysis flow state for active selected project/job.
+
+```ts
+type AnalysisRuntimeStore = {
+  activeProjectId: string | null;
+  activeJobId: string | null;
+
+  runtimeStatus:
+    | 'idle'
+    | 'bootstrapping'
+    | 'waiting_for_inference_confirmation'
+    | 'running'
+    | 'committing_snapshot'
+    | 'completed'
+    | 'failed';
+
+  visibleStep:
+    | 'target_scan'
+    | 'inference_review'
+    | 'competitor_analysis'
+    | 'industry_analysis'
+    | 'strategy_synthesis'
+    | null;
+
+  visibleStepIndex: 0 | 1 | 2 | 3 | 4 | null;
+
+  backendPhase:
+    | 'bootstrap_crawl'
+    | 'inference_pending_confirmation'
+    | 'competitor_analysis'
+    | 'industry_synthesis'
+    | 'strategy_generation'
+    | 'snapshot_committing'
+    | 'completed'
+    | 'failed'
+    | null;
+
+  progressPercent: number | null;
+
+  inferenceDraft:
+    | null
+    | {
+        inferredIndustry: string | null;
+        inferredStructureType: string | null;
+        inferredScaleBand: string | null;
+        notes: string[];
+      };
+
+  canConfirmInference: boolean;
+
+  pollingStatus: 'stopped' | 'polling' | 'backoff';
+  pollingIntervalMs: number | null;
+
+  lastProgressEventAt: string | null;
+
+  terminalReason:
+    | null
+    | 'analysis_failed'
+    | 'commit_failed'
+    | 'cancelled'
+    | 'completed';
+};
+```
+
+Rules:
+
+* This store represents active job UI runtime only.
+* Must be reset only on legitimate job replacement or explicit deselection.
+* Must ignore payloads not matching both `activeProjectId` and `activeJobId`.
+
+---
+
+## 2.6 strategyUiStore
+
+Purpose:
+State for chosen strategy, 30/60/90 execution view, right-side task details.
+
+```ts
+type StrategyUiStore = {
+  selectedStrategyPlanId: string | null;
+  selectedPhase: '30' | '60' | '90' | null;
+  selectedTaskId: string | null;
+
+  taskMutationStatus: 'idle' | 'saving' | 'failed';
+  strategySelectionStatus: 'idle' | 'saving' | 'failed';
+};
+```
+
+Rules:
+
+* strategy selection changes only inside ready snapshot context.
+* during reanalysis, existing strategy UI remains bound to last stable snapshot until new snapshot becomes current.
+
+---
+
+## 2.7 networkStore
+
+```ts
+type NetworkStore = {
+  online: boolean;
+  apiReachability: 'unknown' | 'reachable' | 'degraded' | 'unreachable';
+  lastCheckedAt: string | null;
+};
+```
+
+Rules:
+
+* offline state should pause aggressive polling.
+* reconnect should trigger safe status refresh, not blind mutation.
+
+---
+
+## 2.8 notificationStore
+
+```ts
+type NotificationStore = {
+  toasts: Array<{
+    id: string;
+    level: 'info' | 'success' | 'warning' | 'error';
+    message: string;
+    createdAt: string;
+  }>;
+};
+```
+
+Rules:
+
+* notifications are additive and ephemeral.
+* notifications must not be used as state source.
+
+---
+
+## 3. Derived Rendering Model
+
+## 3.1 Canonical project display derivation
+
+```ts
+function deriveProjectDisplayState(input: {
+  currentSnapshotId: string | null;
+  latestJobStatus:
+    | 'queued'
+    | 'running'
+    | 'waiting_for_inference_confirmation'
+    | 'completed'
+    | 'failed'
+    | 'cancelled'
+    | null;
+}): 'empty' | 'analyzing' | 'failed' | 'ready' {
+  if (input.currentSnapshotId) return 'ready';
+
+  if (
+    input.latestJobStatus === 'queued' ||
+    input.latestJobStatus === 'running' ||
+    input.latestJobStatus === 'waiting_for_inference_confirmation'
+  ) {
+    return 'analyzing';
+  }
+
+  if (
+    input.latestJobStatus === 'failed' ||
+    input.latestJobStatus === 'cancelled'
+  ) {
+    return 'failed';
+  }
+
+  return 'empty';
+}
+```
+
+Rule:
+`completed` without snapshot commit must not be shown as ready.
+Ready requires actual `currentSnapshotId`.
+
+---
+
+## 3.2 Main surface rendering
+
+```ts
+type MainSurfaceRenderMode =
+  | 'empty_state'
+  | 'analysis_flow'
+  | 'failed_state'
+  | 'snapshot_dashboard';
+```
+
+Derivation:
+
+* `empty` -> `empty_state`
+* `analyzing` -> `analysis_flow`
+* `failed` -> `failed_state`
+* `ready` -> `snapshot_dashboard`
+
+Exception:
+If `ready` snapshot exists and reanalysis is active, render:
+
+* snapshot dashboard as base surface
+* analysis progress as overlay / sidecar / banner
+  Not full destructive switch to empty flow.
+
+---
+
+## 3.3 White panel render policy
+
+The center white panel must stay mounted through all analysis steps.
+
+Stable container structure:
+
+```ts
+<AnalysisPanelFrame>
+  <AnalysisPanelHeader />
+  <AnalysisPanelBody currentStepContent />
+  <AnalysisPanelFooter />
+</AnalysisPanelFrame>
+```
+
+Rules:
+
+* frame remains mounted
+* body content transitions
+* body min-height is fixed or softly animated
+* no full remount between steps
+* scroll reset only on explicit rule, not every progress event
+
+---
+
+## 4. State Machine
+
+## 4.1 Project shell state machine
+
+```ts
+type ProjectShellState =
+  | 'no_selection'
+  | 'hydrating_project'
+  | 'project_ready'
+  | 'project_switch_failed';
+```
+
+Transitions:
+
+* `no_selection -> hydrating_project`
+
+  * on project select intent
+* `hydrating_project -> project_ready`
+
+  * on detail hydration success
+* `hydrating_project -> project_switch_failed`
+
+  * on detail hydration failure
+* `project_switch_failed -> hydrating_project`
+
+  * on retry
+* `project_ready -> hydrating_project`
+
+  * on different project select intent
+
+Rules:
+
+* during `hydrating_project`, keep last stable project rendered
+* switch failure does not blank main area
+
+---
+
+## 4.2 Analysis flow state machine
+
+```ts
+type AnalysisFlowState =
+  | 'idle'
+  | 'target_scan'
+  | 'inference_review'
+  | 'competitor_analysis'
+  | 'industry_analysis'
+  | 'strategy_synthesis'
+  | 'committing_snapshot'
+  | 'completed'
+  | 'failed';
+```
+
+Transitions:
+
+* `idle -> target_scan`
+
+  * create-and-start-analysis success
+* `target_scan -> inference_review`
+
+  * backend confirms inference pending confirmation
+* `inference_review -> competitor_analysis`
+
+  * user confirms inference and server acknowledges resume
+* `competitor_analysis -> industry_analysis`
+
+  * backend milestone
+* `industry_analysis -> strategy_synthesis`
+
+  * backend milestone
+* `strategy_synthesis -> committing_snapshot`
+
+  * backend enters commit phase
+* `committing_snapshot -> completed`
+
+  * snapshot commit success + current_snapshot_id present
+* any active step -> failed
+
+  * terminal failure
+
+Rules:
+
+* no backward transition within same job
+* duplicated same-step payload is no-op
+* out-of-order earlier-step payload is ignored
+
+---
+
+## 4.3 Reanalysis overlay state machine
+
+```ts
+type ReanalysisOverlayState =
+  | 'hidden'
+  | 'showing_progress'
+  | 'showing_waiting_confirmation'
+  | 'showing_failure'
+  | 'resolved';
+```
+
+Used only when a ready snapshot exists and a new job is running.
+
+Rules:
+
+* base snapshot dashboard remains visible
+* overlay communicates progress of new analysis
+* on new commit success -> transition to resolved, then swap dashboard snapshot
+* on failure -> overlay shows recoverable failure; old snapshot remains active
+
+---
+
+## 5. Event Handling Rules
+
+## 5.1 Project selection event
+
+When user selects project from list:
+
+1. store selection intent
+2. set `projectSwitchStatus='switching'`
+3. keep current stable rendered content
+4. request project detail
+5. if success:
+
+   * update `selectedProjectId`
+   * update `lastStableSelectedProjectId`
+   * hydrate detail store
+   * sync runtime store if active job exists
+6. if failure:
+
+   * keep old selected project
+   * set `projectSwitchStatus='failed'`
+   * show error toast
+
+Never:
+
+* blank the main surface immediately
+* set selected project to new ID before successful hydration if that would destroy stable UI
+
+---
+
+## 5.2 Create project + start analysis
+
+When user submits URL:
+
+1. validate URL locally
+2. set `createFlowStatus='submitting'`
+3. disable duplicate submit
+4. call create-and-start-analysis with idempotency key
+5. on success:
+
+   * add or refresh project in project list
+   * hydrate new selected project
+   * initialize runtime store with new job
+   * open analysis flow surface
+6. on failure:
+
+   * preserve old selected project and stable view
+   * set `createFlowStatus='failed'`
+   * show canonical failure message
+
+Rule:
+`+` open state is UI-only until API success.
+
+---
+
+## 5.3 Progress polling event
+
+On every poll response:
+
+Validate:
+
+* project id matches selected active project
+* job id matches `analysisRuntimeStore.activeJobId`
+
+If mismatch:
+
+* ignore response
+
+If match:
+
+* apply monotonic update rules:
+
+  * step index cannot decrease
+  * terminal state cannot revert to active
+  * completed requires snapshot committed
+
+---
+
+## 5.4 Inference confirmation event
+
+When backend returns waiting-for-confirmation:
+
+* runtime state enters `inference_review`
+* populate `inferenceDraft`
+* `canConfirmInference = true`
+* polling may continue at reduced interval or pause according to backend contract
+
+When user confirms:
+
+1. disable confirm button
+2. send confirm request
+3. if success:
+
+   * `canConfirmInference = false`
+   * wait for next server-confirmed step
+4. if failure:
+
+   * re-enable confirm button
+   * keep user on inference review
+
+---
+
+## 5.5 Reanalyze event
+
+When user triggers reanalysis on ready project:
+
+1. create new job
+2. update project summary latest job
+3. keep current snapshot dashboard visible
+4. initialize reanalysis overlay
+5. runtime store binds to new job
+6. polling starts for new job
+
+Rules:
+
+* do not clear current snapshot
+* do not switch main surface to empty analysis flow
+* old strategy/task view remains usable unless product intentionally locks edits
+
+---
+
+## 5.6 Snapshot commit success event
+
+When commit success response arrives:
+
+Required conditions:
+
+* job id matches active latest job for project
+* response includes committed snapshot id
+
+Then:
+
+1. refresh project detail
+2. set `currentSnapshot`
+3. set `lastStableSnapshot = currentSnapshot`
+4. set runtime state `completed`
+5. dissolve reanalysis overlay if present
+6. switch main render mode to snapshot dashboard if not already there
+
+---
+
+## 5.7 Failure event
+
+On terminal failure:
+
+If project has no stable snapshot:
+
+* main surface becomes failed state
+
+If project has stable snapshot and current job is reanalysis:
+
+* keep dashboard
+* show overlay/banner failure
+* allow retry/reanalyze action
+
+---
+
+## 6. Monotonic Update Guards
+
+## 6.1 Step index guard
+
+```ts
+function shouldAcceptStepUpdate(
+  currentIndex: number | null,
+  incomingIndex: number | null
+): boolean {
+  if (incomingIndex === null) return true;
+  if (currentIndex === null) return true;
+  return incomingIndex >= currentIndex;
+}
+```
+
+---
+
+## 6.2 Job identity guard
+
+```ts
+function isFreshJobUpdate(input: {
+  activeProjectId: string | null;
+  activeJobId: string | null;
+  incomingProjectId: string;
+  incomingJobId: string;
+}): boolean {
+  return (
+    input.activeProjectId === input.incomingProjectId &&
+    input.activeJobId === input.incomingJobId
+  );
+}
+```
+
+---
+
+## 6.3 Terminal state guard
+
+```ts
+function shouldApplyRuntimeStatus(
+  current:
+    | 'idle'
+    | 'bootstrapping'
+    | 'waiting_for_inference_confirmation'
+    | 'running'
+    | 'committing_snapshot'
+    | 'completed'
+    | 'failed',
+  incoming:
+    | 'idle'
+    | 'bootstrapping'
+    | 'waiting_for_inference_confirmation'
+    | 'running'
+    | 'committing_snapshot'
+    | 'completed'
+    | 'failed'
+): boolean {
+  const terminal = current === 'completed' || current === 'failed';
+  if (!terminal) return true;
+  return incoming === current;
+}
+```
+
+Rule:
+Once terminal, state does not revert.
+
+---
+
+## 7. White Panel Auto-Advance Specification
+
+## 7.1 Auto-advance source
+
+The center white panel must advance based on:
+
+* `visibleStep`
+* derived from backend phase / progress payload
+* not local timers alone
+
+## 7.2 Optional cosmetic animation
+
+Local animation may be used for polish:
+
+* fade content
+* slide labels
+* pulse progress
+  But these must never redefine actual step order.
+
+## 7.3 Transition timing
+
+Recommended sequence:
+
+1. backend milestone received
+2. runtime store updated
+3. panel body enters outgoing animation
+4. content swaps
+5. incoming animation plays
+
+All without unmounting frame.
+
+## 7.4 Height stability
+
+Use one of:
+
+* min-height locked per flow
+* measured-height FLIP transition
+* step-aware height interpolation
+
+Never let the panel collapse to zero between step changes.
+
+---
+
+## 8. Polling / Connectivity Design
+
+## 8.1 Polling start
+
+Start polling when:
+
+* active analysis job exists
+* runtime state is non-terminal
+* network is reachable
+
+## 8.2 Polling stop
+
+Stop polling when:
+
+* job reaches terminal state
+* selected project changes away from job project
+* app enters prolonged offline state
+
+## 8.3 Backoff
+
+Recommended:
+
+* active running: 2s to 4s
+* waiting confirmation: 4s to 8s
+* degraded network: exponential backoff capped
+* hidden tab: moderate backoff
+
+## 8.4 Resume after reconnect
+
+On reconnect:
+
+1. fetch latest project detail
+2. fetch latest job status
+3. reconcile runtime store
+4. continue polling if needed
+
+Never replay stale local assumptions after reconnect.
+
+---
+
+## 9. Error Handling Canon
+
+## 9.1 Create flow errors
+
+Cases:
+
+* invalid URL
+* target unreachable
+* duplicate submit timeout
+* org quota exceeded
+* server creation failed
+
+UI rules:
+
+* keep form values when recoverable
+* do not destroy old project view
+* show canonical actionable message
+
+## 9.2 Project switch errors
+
+Cases:
+
+* detail fetch failed
+* snapshot payload fetch failed
+* unauthorized/missing project
+
+UI rules:
+
+* revert to last stable project view
+* show toast or inline non-blocking error
+* keep list usable
+
+## 9.3 Analysis progress errors
+
+Cases:
+
+* poll timeout
+* malformed payload
+* stale job response
+* temporary backend inconsistency
+
+UI rules:
+
+* stale response => silent ignore
+* malformed payload => log + transient error
+* repeat timeout => degraded network banner
+
+## 9.4 Commit errors
+
+Cases:
+
+* snapshot payload saved but current snapshot pointer not updated
+* strategy generation incomplete
+* task generation partial failure
+
+UI rules:
+
+* treat as commit failure unless backend marks snapshot valid
+* do not show project as ready without committed current snapshot id
+
+---
+
+## 10. Svelte Store Implementation Pattern
+
+Recommended:
+
+* writable stores for raw state
+* derived stores for render state
+* action functions encapsulate API orchestration
+* components consume derived selectors, not mutate core stores directly
+
+---
+
+## 10.1 Raw stores
+
+```ts
+import { writable, derived, get } from 'svelte/store';
+
+export const sessionUiStore = writable<SessionUiStore>({
+  selectedProjectId: null,
+  lastStableSelectedProjectId: null,
+  createFlowOpen: false,
+  createFlowStatus: 'idle',
+  projectSwitchStatus: 'idle',
+  rightPanelMode: 'project_list',
+  mainSurfaceMode: 'dashboard',
+  globalBlockingAction: null,
+  pendingNavigationIntent: null
+});
+
+export const projectCollectionStore = writable<ProjectCollectionStore>({
+  items: [],
+  fetchStatus: 'idle',
+  fetchedAt: null
+});
+
+export const projectDetailStore = writable<ProjectDetailStore>({
+  projectId: null,
+  hydrationStatus: 'idle',
+  project: null,
+  currentSnapshot: null,
+  lastStableSnapshot: null,
+  latestAnalysisJob: null,
+  derivedDisplayState: 'empty',
+  error: null
+});
+
+export const analysisRuntimeStore = writable<AnalysisRuntimeStore>({
+  activeProjectId: null,
+  activeJobId: null,
+  runtimeStatus: 'idle',
+  visibleStep: null,
+  visibleStepIndex: null,
+  backendPhase: null,
+  progressPercent: null,
+  inferenceDraft: null,
+  canConfirmInference: false,
+  pollingStatus: 'stopped',
+  pollingIntervalMs: null,
+  lastProgressEventAt: null,
+  terminalReason: null
+});
+
+export const strategyUiStore = writable<StrategyUiStore>({
+  selectedStrategyPlanId: null,
+  selectedPhase: null,
+  selectedTaskId: null,
+  taskMutationStatus: 'idle',
+  strategySelectionStatus: 'idle'
+});
+```
+
+---
+
+## 10.2 Derived stores
+
+```ts
+export const selectedProjectSummary = derived(
+  [sessionUiStore, projectCollectionStore],
+  ([$sessionUiStore, $projectCollectionStore]) =>
+    $projectCollectionStore.items.find(
+      (p) => p.id === $sessionUiStore.selectedProjectId
+    ) ?? null
+);
+
+export const derivedProjectDisplayState = derived(
+  [projectDetailStore],
+  ([$projectDetailStore]) => {
+    const project = $projectDetailStore.project;
+    const latestJob = $projectDetailStore.latestAnalysisJob;
+
+    return deriveProjectDisplayState({
+      currentSnapshotId: project?.currentSnapshotId ?? null,
+      latestJobStatus: latestJob?.status ?? null
+    });
+  }
+);
+
+export const mainSurfaceRenderMode = derived(
+  [projectDetailStore, analysisRuntimeStore],
+  ([$projectDetailStore, $analysisRuntimeStore]) => {
+    const state = $projectDetailStore.derivedDisplayState;
+    const hasStableSnapshot = !!$projectDetailStore.lastStableSnapshot;
+    const isReanalyzing =
+      hasStableSnapshot &&
+      $analysisRuntimeStore.activeJobId &&
+      $analysisRuntimeStore.runtimeStatus !== 'completed' &&
+      $analysisRuntimeStore.runtimeStatus !== 'failed';
+
+    if (state === 'ready') return 'snapshot_dashboard';
+    if (state === 'failed' && hasStableSnapshot) return 'snapshot_dashboard';
+    if (state === 'failed') return 'failed_state';
+    if (state === 'analyzing' && hasStableSnapshot && isReanalyzing) {
+      return 'snapshot_dashboard';
+    }
+    if (state === 'analyzing') return 'analysis_flow';
+    return 'empty_state';
+  }
+);
+```
+
+---
+
+## 11. Action Layer
+
+## 11.1 selectProject action
+
+```ts
+export async function selectProject(projectId: string) {
+  const session = get(sessionUiStore);
+
+  sessionUiStore.update((s) => ({
+    ...s,
+    projectSwitchStatus: 'switching',
+    pendingNavigationIntent: { type: 'select_project', projectId }
+  }));
+
+  try {
+    const detail = await api.getProjectDetail(projectId);
+
+    projectDetailStore.set({
+      projectId: detail.project.id,
+      hydrationStatus: 'ready',
+      project: detail.project,
+      currentSnapshot: detail.currentSnapshot,
+      lastStableSnapshot: detail.currentSnapshot ?? null,
+      latestAnalysisJob: detail.latestAnalysisJob,
+      derivedDisplayState: deriveProjectDisplayState({
+        currentSnapshotId: detail.project.currentSnapshotId,
+        latestJobStatus: detail.latestAnalysisJob?.status ?? null
+      }),
+      error: null
+    });
+
+    sessionUiStore.update((s) => ({
+      ...s,
+      selectedProjectId: projectId,
+      lastStableSelectedProjectId: projectId,
+      projectSwitchStatus: 'idle',
+      pendingNavigationIntent: null
+    }));
+
+    syncRuntimeWithProjectDetail(detail);
+  } catch (error) {
+    sessionUiStore.update((s) => ({
+      ...s,
+      selectedProjectId: session.lastStableSelectedProjectId,
+      projectSwitchStatus: 'failed',
+      pendingNavigationIntent: null
+    }));
+
+    pushToast('error', 'プロジェクトの読み込みに失敗しました。');
+  }
+}
+```
+
+---
+
+## 11.2 createAndStartAnalysis action
+
+```ts
+export async function createAndStartAnalysis(input: {
+  targetUrl: string;
+  idempotencyKey: string;
+}) {
+  sessionUiStore.update((s) => ({
+    ...s,
+    createFlowStatus: 'submitting',
+    globalBlockingAction: 'creating_project'
+  }));
+
+  try {
+    const result = await api.createAndStartAnalysis(input);
+
+    await refreshProjectList();
+    await selectProject(result.project.id);
+
+    analysisRuntimeStore.set({
+      activeProjectId: result.project.id,
+      activeJobId: result.job.id,
+      runtimeStatus: 'bootstrapping',
+      visibleStep: 'target_scan',
+      visibleStepIndex: 0,
+      backendPhase: 'bootstrap_crawl',
+      progressPercent: 0,
+      inferenceDraft: null,
+      canConfirmInference: false,
+      pollingStatus: 'polling',
+      pollingIntervalMs: 2500,
+      lastProgressEventAt: null,
+      terminalReason: null
+    });
+
+    sessionUiStore.update((s) => ({
+      ...s,
+      createFlowStatus: 'idle',
+      createFlowOpen: false,
+      globalBlockingAction: null,
+      mainSurfaceMode: 'analysis_flow'
+    }));
+  } catch (error) {
+    sessionUiStore.update((s) => ({
+      ...s,
+      createFlowStatus: 'failed',
+      globalBlockingAction: null
+    }));
+
+    pushToast('error', '分析開始に失敗しました。URLや通信状態を確認してください。');
+  }
+}
+```
+
+---
+
+## 11.3 applyProgressUpdate action
+
+```ts
+export function applyProgressUpdate(payload: {
+  projectId: string;
+  jobId: string;
+  status: AnalysisRuntimeStore['runtimeStatus'];
+  visibleStep: AnalysisRuntimeStore['visibleStep'];
+  visibleStepIndex: AnalysisRuntimeStore['visibleStepIndex'];
+  backendPhase: AnalysisRuntimeStore['backendPhase'];
+  progressPercent: number | null;
+  inferenceDraft: AnalysisRuntimeStore['inferenceDraft'];
+}) {
+  const runtime = get(analysisRuntimeStore);
+
+  if (
+    !isFreshJobUpdate({
+      activeProjectId: runtime.activeProjectId,
+      activeJobId: runtime.activeJobId,
+      incomingProjectId: payload.projectId,
+      incomingJobId: payload.jobId
+    })
+  ) {
+    return;
+  }
+
+  if (
+    !shouldAcceptStepUpdate(runtime.visibleStepIndex, payload.visibleStepIndex)
+  ) {
+    return;
+  }
+
+  if (!shouldApplyRuntimeStatus(runtime.runtimeStatus, payload.status)) {
+    return;
+  }
+
+  analysisRuntimeStore.update((s) => ({
+    ...s,
+    runtimeStatus: payload.status,
+    visibleStep: payload.visibleStep,
+    visibleStepIndex: payload.visibleStepIndex,
+    backendPhase: payload.backendPhase,
+    progressPercent:
+      payload.progressPercent !== null
+        ? Math.max(s.progressPercent ?? 0, payload.progressPercent)
+        : s.progressPercent,
+    inferenceDraft: payload.inferenceDraft ?? s.inferenceDraft,
+    canConfirmInference:
+      payload.visibleStep === 'inference_review' &&
+      payload.status === 'waiting_for_inference_confirmation',
+    pollingStatus:
+      payload.status === 'completed' || payload.status === 'failed'
+        ? 'stopped'
+        : s.pollingStatus
+  }));
+}
+```
+
+---
+
+## 11.4 confirmInference action
+
+```ts
+export async function confirmInference(projectId: string, jobId: string) {
+  analysisRuntimeStore.update((s) => ({
+    ...s,
+    canConfirmInference: false
+  }));
+
+  try {
+    await api.confirmInference({ projectId, jobId });
+    pushToast('success', '推定内容を確定しました。分析を続行します。');
+  } catch (error) {
+    analysisRuntimeStore.update((s) => ({
+      ...s,
+      canConfirmInference: true
+    }));
+    pushToast('error', '推定内容の確定に失敗しました。');
+  }
+}
+```
+
+---
+
+## 11.5 reconcileOnCommitSuccess action
+
+```ts
+export async function reconcileOnCommitSuccess(projectId: string) {
+  const detail = await api.getProjectDetail(projectId);
+
+  projectDetailStore.update((s) => ({
+    ...s,
+    projectId: detail.project.id,
+    hydrationStatus: 'ready',
+    project: detail.project,
+    currentSnapshot: detail.currentSnapshot,
+    lastStableSnapshot: detail.currentSnapshot ?? s.lastStableSnapshot,
+    latestAnalysisJob: detail.latestAnalysisJob,
+    derivedDisplayState: deriveProjectDisplayState({
+      currentSnapshotId: detail.project.currentSnapshotId,
+      latestJobStatus: detail.latestAnalysisJob?.status ?? null
+    }),
+    error: null
+  }));
+
+  analysisRuntimeStore.update((s) => ({
+    ...s,
+    runtimeStatus: 'completed',
+    pollingStatus: 'stopped',
+    terminalReason: 'completed'
+  }));
+}
+```
+
+---
+
+## 12. Component Binding Guidance
+
+## 12.1 Strategy route shell
+
+Should subscribe to:
+
+* `sessionUiStore`
+* `projectCollectionStore`
+* `mainSurfaceRenderMode`
+
+Should not directly infer backend job transitions.
+
+## 12.2 White analysis panel
+
+Should subscribe to:
+
+* `analysisRuntimeStore`
+* derived step presentation selectors
+
+Must not:
+
+* own canonical progress state internally
+* advance steps via local-only timers
+
+## 12.3 Right project list
+
+Should remain interactive during:
+
+* selected project hydration
+* background reanalysis
+  Except where explicit blocking action applies.
+
+## 12.4 Snapshot dashboard
+
+Should prefer:
+
+* `currentSnapshot`
+* else `lastStableSnapshot`
+  when reanalysis in progress.
+
+---
+
+## 13. Dangerous Cases and Required Guards
+
+## 13.1 Double submit on analysis start
+
+Guard:
+
+* disable submit during `createFlowStatus='submitting'`
+* always send idempotency key
+
+## 13.2 Old poll response after project switch
+
+Guard:
+
+* reject by projectId/jobId identity check
+
+## 13.3 Reanalysis completes after user switched projects
+
+Guard:
+
+* update collection cache globally
+* do not mutate currently open runtime store unless matching selection context
+* optionally show passive success toast
+
+## 13.4 Snapshot commit partially succeeded
+
+Guard:
+
+* require project detail refetch before treating as ready
+* ready UI needs real `currentSnapshotId`
+
+## 13.5 Animation causes content flicker
+
+Guard:
+
+* keep frame mounted
+* separate data state from animation state
+* animation state derives from stable visibleStep changes only
+
+## 13.6 Offline during inference confirmation
+
+Guard:
+
+* confirmation button enters pending disabled state briefly
+* on request failure, restore enabled state and preserve inference screen
+
+---
+
+## 14. Test Matrix
+
+Frontend implementation should be verified against at least:
+
+1. create analysis success path
+2. invalid URL create failure
+3. project switch while polling
+4. stale poll after project switch
+5. inference confirmation success
+6. inference confirmation failure
+7. competitor analysis failure without stable snapshot
+8. reanalysis failure with stable snapshot retained
+9. commit success snapshot swap
+10. commit failure with old snapshot retained
+11. network offline during polling
+12. reconnect reconciliation
+13. double-click create submit
+14. double-click reanalyze
+15. hidden tab polling backoff
+16. delayed out-of-order progress event
+
+---
+
+## 15. Final Acceptance Criteria
+
+Implementation is considered aligned when all of the following are true:
+
+* selected project view never destructively blanks on switch/create failure
+* white analysis panel auto-advances only on server-confirmed milestones
+* stale job responses cannot corrupt active UI
+* reanalysis never destroys old snapshot before new snapshot commit success
+* ready state requires committed `current_snapshot_id`
+* failed analysis without snapshot renders deterministic failed state
+* polling/network degradation does not cause phantom regressions
+* task and strategy surfaces remain bound to valid snapshot context
+
+---
+
+## 16. Recommended Next Implementation Artifact
+
+After this document, the recommended next artifact is:
+
+* Svelte store skeleton implementation file set
+* API client wrapper with guarded mutation helpers
+* step presentation selector utilities
+* integration test checklist for project switch / reanalysis / stale job races
+
+This document is the canonical frontend state and orchestration specification for Panoptes MVP v3.3.

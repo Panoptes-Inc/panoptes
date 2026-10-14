@@ -1,0 +1,496 @@
+Panoptes Python Crawler Implementation Specification v1.0
+
+Purpose
+Panoptesのサイト観測レイヤーを構築するためのPythonクローラー実装仕様。
+本クローラーはAIクローリングを行わず、機械的観測と構造抽出を担当する。
+
+役割
+・URL取得
+・HTML取得
+・内部リンク探索
+・構造抽出
+・スクリーンショット取得
+・差分検知
+・Observation bundle生成素材作成
+
+AIの役割
+・構造意味理解
+・Visual理解
+・戦略文章化
+
+CrawlerはAI処理を行わない。
+
+---
+
+1 Architecture
+
+crawler/
+ ├ core/
+ │  crawler.py
+ │  fetcher.py
+ │  normalizer.py
+ │  extractor.py
+ │  classifier.py
+ │  diff.py
+ │  screenshot.py
+ │
+ ├ discovery/
+ │  url_discovery.py
+ │  link_parser.py
+ │
+ ├ models/
+ │  page_snapshot.py
+ │  crawl_event.py
+ │
+ ├ pipelines/
+ │  bootstrap_pipeline.py
+ │  analysis_pipeline.py
+ │  monitoring_pipeline.py
+ │
+ └ utils/
+    url_utils.py
+    html_utils.py
+    hash_utils.py
+
+---
+
+2 Tech Stack
+
+Python 3.11+
+
+libraries
+
+httpx
+beautifulsoup4
+lxml
+playwright
+pydantic
+
+optional
+
+redis
+asyncio
+
+---
+
+3 Core Components
+
+Crawler Controller
+
+crawler.py
+
+class Crawler
+
+役割
+
+・crawl mode管理
+・pipeline起動
+・crawl run管理
+
+---
+
+Fetcher
+
+fetcher.py
+
+役割
+
+HTML取得
+
+使用
+
+httpx
+
+取得情報
+
+status_code
+html
+headers
+response_time
+content_length
+
+---
+
+Normalizer
+
+normalizer.py
+
+役割
+
+HTML差分ノイズ削除
+
+削除対象
+
+script
+style
+timestamp
+tracking parameters
+nonce
+session id
+
+---
+
+Extractor
+
+extractor.py
+
+役割
+
+Internal evidence抽出
+
+抽出対象
+
+title
+meta description
+h1
+h2
+h3
+CTA
+form
+faq
+pricing
+compare
+trust block
+case block
+section list
+internal links
+
+---
+
+Classifier
+
+classifier.py
+
+役割
+
+page_type推定
+
+types
+
+top
+pricing
+feature
+faq
+case
+company
+contact
+comparison
+article
+product
+
+---
+
+Screenshot Engine
+
+screenshot.py
+
+Playwright使用
+
+取得
+
+first_view screenshot
+full_page screenshot
+
+optional
+
+section crop
+
+---
+
+Diff Detector
+
+diff.py
+
+差分判定
+
+level1
+
+URL追加
+URL削除
+
+level2
+
+content hash diff
+
+level3
+
+構造差分
+
+h1
+CTA
+pricing
+faq
+section order
+
+level4
+
+AI意味差分
+（crawlerでは扱わない）
+
+---
+
+4 Crawl Modes
+
+bootstrap crawl
+
+目的
+
+サイト基本推定
+
+pages
+
+top
+nav
+footer
+
+最大
+
+10 pages
+
+---
+
+analysis crawl
+
+目的
+
+完全分析
+
+最大
+
+30 pages
+
+優先
+
+top
+pricing
+feature
+faq
+case
+contact
+
+---
+
+monitoring crawl
+
+目的
+
+競合監視
+
+最大
+
+10 pages
+
+diff検知のみ
+
+---
+
+5 URL Discovery
+
+link source
+
+nav
+footer
+CTA
+internal links
+
+depth
+
+max depth = 3
+
+max pages = 30
+
+除外
+
+pdf
+image
+zip
+login
+cart
+checkout
+
+---
+
+6 URL Normalization
+
+remove
+
+tracking query
+
+remove
+
+fragment
+
+apply
+
+canonical
+
+remove duplicate
+
+---
+
+7 Page Snapshot Model
+
+class PageSnapshot(BaseModel)
+
+url
+page_type
+page_role
+status_code
+
+title
+h1
+h2_list
+cta_list
+
+section_count
+cta_count
+internal_links
+
+pricing_exists
+faq_exists
+compare_exists
+
+content_hash
+normalized_hash
+
+screenshot_first
+screenshot_full
+
+---
+
+8 Crawl Event Model
+
+class CrawlEvent(BaseModel)
+
+event_type
+url
+severity
+
+diff_type
+
+h1_change
+cta_change
+pricing_change
+faq_change
+
+timestamp
+
+---
+
+9 Diff Logic
+
+content_hash
+
+hash(html)
+
+normalized_hash
+
+hash(normalized_html)
+
+diff triggers
+
+hash changed
+structure changed
+cta changed
+
+---
+
+10 Visual Capture
+
+Playwright
+
+browser headless
+
+capture
+
+first viewport
+
+capture
+
+full page
+
+image format
+
+webp
+
+---
+
+11 Storage Strategy
+
+snapshot table
+
+crawl_page_snapshot
+
+event table
+
+crawl_event
+
+run table
+
+crawl_run
+
+---
+
+12 Observation Bundle
+
+Engineに渡すデータ
+
+site_info
+
+pages
+
+internal_evidence
+
+visual_evidence
+
+page_types
+
+flow_summary
+
+diff_summary
+
+---
+
+13 Performance Limits
+
+max pages per site
+
+30
+
+max crawl depth
+
+3
+
+timeout
+
+10s
+
+concurrency
+
+5
+
+---
+
+14 Security
+
+robots.txt respect
+
+rate limit
+
+domain isolation
+
+no credential crawl
+
+---
+
+15 Future Extensions
+
+diff aware recrawl
+
+AI assisted page classification
+
+visual section detection
+
+semantic diff detection
+
+industry feed generator

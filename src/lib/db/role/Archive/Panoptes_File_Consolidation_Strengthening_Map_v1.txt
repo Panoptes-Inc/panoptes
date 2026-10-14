@@ -1,0 +1,38 @@
+Panoptes File Consolidation & Strengthening Map v1.0
+
+1. 正本として残す
+- Panoptes Master Specification v3.2
+  役割: 唯一の親仕様書
+
+2. 吸収済みとして archive へ移す
+- Panoptes Master Specification v3.0 UPDATED
+  吸収先: v3.2
+- Panoptes Master Specification v3.1
+  吸収先: v3.2
+- Panoptes Strategic Engine Complete Specification v1.0
+  吸収先: v3.2 Chapter 10
+- Panoptes Python Crawler Implementation Specification v1.0
+  吸収先: v3.2 Chapter 6
+- Panoptes TypeScript & Zod Foundation v1.1
+  吸収先: v3.2 Chapter 13 / 16
+- Panoptes Strategy Types & Schemas v1.0
+  吸収先: v3.2 Chapter 11
+- Panoptes API Types & Schemas v1.1
+  吸収先: v3.2 Chapter 14
+
+3. 強化して残した論点
+- bootstrap / analysis / monitoring crawl の3層化
+- AI direct crawling 禁止
+- APIは raw engine result を返さない
+- snapshot由来プランと current execution state を分離
+- strategy / phase plan / task / transition / reanalysis merge の責務固定
+- snake_case / camelCase / PascalCase の命名固定
+- dashboard payload = SnapshotViewPayload で固定
+
+4. 今後の実装順
+1) DB migration SQL 完全版
+2) SvelteKit route contract 実装
+3) Python crawler package skeleton
+4) Engine module implementation
+5) Snapshot builder
+6) Strategy persistence & task transition

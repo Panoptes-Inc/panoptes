@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+case "${1:-} ${2:-} ${3:-} ${4:-}" in
+  bundle\ exec\ puma\ *|bundle\ exec\ rails\ server) bundle exec rails db:prepare ;;
+esac
+
+exec "$@"

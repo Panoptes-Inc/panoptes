@@ -1,0 +1,1266 @@
+Panoptes Master Specification v3.3 Stability Hardened
+Unified Product / Crawl / Engine / Strategy / API Contract / Project Creation / Selection State / Initial Analysis Progress State
+統合版・強化版・状態遷移安全設計・初回分析UI進行設計統合版
+
+0. Document Control
+0.1 文書名
+Panoptes Master Specification v3.3 Stability Hardened
+
+0.2 役割
+本書は Panoptes の唯一の親仕様書とする。
+実装、UI、推定、分析、保存、クローリング、戦略生成、Engine、API、型定義、
+初回分析進行UI、ジョブ状態遷移、安全設計はすべて本書を基準とする。
+
+0.3 優先順位
+1. 本書 v3.3
+2. 現在の確定UIデザイン
+3. Strategic Engine Complete Spec v1.0
+4. Python Crawler Implementation Specification v1.0
+5. TypeScript / Zod Foundation v1.1
+6. Strategy Types & Schemas v1.0
+7. API Types & Schemas v1.1
+8. 旧 Master Spec / 旧派生資料
+
+0.4 v3.3 の目的
+- v3.2 Integrated の骨格を維持しつつ、初回分析 progress UI を正規仕様化する
+- URL入力直後から snapshot 完成までの state machine を固定する
+- 中央 white panel が自動進行する UI を、破綻しない非同期設計として定義する
+- stale response / race condition / 二重実行 / snapshot競合 / route遷移競合を防止する
+- 他に Panoptes 内で壊れやすい箇所を洗い出し、MVPで必要な安全策を固定する
+
+1. Product Definition
+1.1 Panoptesとは何か
+Panoptesは、
+「競合・業界・自社の構造を読み、戦略を可視化し、実行優先順位まで導く戦略OS」
+である。
+
+Panoptesは以下ではない
+- トラフィック推定ツール
+- アナリティクスツール
+- Similarweb系
+- SEOツール
+- LP改善ツール
+
+Panoptesは以下である
+- 構造理解装置
+- 因果説明装置
+- 戦略提案装置
+- 実行優先順位エンジン
+- 思考圧縮UI
+- 戦略OS
+
+1.2 MVPの目的
+- URL入力から、競合・業界・自社の構造分析を実行する
+- Internal / Visual の2レイヤーで6軸評価を行う
+- 同格比較を軸に競合10社を分析する
+- 業界構造を推定する
+- 自社の差分と改善余地を示す
+- 戦略提案3件を生成する
+- 30/60/90日プランを task 管理付きで生成する
+- snapshot として保存し、再分析で更新できるようにする
+
+1.3 MVPでやらないこと
+- 流入流出推定
+- 滞在時間推定
+- CVR推定
+- 広告チャネル分析
+- 指名検索推定
+- GA / Search Console 統合
+- Panoptes独自タグによる行動収集
+- リアルタイム更新
+- 自動改善実行
+- 実行代行
+
+2. MVP Absolute Rules
+2.1 データ原則
+MVPで使用するのは以下のみ
+- サイトの内部構造
+- サイトのビジュアル構造
+- 競合比較ロジック
+- Engine計算
+- AIによる抽出と文章化
+
+MVPで使用しない
+- 外部推定データ
+- アナリティクスデータ
+- 流入/流出
+- 滞在時間
+- 属性推定
+- 売上/市場シェア推定
+
+2.2 観測レイヤー
+Panoptesは常に以下の2レイヤーで観測する
+- Internal
+- Visual
+
+2.3 戦略軸
+固定6軸
+- 価値訴求
+- 情報階層
+- 導線強度
+- 信頼構造
+- 差別化明確性
+- 意思決定支援
+
+2.4 LLM原則
+LLMの役割
+- 構造意味理解
+- visual意味理解
+- evidence整理
+- narrative生成
+- 提案文の文章化
+- 戦略要約
+
+LLMにやらせてはいけないもの
+- スコア計算
+- delta計算
+- priority算出
+- opportunity算出
+- confidence算出
+- coherence算出
+- 業界平均計算
+- 外部データ補完
+
+2.5 保存原則
+Panoptesは分析のたびに snapshot を保存する。
+各タブは個別計算ではなく、同じ snapshot を参照して表示される。
+
+2.6 API返却原則
+APIは raw engine result を返さない。
+返すのは以下のみ
+- analysis job status
+- progress state
+- snapshot view payload
+- strategy state
+- usage state
+
+3. Supported Site Scope
+3.1 対象サイト
+- SaaSサイト
+- サービスサイト
+- 比較検討が発生するB2Bサイト
+- コーポレートサイト
+- D2C / ECサイト
+- 情報設計と意思決定導線が重要なサイト
+
+3.2 対象の考え方
+PanoptesはLP専用ではない。
+ただしMVPは「判断を前に進める構造を持つサイト」を得意とする。
+
+3.3 相性が弱い対象
+- 純ポートフォリオ
+- 採用専用サイト
+- ギャラリー専用ブランドサイト
+- 行動導線をほとんど持たない展示サイト
+
+4. UI Canon
+4.1 PC UI構成
+- competitors
+- industry
+- self
+- strategy
+- panoai
+
+4.2 各タブの責務
+competitors
+競合群の一覧と比較対象の理解
+
+industry
+市場構造・競争構造・型分布・市場余白の理解
+
+self
+自社の高解像度診断
+
+strategy
+実行司令室。戦略状態・改善余地・選択中戦略・AI評価・30/60/90実行管理・再分析の中核。
+30/60/90は phase 単位の要約表示ではなく、task進行管理を伴う実行UIとする。
+strategy タブは project selection と project creation の起点を持つ。
+右側 project list では既存 project の選択を行い、
+「+」導線では新規 project 作成フローを開始する。
+新規作成フローは current project 表示状態から分離された一時状態として扱う。
+
+panoai
+保存済み snapshot を文脈として使う対話補助
+
+4.3 スマホViewer
+スマホ版はPC版の縮小ではなく、専用Viewerとする。
+役割
+- 戦略適合指数の確認
+- 現在のテーマ確認
+- 構造リスク確認
+- 改善余地確認
+- 戦略カード確認
+- 30/60/90確認
+- プロジェクト一覧確認
+- 再分析
+
+4.4 Project Shell Behavior
+Panoptes app shell は以下の3状態を分離保持する。
+
+- app_shell_state
+  - selected_project_id
+  - selected_snapshot_id
+  - active_tab
+
+- project_list_state
+  - projects[]
+  - loading_projects
+  - selected_project_id
+
+- create_project_flow_state
+  - is_create_project_open
+  - draft_project_name
+  - draft_target_url
+  - is_submitting
+  - create_error
+  - pending_analysis_job_id
+
+ルール
+- create_project_flow_state は selected_project_id を直接変更しない
+- project 作成と analysis 開始が成功するまで current 表示を維持する
+- 新規作成成功後にはじめて project list に追加する
+- 遷移は「自動遷移」または「この project を開く」導線で行う
+
+4.5 Initial Analysis Progress Shell
+URL入力後から snapshot 保存完了までの間、中央 white panel を進行UIの唯一の主表示とする。
+この UI は route 切替ではなく、同一 shell 内の phase 切替で動く。
+
+4.5.1 中央 panel の役割
+- 進行段階の視覚化
+- 現在処理中の内容の要約表示
+- bootstrap結果の確認
+- 修正導線
+- 失敗時の復旧導線
+- 完了後の dashboard 遷移
+
+4.5.2 進行UIの固定5段階
+- step_1: target_scan
+  表示文言例: 分析対象URLを分析中です…
+- step_2: inference_review
+  表示文言例: 業界・構造タイプ自動推定
+- step_3: competitor_analysis
+  表示文言例: 競合を分析中です…
+- step_4: industry_analysis
+  表示文言例: 業界構造を分析中です…
+- step_5: strategy_synthesis
+  表示文言例: 競合×業界×自社の差分を分析中です…
+
+4.5.3 step と backend pipeline の対応
+- step_1 = project create + bootstrap crawl + URL正規化 + 初期到達確認
+- step_2 = 業界推定 + 構造タイプ推定 + サイト規模推定 + confidence計算 + user confirmation待ち
+- step_3 = competitor set construction + competitor analysis crawl + competitor observation bundle
+- step_4 = market structure synthesis + type distribution + whitespace extraction
+- step_5 = self synthesis + engine calculation + strategy generation + 30/60/90 generation + snapshot commit
+
+4.5.4 auto advance 原則
+各段階の完了後、中央 panel は自動的に次段階へ進む。
+ただし進行は server-confirmed milestone にのみ従う。
+フロントの推測だけで step を進めてはならない。
+
+4.5.5 progress UI 最小表示時間
+ちらつき防止のため、各 step は最小 500ms 以上表示してよい。
+ただし進行を遅く見せるために 2秒以上の人工遅延を標準化してはならない。
+MVPでは「自然に見える最小演出」に留める。
+
+4.5.6 panel 自動移動の実装原則
+- panel 自体を unmount / remount しない
+- panel 内の content だけを keyed transition で差し替える
+- height は step 間で急変させず min-height を固定する
+- progress dot / line / title / body / action area を別々に壊さない
+- action button の disabled / hidden は phase rule に従って制御する
+
+4.5.7 step_2 の confirm 画面
+推定結果確認画面では以下を表示してよい
+- 推定業界
+- 推定構造タイプ
+- 推定サイト規模
+- confidence label
+
+使用可能導線
+- 修正する
+- 戦略分析開始
+
+固定ルール
+- confirm前に step_3 へ進めない
+- confirm画面表示中は analysis_job を competitor分析まで進めない設計でよい
+- 修正内容が保存されるまで次stepへ進めない
+
+4.5.8 step skip 禁止
+初回分析では 5段階を UI 上必ず通す。
+backend 内部で一部処理が高速完了しても、UI 表示上は段階を飛ばしてはならない。
+ただし server 側で複数段階がすでに完了している場合、
+フロントは step を順に短時間で consume して現在段階へ追いついてよい。
+
+4.5.9 completion rule
+step_5 が完了し snapshot commit が成功した時のみ、
+selected_project_id と selected_snapshot_id を更新して通常 dashboard 表示へ遷移してよい。
+
+5. Initial Analysis Flow
+5.1 canonical backend flow
+1. URL入力
+2. project create
+3. bootstrap crawl
+4. site type / page type 推定
+5. 業界推定
+6. 構造タイプ推定
+7. サイト規模推定
+8. confidence算出
+9. user confirmation or correction
+10. 競合候補生成
+11. 競合10社選定
+12. competitor analysis crawl
+13. competitor observation bundle 生成
+14. industry synthesis
+15. self synthesis
+16. AI understanding
+17. Strategic Engine 計算
+18. 戦略提案生成
+19. 30/60/90生成
+20. snapshot保存
+21. current_snapshot_id commit
+22. dashboard ready
+
+5.2 UI visible flow
+- visible_step_1 = target_scan
+- visible_step_2 = inference_review
+- visible_step_3 = competitor_analysis
+- visible_step_4 = industry_analysis
+- visible_step_5 = strategy_synthesis
+
+5.3 phase transition authority
+phase 遷移の正は server とする。
+フロントは polling または stream で phase を受け取り、単調増加で反映する。
+
+5.4 monotonic progress rule
+progress_step は後退してはならない。
+受信値が現在 step より古い場合は無視する。
+ただし failed / cancelled は例外で、現在stepに対する終端状態として上書きしてよい。
+
+5.5 resume rule
+ページ再読み込みや route 再入場時は、
+analysis_job の current_phase と current_phase_started_at から UI を復元する。
+一時的な local UI state のみを正としてはならない。
+
+6. Crawling Architecture
+6.1 クローリング方針
+PanoptesはAIクローリングを行わない。
+すべてのクロールは機械的クローリングで行う。
+クローリングエンジンは Python crawler とする。
+
+6.2 Crawl Modes
+- bootstrap crawl
+- analysis crawl
+- monitoring crawl
+
+6.3 bootstrap crawl
+目的
+- サイトの基本推定
+- 業界
+- サイトタイプ
+- 構造タイプ
+- 競合候補
+
+対象
+- top
+- navリンク
+- footerリンク
+- 代表ページ
+
+最大
+- 10 pages
+
+6.4 analysis crawl
+目的
+- 完全分析
+- Internal evidence取得
+- Visual evidence取得
+
+対象
+- 最大30ページ
+- 優先: top / pricing / feature / faq / case / contact
+
+6.5 monitoring crawl
+目的
+- 競合監視
+- 差分検知
+- Feed生成
+- Radar生成
+
+対象
+- 主要ページのみ
+- 最大10ページ
+
+6.6 URL Discovery Rules
+取得対象
+- 同一ドメイン
+- HTMLページ
+- nav / footer / CTA から辿れるページ
+
+除外
+- ログイン
+- cart
+- checkout
+- session URL
+- PDF
+- 画像
+- zip
+- 外部リンク
+- 検索ページ
+
+URL正規化
+- tracking削除
+- fragment削除
+- canonical優先
+- duplicate除外
+- www / non-www 差分統合
+- trailing slash 正規化
+- http→https 可能時は https を優先
+
+6.7 Page Type Routing
+page_type
+- top
+- pricing
+- feature
+- comparison
+- faq
+- case
+- company
+- contact
+- article
+- product
+- unknown
+
+6.8 Internal Evidence Extraction
+抽出対象
+- title
+- meta description
+- h1 / h2 / h3
+- CTA
+- CTAリンク
+- form
+- faq
+- pricing block
+- compare block
+- trust block
+- case block
+- nav
+- footer
+- internal links
+- section count
+- cta count
+- heading depth
+- nav categories
+- decision support blocks
+
+6.9 Visual Observation
+Visualは capture → AI理解 の順序で行う。
+AIが直接クロールすることは禁止。
+
+取得
+- first view screenshot
+- full page screenshot
+
+Visual評価対象
+- 視覚階層
+- CTA目立ち
+- 視線誘導
+- レイアウト密度
+- 比較要素
+- 証拠ブロック
+- 信頼表示
+
+6.10 Diff Detection
+4段階
+- Level1 URL差分
+- Level2 HTML hash差分
+- Level3 構造差分
+- Level4 意味差分（AI）
+
+6.11 Crawl Failure Classification
+失敗分類を固定する。
+- unreachable
+- blocked
+- timeout
+- unsupported_site_shape
+- insufficient_pages
+- parse_failed
+- screenshot_failed_partial
+- extraction_failed_partial
+
+原則
+- partial failure は即全体失敗にしない
+- engine実行に必要な最低 evidence を満たすかで継続可否を判定する
+- failure reason は user-facing label に変換して返す
+
+7. Inference System
+7.1 業界推定
+主な証拠
+- title
+- meta description
+- h1 / h2
+- ナビ項目
+- CTA文言
+- サービス説明
+- FAQ語彙
+- 事例語彙
+- URL path
+- ビジュアル特徴
+
+7.2 構造タイプ推定
+主な構造タイプ
+- 比較検討型
+- 信頼構築型
+- 訴求特化型
+- 構造優位型
+- 平均優位型
+
+証拠
+- 価格表
+- 比較表
+- FAQ
+- 導入事例
+- 実績数値
+- ロゴ
+- ヒーローコピー
+- CTA設計
+- ナビ構造
+- 6軸 preliminary score
+
+7.3 サイト規模推定
+構造規模を small / medium / large で推定する。
+
+7.4 confidence
+内部では 0〜1 で保持し、UIでは 高 / 中 / 低 に変換可能にする。
+
+7.5 user correction precedence
+step_2 で user が業界 / 構造タイプ / 規模を修正した場合、
+以後の competitor set construction と narrative では user corrected value を優先する。
+自動推定値は raw_inference として別保持する。
+
+8. Competitor Set Construction
+8.1 競合候補生成
+- 業界一致候補
+- テキスト類似候補
+- サービス説明類似候補
+- 構造タイプ類似候補
+- サイト規模類似候補
+- ユーザー指定競合
+
+8.2 同格比較の原則
+単純な業界上位10社比較をしない。
+優先
+- 業界一致
+- 構造タイプ一致
+- サイト規模一致
+
+8.3 競合10社の決定
+fit_score 構成
+- 業界一致度
+- 構造タイプ一致度
+- サイト規模一致度
+- テキスト類似度
+- ページ種別類似度
+- ナビ構造類似度
+
+8.4 competitor pool degradation rule
+競合候補が不足する場合は、以下の順で緩和する。
+1. 構造タイプ一致を優先したまま規模条件を緩和
+2. 業界近接カテゴリまで緩和
+3. 候補不足であることを明示し、10未満でも実行
+
+9. Observation Bundle
+Engine入力
+- site_info
+- page_list
+- page_type_map
+- page_role_map
+- internal_observations
+- visual_observations
+- flow_summary
+- diff_summary
+- confidence_inputs
+- benchmark_context
+
+LLMには HTML全文を渡さない。
+整理された evidence のみ渡す。
+
+10. Unified Strategic Engine
+10.1 6軸固定
+内部キー
+- value_proposition
+- information_hierarchy
+- navigation_strength
+- trust_proof
+- differentiation
+- decision_support
+
+10.2 Submetric
+各軸は複数submetricで構成し、0.0〜1.0で評価する。
+取得不能は null 許容。
+
+10.3 Layer別スコア
+各軸について
+- internal_axis_score
+- visual_axis_score
+を算出する。
+
+10.4 Layer総合
+- internal_score
+- visual_score
+
+10.5 総合スコア
+T = 1 / ((0.6 / I) + (0.4 / V))
+
+10.6 Confidence調整
+- c_internal
+- c_visual
+- c_benchmark
+- c_delta
+- c_total
+
+10.7 Coherence補正
+- coherence_nav
+- coherence_dec
+- coherence_msg
+- coherence_average
+
+10.8 delta
+- delta_vs_industry per axis
+- delta_vs_competitor_set per axis
+- delta_vs_industry_total
+
+10.9 opportunity
+構造的改善余地を 0〜100 で算出する。
+
+10.10 priority
+優先施策の軸優先度を 0〜100 で算出する。
+
+10.11 Flow評価
+- stage completeness
+- trust timing
+- compare timing
+- CTA progression
+
+これらを A3 / A6 / coherence に反映する。
+
+10.12 市場タイプ推定
+Engine側では tags として保持し、narrative と industry tab に表示する。
+
+10.13 型分布推定
+基本型例
+- 平均優位型
+- 構造優位型
+- 訴求特化型
+- 信頼特化型
+- 価格決断型
+- 比較検討型
+
+10.14 ポジションマップ
+候補軸
+- X = 差別化明確性 + 価値訴求
+- Y = 信頼構造 + 意思決定支援
+
+10.15 flags
+例
+- BRAND_UNFORMED
+- OVER_DESIGNED_UNDER_CONVERTING
+- UNIQUE_BUT_UNCLEAR
+- PROOF_TOO_LATE
+- CTA_TOO_EARLY
+- COMPARE_MISSING
+- PRICE_DECISION_GAP
+
+11. Strategy System
+11.1 戦略提案の役割
+戦略提案 = WHAT
+30/60/90 = HOW / WHEN
+
+11.2 戦略提案件数
+MVPでは原則3件。
+
+11.3 戦略カード構成
+- title
+- strategy_intent
+- rationale
+- action_items
+- expected_impact
+
+11.4 戦略カード制約
+MVPで使わない
+- CVR改善値
+- 自然流入増加
+- CPA改善
+- 指名検索増加
+- 広告効率改善
+
+MVPで使う
+- 導線強度スコア改善
+- 信頼構造スコア改善
+- 差別化明確性改善
+- 意思決定支援改善
+- 情報階層改善
+
+11.5 strategy と phase task の責務
+- strategy = 選択中の戦略テーマ
+- phase plan = 30/60/90 の実行管理
+- task = 各フェーズ内の具体タスク
+- task transition = 状態変更履歴
+- reanalysis merge = 再分析時の引き継ぎ判定
+
+11.6 Selected Strategy State
+保持項目
+- strategy_plan_id
+- source_snapshot_id
+- selected_strategy_key
+- selected_strategy_rank
+- current_strategy_theme
+- strategy_status
+- previous_strategy_fit_index
+- current_strategy_fit_index
+- structural_risk_label
+- improvement_headroom_percent
+
+11.7 30/60/90
+各 phase は実行管理単位とする。
+phase plan 必須項目
+- phase_key
+- phase_label
+- phase_theme
+- phase_objective
+- progress_status
+- completed_task_count
+- total_task_count
+- assignee_status_label
+- next_action
+- tasks[]
+
+task 必須項目
+- task_key
+- task_label
+- task_status
+- display_order
+
+task_status
+- not_started
+- in_progress
+- done
+- blocked
+
+11.8 Reanalysis relation
+再分析時は strategy plan と phase task state を破壊しない。
+判定
+- strategy_keep
+- strategy_update_recommended
+- strategy_rework_required
+
+task引き継ぎ
+- exact / semantic / none
+- obsolete task は archived 扱い
+- new task は not_started で追加
+
+12. Snapshot System
+12.1 snapshot 基準
+1回の本分析 = 1 snapshot
+
+12.2 snapshot の役割
+- competitors tab
+- industry tab
+- self tab
+- strategy tab
+- panoai context
+
+12.3 current snapshot
+project は current_snapshot_id を持つ。
+
+12.4 strategy memory
+selected strategy、phase plans、phase tasks は snapshot に紐づくが、
+current strategy state として project にも反映される。
+「snapshot由来の推奨プラン」と「現在の実行状態」を分離保持する。
+
+12.5 Project Display State
+project は以下の display_state を持つ。
+
+- ready
+- creating
+- queued
+- analyzing
+- awaiting_confirmation
+- completing
+- completed
+- failed
+- empty
+
+定義
+- ready / completed: current_snapshot_id が存在し、表示可能
+- queued: analysis_job 作成済み、実行待ち
+- analyzing: analysis 実行中
+- awaiting_confirmation: 推定確認待ち
+- completing: snapshot commit 直前から commit 完了まで
+- failed: 最新 analysis が失敗
+- empty: project は存在するが snapshot 未生成
+- creating: create_project_flow 上の一時状態
+
+UIルール
+- ready / completed は通常描画
+- queued / analyzing / completing は loading / progress 表示
+- awaiting_confirmation は inference review 画面を表示
+- failed は error state + retry 導線
+- empty は start-analysis empty state を表示
+
+12.6 Project Creation and Selection Safety Rules
+以下を固定ルールとする。
+
+- 「+」押下では selected_project_id を変更しない
+- create project 成功前に既存 project を unmount しない
+- current_snapshot_id = null をエラー扱いしない
+- snapshot 未生成 project 選択時は empty state / analyzing state / failed state を表示する
+- strategy / industry / self / panoai は has_snapshot に応じて guarded rendering を行う
+
+12.7 UI Guard Rendering Rule
+各タブは以下で描画分岐する。
+
+12.7.1 has_snapshot = true
+- competitors / industry / self / strategy / panoai を通常描画
+
+12.7.2 has_snapshot = false and latest_job_status in (queued, running)
+- analyzing state を表示
+- skeleton / progress / 「分析中」表示
+
+12.7.3 has_snapshot = false and latest_job_status = failed
+- failed state を表示
+- retry 導線
+- target_url 再確認導線
+
+12.7.4 has_snapshot = false and latest_job_status is null
+- empty state を表示
+- 「URLを入力して分析開始」
+
+12.8 Snapshot Commit Safety
+snapshot は header / payload / strategy_plan / phase_task を整合状態で commit しなければならない。
+途中成功の見かけを禁止する。
+
+固定ルール
+- current_snapshot_id 更新は最後に行う
+- payload insert 前に current_snapshot_id を更新しない
+- commit 成功前に completed を返さない
+- commit 途中で失敗した場合は failed または commit_failed を internal に残す
+- user-facing では failed として再試行導線を出す
+
+12.9 stale job overwrite prevention
+古い job が新しい snapshot を上書きしてはならない。
+
+固定ルール
+- analysis_job には started_at と job_generation を持たせてよい
+- project.latest_analysis_job_id と一致しない job は current_snapshot_id を更新してはならない
+- reanalysis 開始後、旧job完了通知は UIで無視してよい
+
+12.10 refresh / reconnect recovery
+ページ更新・復帰時は DB または analysis_status API を正として current state を復元する。
+未保存 local animation state は復元対象ではない。
+
+13. Naming Canon
+13.1 固定ルール
+- DBカラム / API request-response / snapshot payload は snake_case
+- アプリ内部の関数名 / 変数名 / utility は camelCase
+- Type / Interface 名は PascalCase
+
+13.2 forbidden names
+禁止
+- data
+- result
+- info
+- obj
+- temp
+- score1
+- score2
+
+推奨
+- snapshot_payload
+- strategy_plan
+- phase_task
+- phase_task_transition
+- inference_result
+- competitor_card_view
+- analysis_progress_state
+- progress_phase_view
+
+13.3 forbidden UX terms
+禁止
+- 検索流入
+- 広告流入
+- リファラル
+- 直流入
+- 指名検索
+- CVR
+- CPA
+- SEO依存率
+- 獲得単価
+
+14. API Contract
+14.1 required API
+- POST /api/project/create
+- POST /api/project/select
+- POST /api/project/create-and-start-analysis
+- POST /api/project/:project_id/inference/confirm
+- POST /api/project/:project_id/inference/correct
+- POST /api/analysis/start
+- GET /api/analysis/:job_id
+- GET /api/analysis/:job_id/progress
+- GET /api/project/:project_id/dashboard
+- POST /api/project/:project_id/strategy/select
+- POST /api/project/:project_id/reanalyze
+- POST /api/strategy/task/update-status
+- GET /api/project/list
+- GET /api/usage/current
+
+14.2 request / response 基本方針
+通信と保存は snake_case とする。
+
+14.3 dashboard API
+dashboard は SnapshotViewPayload を返す。
+UIは engine 結果を再計算しない。
+
+14.4 strategy API
+- select strategy は current strategy の採用保存
+- update phase task status は task状態だけ更新
+- task transition は server側で自動記録
+
+14.5 Project Creation API Rule
+create-and-start-analysis は以下を一体化してよい。
+- project 作成
+- 初回 analysis_job 発行
+- bootstrap crawl 開始
+
+返却例
+- project_id
+- analysis_job_id
+- analysis_session_id
+- project_display_state
+- current_snapshot_id = null
+- current_progress_phase = target_scan
+
+フロントはこれを受けて、
+- project list に新規 card を追加
+- current project を維持する、または新規 project に遷移する
+のいずれかを選択する。
+
+14.6 Progress API Rule
+progress API は user-facing step と internal phase の両方を返してよい。
+
+必須項目
+- project_id
+- analysis_job_id
+- analysis_session_id
+- job_status
+- progress_phase
+- progress_step_index
+- progress_percent nullable
+- phase_started_at
+- phase_completed_at nullable
+- is_waiting_user_confirmation
+- failure_code nullable
+- failure_message nullable
+- is_terminal
+
+固定ルール
+- progress_step_index は単調増加
+- stale analysis_session_id はフロントで無視する
+- failed / cancelled は terminal とする
+
+14.7 Idempotency Rule
+create-and-start-analysis と reanalyze は idempotency_key を受け付けてよい。
+短時間の連打や通信再送で project 二重作成を起こしてはならない。
+
+14.8 Retry Rule
+retry は最後の失敗原因に応じて以下を分ける。
+- bootstrap retry
+- inference retry
+- competitor crawl retry
+- synthesis retry
+- full reanalyze
+
+MVPでは user-facing には単一の「再試行」で見せてもよいが、
+server 内部では原因別に分けてよい。
+
+15. Security and Access Rules
+15.1 access unit
+org を基準とする。
+
+15.2 read rule
+同一 org の active member は project と snapshot を読める。
+
+15.3 write rule
+分析結果系テーブルは原則 server-only write。
+クライアントから直接 insert / update させない。
+
+15.4 admin
+admin UI は URL 隠しではなく allowlist / role / server guard で制御する。
+
+15.5 secrets
+- service role key
+- llm api keys
+- crawler secrets
+は server-side のみ保持する。
+
+15.6 audit
+重要操作は audit log に残す。
+最低対象
+- waitlist approval
+- admin action
+- project delete
+- reanalysis trigger
+- strategy selection
+- task status change
+
+16. Implementation Contracts
+16.1 required DB groups
+- org / member / plan / usage
+- project
+- site_entity
+- analysis_job
+- analysis_progress_event
+- analysis_snapshot_header
+- analysis_snapshot_payload
+- strategy_plan
+- phase_task
+- phase_task_transition
+- admin / audit
+- project_list_view または project_summary_view
+
+16.1.1 project 必須項目
+- project_id
+- org_id
+- project_name
+- target_url
+- normalized_target_url
+- project_status
+- current_snapshot_id nullable
+- latest_analysis_job_id nullable
+- latest_analysis_session_id nullable
+- created_at
+- updated_at
+
+16.1.2 project summary view 推奨項目
+- project_id
+- project_name
+- target_url
+- current_snapshot_id
+- latest_analysis_job_id
+- latest_job_status
+- has_snapshot
+- project_display_state
+- current_progress_phase nullable
+- day_count
+- strategy_status_label nullable
+
+16.1.3 analysis_job 推奨項目
+- analysis_job_id
+- project_id
+- analysis_session_id
+- job_generation
+- job_status
+- progress_phase
+- progress_step_index
+- started_at
+- finished_at nullable
+- failure_code nullable
+- failure_payload nullable
+- triggered_by
+
+16.2 required TypeScript model groups
+- inference
+- crawl
+- engine
+- snapshot
+- payloads
+- strategy
+- api
+- progress
+
+16.2.1 推奨追加型
+ProjectDisplayState
+- ready
+- creating
+- queued
+- analyzing
+- awaiting_confirmation
+- completing
+- completed
+- failed
+- empty
+
+ProgressPhase
+- target_scan
+- inference_review
+- competitor_analysis
+- industry_analysis
+- strategy_synthesis
+
+ProjectListItemView
+- project_id: string
+- project_name: string
+- target_url: string
+- current_snapshot_id: string | null
+- latest_analysis_job_id: string | null
+- latest_analysis_session_id: string | null
+- latest_job_status: queued | running | completed | failed | cancelled | null
+- has_snapshot: boolean
+- project_display_state: ProjectDisplayState
+- current_progress_phase: ProgressPhase | null
+- day_count: number
+- strategy_status_label: not_started | improving | stable | rework_required | null
+- selected: boolean
+
+CreateAndStartAnalysisRequest
+- org_id: string
+- project_name: string
+- target_url: string
+- tone_mode: supportive | neutral | tough
+- mode: low | mid | high
+- idempotency_key: string
+
+CreateAndStartAnalysisResponse
+- project_id: string
+- analysis_job_id: string
+- analysis_session_id: string
+- project_display_state: ProjectDisplayState
+- current_snapshot_id: string | null
+- latest_job_status: queued | running | completed | failed | cancelled
+- current_progress_phase: ProgressPhase
+
+AnalysisProgressView
+- project_id: string
+- analysis_job_id: string
+- analysis_session_id: string
+- job_status: queued | running | completed | failed | cancelled
+- progress_phase: ProgressPhase
+- progress_step_index: 1 | 2 | 3 | 4 | 5
+- progress_percent: number | null
+- phase_started_at: string
+- phase_completed_at: string | null
+- is_waiting_user_confirmation: boolean
+- failure_code: string | null
+- failure_message: string | null
+- is_terminal: boolean
+
+16.3 job lifecycle
+analysis job status
+- queued
+- running
+- completed
+- failed
+- cancelled
+
+16.4 retries
+crawl / extract / narrative は限定的 retry を許可する。
+Engine calculation は deterministic とし retry不要を原則とする。
+
+16.5 force low mode
+SPU制約時は analysis を停止せず、 forced_low_mode = true として実行継続する。
+
+16.6 Implementation Notes for Project List and Create Flow
+- 「+」は new project modal / drawer の open trigger とする
+- 作成成功前に route 遷移しない設計でもよい
+- 一覧追加後に toast で
+  「分析を開始しました。完了まで他の project を確認できます」
+  を表示するとUXが良い
+- project list card は常に nullable-safe に描画する
+
+16.7 Initial Progress UI Implementation Notes
+- progress polling は 1.5s〜3s の backoff で十分
+- hidden tab 中は polling 間隔を伸ばしてよい
+- network reconnect 時は即時 progress refetch を行う
+- panel transition 中でも polling は止めない
+- 新しい phase 受信後は animation queue に積み、表示は単調に進める
+- failure 受信時は進行中 animation を打ち切って error view に遷移してよい
+- completed 受信後も dashboard payload が未到着なら completing view を表示してよい
+
+16.8 Route / Tab Safety
+- analysis 実行中でも他 project / 他 tab 閲覧を禁止しない
+- ただし現在 panel の analysis_session_id と一致しないデータで UI を上書きしない
+- selected project 変更時は前 project の polling を停止する
+- browser back で create flow に戻っても duplicate submit しない
+
+16.9 Offline / Timeout Safety
+- 一時的通信断では job を failed 扱いしない
+- client timeout と server failure を混同しない
+- polling 失敗時は「接続を確認中…」の中間状態を表示してよい
+- server が job running を返す限り progress UI を維持する
+
+16.10 Duplicate Trigger Safety
+以下を禁止する。
+- Enter連打で create-and-start-analysis 多重発火
+- confirm button 連打で competitor analysis 多重発火
+- reanalyze 多重実行
+
+必要対策
+- submit lock
+- idempotency_key
+- latest_analysis_job_id comparison
+- server-side mutex または generation check
+
+16.11 Reanalysis Safety
+reanalysis は旧 snapshot を即消さない。
+新 snapshot commit 完了まで既存 dashboard を保持する。
+失敗時は旧 snapshot を current のまま維持してよい。
+
+17. Failure UX Canon
+17.1 URL 到達失敗
+表示
+- URLにアクセスできませんでした
+- URLの形式、接続状態、アクセス制限をご確認ください
+
+導線
+- URLを修正
+- 再試行
+
+17.2 推定確認失敗
+表示
+- 自動推定の確定中に問題が発生しました
+
+導線
+- 再読み込み
+- 手動で条件を指定して続行
+
+17.3 競合候補不足
+表示
+- 十分な同格競合が見つからなかったため、近接条件で分析しています
+
+17.4 部分失敗
+表示
+- 一部ページの取得に失敗しましたが、分析は継続しました
+
+17.5 snapshot commit 失敗
+表示
+- 分析結果の保存中に問題が発生しました
+
+導線
+- 再試行
+- project一覧へ戻る
+
+18. Reserved Future Fields
+MVPでは内部保持のみ行い、UIでは必須表示しない。
+- avg_global_i
+- avg_industry_i
+- avg_mechanism_i
+- cluster_id
+- gap_to_leader
+- rank_position
+- c_internal
+- c_visual
+- c_benchmark
+- c_delta
+- coherence_nav
+- coherence_dec
+- coherence_msg
+- advantage_mechanism_label
+- progress_eta_seconds
+
+19. Out of Scope for MVP
+- GA / Search Console integration
+- Panoptes tag
+- real-time update
+- external traffic modeling
+- automated ads/media recommendation
+- advanced strategic pressure model
+- autonomous execution

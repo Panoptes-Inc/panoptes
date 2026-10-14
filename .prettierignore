@@ -1,0 +1,15 @@
+node_modules
+.svelte-kit
+build
+dist
+coverage
+.env
+.env.*
+package-lock.json
+build-debug.log
+build_err.txt
+repo
+src
+static
+docs/audit
+README.md

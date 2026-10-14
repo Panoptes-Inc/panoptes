@@ -1,0 +1,17 @@
+alpha:
+  id: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+  name: Alpha Organization
+  slug: alpha-organization
+  status: active
+
+beta:
+  id: bbbbbbbb-1111-4111-8111-bbbbbbbbbbbb
+  name: Beta Organization
+  slug: beta-organization
+  status: active
+
+suspended:
+  id: cccccccc-1111-4111-8111-cccccccccccc
+  name: Suspended Organization
+  slug: suspended-organization
+  status: suspended

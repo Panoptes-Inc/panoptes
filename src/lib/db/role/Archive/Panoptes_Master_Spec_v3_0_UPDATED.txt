@@ -1,0 +1,873 @@
+Panoptes Master Specification v3.0
+本文草案 第1稿（統合版・Strategy UI Revision反映版）
+
+0. Document Control
+0.1 文書名
+Panoptes Master Specification v3.0
+
+0.2 役割
+本書は、Panoptes-MVPの唯一の親仕様書とする。
+実装、UI、推定、分析、保存、セキュリティ、命名、API、型定義は、すべて本書を基準とする。
+
+0.3 優先順位
+仕様の優先順位は以下の通り。
+1. 本書 v3.0
+2. 現在の確定UIデザイン
+3. Unified Engine v1.1 Hardened
+4. Hardened DB / Codex Handoff / Codex Addendum
+5. 旧 Master Spec / 旧資料群
+
+0.4 v2 からの変更方針
+v2以前の資料に含まれる、以下の要素はMVP本体仕様から除外または別紙化する。
+- 外部データ依存の分析表現
+- 初期のアナリティクス寄りロジック
+- 将来構想寄りの価格・成長・帝国戦略
+- MVP実装に直結しない経営資料
+
+1. Product Definition
+1.1 Panoptesとは何か
+Panoptesは、競合・業界・自社の構造を読み、戦略を可視化し、実行優先順位まで導く戦略OSである。
+
+Panoptesは以下ではない。
+- トラフィック推定ツール
+- アナリティクスダッシュボード
+- Similarweb模倣
+- GA代替
+- SEO専用ツール
+- LP専用改善ツール
+
+Panoptesは以下である。
+- 構造理解装置
+- 因果説明装置
+- 戦略提案装置
+- 実行管理装置
+- 思考圧縮UI
+- 戦略OS
+
+1.2 MVPの目的
+MVPの目的は以下。
+- URL入力から、競合・業界・自社の構造分析を実行する
+- Internal / Visual の2レイヤーで6軸評価を行う
+- 同格比較を軸に競合10社を分析する
+- 業界構造を推定する
+- 自社の差分と改善余地を示す
+- 戦略提案3件を生成する
+- 30/60/90日プランに分解する
+- snapshot として保存し、再分析で更新できるようにする
+
+1.3 MVPでやらないこと
+MVPでは以下を行わない。
+- 流入流出推定
+- 滞在時間推定
+- CVR推定
+- 広告チャネル分析
+- 指名検索推定
+- GA / Search Console 統合
+- Panoptes独自タグによる行動収集
+- リアルタイム更新
+- 自動改善実行
+- 実行代行
+
+2. MVP Absolute Rules
+2.1 データ原則
+MVPで使用するのは以下のみ。
+- サイトの内部構造
+- サイトのビジュアル構造
+- 競合比較ロジック
+- Engine計算
+- AIによる抽出と文章化
+
+MVPで使用しないのは以下。
+- 外部推定データ
+- アナリティクスデータ
+- 流入/流出
+- 滞在時間
+- 属性推定
+- 売上/市場シェア推定
+
+2.2 レイヤー原則
+Panoptesは常に以下の2レイヤーで観測する。
+- Internal
+- Visual
+
+Internal と Visual は別々に観測されるが、
+最終的には同じ6軸に統合される。
+
+2.3 軸原則
+Panoptesの戦略軸は常に以下の6軸に固定する。
+- 価値訴求
+- 情報階層
+- 導線強度
+- 信頼構造
+- 差別化明確性
+- 意思決定支援
+
+この6軸は、Internal と Visual の両方に共通する戦略軸とする。
+
+2.4 LLM原則
+LLMの役割は以下に限定する。
+- 抽出補助
+- evidence整理
+- narrative生成
+- 提案文の文章化
+- 戦略要約
+
+LLMにやらせてはいけないもの。
+- スコア計算
+- delta計算
+- priority算出
+- opportunity算出
+- confidence算出
+- coherence算出
+- 業界平均計算
+- 外部データ補完
+
+2.5 保存原則
+Panoptesは、分析のたびにsnapshotを保存する。
+各タブは個別計算ではなく、同じ snapshot を参照して表示される。
+
+つまり、
+- 競合タブ
+- 業界タブ
+- 自社タブ
+- 戦略タブ
+- PanoAI
+
+は、すべて同一分析世界を共有する。
+
+3. Supported Site Scope
+3.1 対象サイト
+Panoptes-MVPの対象サイトは以下。
+- SaaSサイト
+- サービスサイト
+- 比較検討が発生するB2Bサイト
+- コーポレートサイト
+- D2C / ECサイト
+- 情報設計と意思決定導線が重要なサイト
+
+3.2 対象の考え方
+PanoptesはLP専用ではない。
+ただし、MVPは以下を得意とする。
+判断を前に進める構造を持つサイト
+
+これはたとえば、
+- 比較
+- 信頼形成
+- 問い合わせ
+- 購入
+- 導入検討
+- 選定判断
+
+が発生するサイトを意味する。
+
+3.3 相性が弱い対象
+以下はMVPで主戦場ではない。
+- 純ポートフォリオ
+- 採用専用サイト
+- ギャラリー専用ブランドサイト
+- 行動導線をほとんど持たない展示サイト
+
+これは弱点というより、MVPの主対象外と定義する。
+
+4. UI Canon
+4.1 PC UI構成
+PC版Panoptesは以下の5タブ構成とする。
+- competitors
+- industry
+- self
+- strategy
+- panoai
+
+4.2 各タブの責務
+competitors
+競合群の一覧と比較対象の理解
+
+industry
+市場構造・競争構造・型分布・市場余白の理解
+
+self
+自社の高解像度診断
+
+strategy
+実行司令室。戦略状態・改善余地・選択中戦略・AI評価・30/60/90実行管理・再分析の中核。
+30/60/90 は phase 単位の要約表示ではなく、タスク進行管理を伴う実行UIとする。
+
+panoai
+保存済み snapshot を文脈として使う対話補助
+
+4.3 スマホViewer
+スマホ版はPC版の縮小ではなく、専用Viewerとする。
+役割は以下。
+- 戦略適合指数の確認
+- 現在のテーマ確認
+- 構造リスク確認
+- 改善余地確認
+- 戦略カード確認
+- 30/60/90確認
+- プロジェクト一覧確認
+- 再分析
+
+スマホでは本格分析UIを提供しない。
+
+5. Initial Analysis Flow
+5.1 初分析フロー
+初分析は以下の順で行う。
+1. URL入力
+2. lightweight crawl
+3. site type / page type 推定
+4. 業界推定
+5. 構造タイプ推定
+6. サイト規模推定
+7. confidence算出
+8. 競合候補生成
+9. 競合10社選定
+10. 本分析
+11. Unified Engine 計算
+12. 戦略提案生成
+13. 30/60/90生成
+14. snapshot保存
+
+5.2 lightweight crawl の役割
+初分析時の crawl は、まず推定のために軽く行う。
+この段階ではサイト全体を深く解析しない。
+
+目的は以下。
+- 何のサイトかを把握する
+- どの観測ルールを使うか決める
+- 競合候補を生成する
+- 本分析の前提を固める
+
+5.3 推定対象
+初分析で推定するのは以下の3点。
+- 業界
+- 構造タイプ
+- サイト規模
+
+それぞれに confidence を持つ。
+
+6. Inference System
+6.1 業界推定
+業界推定は、URLだけで決めるのではなく、lightweight crawl の evidence に基づいて決定する。
+
+主な証拠
+- title
+- meta description
+- h1 / h2
+- ナビ項目
+- CTA文言
+- サービス説明
+- FAQ語彙
+- 事例語彙
+- URL path
+- ビジュアル特徴
+
+推定方式
+業界候補ごとに加点し、上位候補を採用する。
+単一ルールで断定しない。
+
+6.2 構造タイプ推定
+構造タイプは、サイトがどのような勝ち方をしているかを表す。
+
+MVPで扱う主な構造タイプは以下。
+- 比較検討型
+- 信頼構築型
+- 訴求特化型
+- 構造優位型
+- 平均優位型
+
+推定には以下を使う。
+- 価格表
+- 比較表
+- FAQ
+- 導入事例
+- 実績数値
+- ロゴ
+- ヒーローコピー
+- CTA設計
+- ナビ構造
+- 6軸 preliminary score
+
+6.3 サイト規模推定
+サイト規模は、売上規模ではなく構造規模を指す。
+
+MVPでの規模区分は以下。
+- small
+- medium
+- large
+
+判定には以下を使う。
+- 推定ページ数
+- URL階層の深さ
+- ナビカテゴリ数
+- サイトマップ有無
+- ページ種別数
+- 内部リンク密度
+
+6.4 confidence
+各推定には confidence を付与する。
+confidence は、単に最大スコアではなく以下の組み合わせで決まる。
+- 上位候補の絶対スコア
+- 1位と2位の差
+- evidence量
+- 主要ページ間の一貫性
+- 判定ルール間の整合性
+
+内部では 0〜1 で保持し、UIでは高 / 中 / 低 に変換可能にする。
+
+7. Competitor Set Construction
+7.1 競合候補生成
+競合候補は以下から生成する。
+- 業界一致候補
+- テキスト類似候補
+- サービス説明類似候補
+- 構造タイプ類似候補
+- サイト規模類似候補
+- ユーザー指定競合
+
+7.2 同格比較の原則
+Panoptesは、単純な「業界上位10社」比較をしない。
+MVPでは、以下を優先する。
+- 業界一致
+- 構造タイプ一致
+- サイト規模一致
+
+つまり、同格比較を優先する。
+
+7.3 競合10社の決定
+候補群に対して fit score を計算する。
+fit score の要素は以下。
+- 業界一致度
+- 構造タイプ一致度
+- サイト規模一致度
+- テキスト類似度
+- ページ種別類似度
+- ナビ構造類似度
+
+上位候補を基本としつつ、すべて同質になりすぎないように軽い多様性を入れる。
+
+8. Crawl Rule System
+8.1 Crawl の二段階構造
+Panoptesの crawl は以下の2段階に分ける。
+- lightweight crawl
+- main crawl
+
+lightweight crawl は推定専用。
+main crawl は本分析専用。
+
+8.2 共通安全ルール
+すべての crawl は以下を守る。
+- 同一オリジン限定
+- robots.txt 尊重
+- 外部リンクを追わない
+- max pages を固定
+- max depth を固定
+- timeout を固定
+- page size upper bound を固定
+- binary / download / login-required page を除外
+- duplicate URL を除外
+
+8.3 lightweight crawl
+目的:
+- site type 推定
+- industry 推定
+- structure type 推定
+- site size 推定
+- 競合候補生成
+
+対象:
+- top page
+- global navigation linked pages
+- footer linked core pages
+- 主要ページ 5〜10件
+
+8.4 main crawl
+目的:
+- Internal 観測
+- Visual 観測
+- 6軸算出用 evidence 収集
+- narrative 用 evidence 収集
+
+対象:
+- top
+- pricing / plan
+- feature / service
+- comparison
+- case / works
+- faq
+- about / company
+- contact / inquiry
+- category / product / product detail
+- 主要ページ 30件以内
+
+8.5 page type routing
+Panoptesはページ種別ごとに観測テンプレートを切り替える。
+主な page type:
+- top
+- pricing
+- feature
+- comparison
+- case_study
+- faq
+- company
+- contact
+- product_index
+- product_detail
+- article
+- unknown
+
+8.6 evidence extraction
+各ページから最低限以下を抽出する。
+Internal:
+- title
+- meta
+- h1 / h2 / h3
+- CTA text
+- link targets
+- structured sections
+- trust elements
+- comparison elements
+- pricing elements
+- faq elements
+
+Visual:
+- screenshot
+- first-view hierarchy
+- CTA prominence
+- layout density
+- visual noise
+- evidence block prominence
+- comparison block prominence
+
+9. Unified Strategic Engine
+9.1 6軸固定
+内部キー:
+- value_proposition
+- information_hierarchy
+- navigation_strength
+- trust_proof
+- differentiation
+- decision_support
+
+9.2 2レイヤー観測
+各軸は以下の2レイヤーで別々に観測する。
+- internal
+- visual
+
+9.3 軸スコア
+各軸について
+- internal_axis_score
+- visual_axis_score
+を算出する。
+
+最終的な軸スコアは統合値とする。
+
+9.4 レイヤースコア
+以下を保持する。
+- internal_score
+- visual_score
+
+9.5 総合スコア
+Panoptesの総合スコアは、Unified Engine v1.1 Hardened の定義に従い、内部 / ビジュアル / confidence / coherence を踏まえた total score とする。
+
+9.6 delta
+以下を算出する。
+- delta_vs_industry per axis
+- delta_vs_competitor_set per axis
+- delta_total_vs_industry
+
+9.7 opportunity
+各軸に対して improvement headroom を算出する。
+これは外部成果指標ではなく、構造的改善余地である。
+
+9.8 priority
+priority は以下の要素で決まる。
+- opportunity
+- industry delta
+- structural relevance
+- selected strategy consistency
+
+9.9 confidence
+以下を保持する。
+- c_internal
+- c_visual
+- c_benchmark
+- c_delta
+- c_total
+
+9.10 coherence
+以下を保持する。
+- coherence_nav
+- coherence_dec
+- coherence_msg
+- coherence_average
+
+9.11 market type
+market type は業界全体の構造傾向を表す。
+例:
+- 成熟 × 比較検討型
+- 成熟 × 信頼証拠型
+- 同質化 × 差別化余白型
+- 安定競争 × 情報設計勝負型
+
+9.12 structure type
+各社または自社の勝ち方を構造分類したもの。
+例:
+- 比較検討型
+- 信頼構築型
+- 訴求特化型
+- 構造優位型
+- 平均優位型
+
+10. Tab Payload Contracts
+10.1 competitors payload
+含めるもの:
+- competitor cards
+- selected competitor detail
+- competitor axis scores
+- position label
+- required elements
+- ai summary short
+
+10.2 industry payload
+含めるもの:
+- market_type_label
+- market_type_confidence
+- market_type_tags
+- industry_axis_averages
+- structure_stability
+- differentiation_headroom
+- position_map
+- self_position_summary
+- leader_gap_summary
+- market_pressure_level
+- type_distribution
+- industry_cluster_summary
+- opportunity_cards
+- market_battleground_summary
+- industry_ai_summary
+
+10.3 self payload
+含めるもの:
+- total_score
+- internal_score
+- visual_score
+- delta_vs_industry
+- top_strengths
+- top_issues
+- axis_breakdown
+- radar_chart_values
+- technical_baseline_check
+- strategy_proposals
+
+10.4 strategy payload
+含めるもの:
+- strategy_fit_index
+- market_pressure_level
+- delta_vs_industry_total
+- strategy_status_label
+- previous_strategy_fit_index
+- current_strategy_theme
+- structural_risk_label
+- improvement_headroom_percent
+- selected_strategy_card
+- panoptes_ai_strategy_summary
+- project_day_count
+- plan_30
+- plan_60
+- plan_90
+- sidebar_projects
+
+各 phase plan は以下を必須とする:
+- phase_key
+- phase_label
+- phase_theme
+- phase_objective
+- progress_status
+- completed_task_count
+- total_task_count
+- assignee_status_label
+- next_action
+- tasks
+
+各 task は以下を持つ:
+- task_key
+- task_label
+- task_status
+- display_order
+
+10.5 panoai context payload
+含めるもの:
+- current project summary
+- current snapshot summary
+- selected strategy summary
+- latest deltas
+- latest strengths / issues
+- latest phase plan summary
+- tone mode
+
+11. Strategy System
+11.1 戦略提案の役割
+戦略提案は WHAT を示す。
+30/60/90 は HOW / WHEN を示す。
+
+11.2 戦略提案件数
+MVPでは戦略提案を原則3件生成する。
+
+11.3 戦略カード構成
+各カードは以下を持つ。
+- title
+- strategy_intent
+- rationale
+- action_items
+- expected_impact
+
+11.4 戦略カードの制約
+MVPでは以下を使わない。
+- CVR改善値
+- 自然流入増加
+- CPA改善
+- 指名検索増加
+- 広告効率改善
+
+MVPで使うのは以下。
+- 導線強度スコア改善
+- 信頼構造スコア改善
+- 差別化明確性改善
+- 意思決定支援改善
+- 情報階層改善
+
+11.5 selected strategy
+戦略タブでは3提案のうち1件を current strategy として選択可能にする。
+strategy plan は selected strategy を基準に管理する。
+
+11.6 30/60/90
+各フェーズは以下。
+- plan_30
+- plan_60
+- plan_90
+
+各フェーズは、戦略テーマを実行可能なタスク群に分解した実行管理単位とする。
+各フェーズは以下を持つ。
+- phase_key
+- phase_label
+- phase_theme
+- phase_objective
+- progress_status
+- completed_task_count
+- total_task_count
+- assignee_status_label
+- next_action
+- tasks[]
+
+tasks[] は以下を持つ。
+- task_key
+- task_label
+- task_status
+- display_order
+
+task_status は以下とする。
+- not_started
+- in_progress
+- done
+- blocked
+
+UI上の「進捗」は completed_task_count / total_task_count を基本とし、
+「着手」は assignee_status_label と progress_status の組み合わせで表示する。
+
+11.7 strategy status
+戦略状態は以下を持つ。
+- not_started
+- improving
+- stable
+- rework_required
+
+11.8 reanalysis relation
+再分析時は、既存の strategy plan と phase task state を破壊しない。
+新 snapshot と比較して、以下を判定する。
+- strategy_keep
+- strategy_update_recommended
+- strategy_rework_required
+
+phase tasks は以下のルールで扱う。
+- task_label が同一または同義と判定できるものは state を引き継ぐ
+- obsolete と判定された task は archived 扱いで保持する
+- new task は not_started で追加する
+
+12. Snapshot System
+12.1 snapshot 基準
+Panoptesの分析結果は常に snapshot として保存する。
+1回の本分析 = 1 snapshot。
+
+12.2 snapshot の役割
+snapshot は以下のすべての親となる。
+- competitors tab
+- industry tab
+- self tab
+- strategy tab
+- panoai context
+
+12.3 snapshot 種類
+MVPでは実質的に full bundle snapshot を主とする。
+
+12.4 current snapshot
+project は常に current_snapshot_id を持つ。
+
+12.5 history
+過去 snapshot は履歴として残す。
+前回比較は current と previous の比較で行う。
+
+12.6 strategy memory
+selected strategy、phase plans、phase tasks は snapshot に紐づくが、
+current strategy state として project にも反映される。
+MVPでは「snapshot由来の推奨プラン」と「現在の実行状態」を分離保持する。
+
+13. Security and Access Rules
+13.1 access unit
+Panoptesの権限単位は org を基準とする。
+
+13.2 read rule
+同一 org の active member は project と snapshot を読める。
+
+13.3 write rule
+分析結果系テーブルは原則 server-only write とする。
+クライアントから直接 insert / update させない。
+
+13.4 admin rule
+admin UI は別レイヤー扱いとし、
+URL 隠しではなく allowlist / role / server guard で制御する。
+
+13.5 secrets
+- service role key
+- llm api keys
+- crawler secrets
+は server-side のみ保持する。
+
+13.6 audit
+重要操作は audit log に残す。
+少なくとも以下を対象とする。
+- waitlist approval
+- admin action
+- project delete
+- reanalysis trigger
+- strategy selection
+
+14. Naming Canon
+14.1 DB
+- snake_case
+- 単数形テーブル名を推奨
+- *_id は uuid foreign key
+- created_at / updated_at を統一
+
+14.2 TypeScript
+- variable / function は camelCase
+- type / interface は PascalCase
+
+14.3 JSON
+- snake_case を基本とする
+- UI DTO も snake_case に統一してよい
+
+14.4 enum
+- lowercase snake_case
+- UI label と内部 enum を分離する
+
+14.5 forbidden names
+禁止:
+- data
+- result
+- info
+- obj
+- temp
+- score1
+- score2
+
+推奨:
+- snapshot_payload
+- strategy_plan
+- phase_plan_item
+- inference_result
+- competitor_card_view
+
+14.6 forbidden UX terms
+MVPでは以下の表現を禁止。
+- 検索流入
+- 広告流入
+- リファラル
+- 直流入
+- 指名検索
+- CVR
+- CPA
+- SEO依存率
+- 獲得単価
+
+15. Implementation Contracts
+15.1 required API
+- POST /api/project/create
+- POST /api/project/select
+- POST /api/analysis/start
+- GET /api/analysis/:jobId
+- GET /api/project/:projectId/dashboard
+- POST /api/strategy/select
+- POST /api/project/reanalyze
+- GET /api/usage/current
+
+15.2 required DB groups
+- org / member / plan / usage
+- project
+- site_entity
+- analysis_job
+- analysis_snapshot_header
+- analysis_snapshot_payload
+- strategy_plan
+- phase_plan_item
+- admin / audit
+
+15.3 required TypeScript model groups
+- inference
+- crawl
+- engine
+- snapshot
+- tab payload
+- strategy
+- api request/response
+
+15.4 job lifecycle
+analysis job status:
+- queued
+- running
+- completed
+- failed
+- cancelled
+
+15.5 retries
+crawl / extract / narrative は限定的 retry を許可する。
+Engine calculation は deterministic とし retry 不要を原則とする。
+
+15.6 force low mode
+SPU制約時は analysis を停止せず、
+forced_low_mode = true として実行を継続する。
+
+16. Reserved Future Fields
+MVPでは内部保持のみ行い、UIでは必須表示しない。
+- avg_global_i
+- avg_industry_i
+- avg_mechanism_i
+- cluster_id
+- gap_to_leader
+- rank_position
+- c_internal
+- c_visual
+- c_benchmark
+- c_delta
+- coherence_nav
+- coherence_dec
+- coherence_msg
+- advantage_mechanism_label
+
+17. Out of Scope for MVP
+- GA / Search Console integration
+- Panoptes tag
+- real-time update
+- external traffic modeling
+- automated ads/media recommendation
+- advanced strategic pressure model
+- autonomous execution

@@ -1,0 +1,1042 @@
+Panoptes TypeScript & Zod Foundation Draft v1.1
+統合テキスト版（Strategy UI Revision反映版）
+
+==================================================
+1. ファイル構成案
+==================================================
+
+src/lib/panoptes/
+  core/
+    enums.ts
+    types.ts
+    schemas.ts
+  inference/
+    types.ts
+    schemas.ts
+  engine/
+    types.ts
+    schemas.ts
+  payloads/
+    types.ts
+    schemas.ts
+  strategy/
+    types.ts
+    schemas.ts
+  api/
+    types.ts
+    schemas.ts
+
+==================================================
+2. core/enums.ts
+==================================================
+
+export const AXIS_KEYS = [
+  "value_proposition",
+  "information_hierarchy",
+  "navigation_strength",
+  "trust_proof",
+  "differentiation",
+  "decision_support",
+] as const;
+
+export type AxisKey = (typeof AXIS_KEYS)[number];
+
+export const LAYER_KEYS = ["internal", "visual"] as const;
+export type LayerKey = (typeof LAYER_KEYS)[number];
+
+export const SITE_SIZE_KEYS = ["small", "medium", "large"] as const;
+export type SiteSizeKey = (typeof SITE_SIZE_KEYS)[number];
+
+export const STRUCTURE_TYPE_KEYS = [
+  "comparison_oriented",
+  "trust_oriented",
+  "message_specialized",
+  "structure_advantaged",
+  "balanced_average",
+] as const;
+export type StructureTypeKey = (typeof STRUCTURE_TYPE_KEYS)[number];
+
+export const PROJECT_STATUS_KEYS = ["active", "archived", "deleted"] as const;
+export type ProjectStatusKey = (typeof PROJECT_STATUS_KEYS)[number];
+
+export const JOB_STATUS_KEYS = [
+  "queued",
+  "running",
+  "completed",
+  "failed",
+  "cancelled",
+] as const;
+export type JobStatusKey = (typeof JOB_STATUS_KEYS)[number];
+
+export const ANALYSIS_TYPE_KEYS = [
+  "competitors",
+  "industry",
+  "self",
+  "strategy_bundle",
+] as const;
+export type AnalysisTypeKey = (typeof ANALYSIS_TYPE_KEYS)[number];
+
+export const ANALYSIS_MODE_KEYS = ["low", "mid", "high"] as const;
+export type AnalysisModeKey = (typeof ANALYSIS_MODE_KEYS)[number];
+
+export const NARRATIVE_TONE_KEYS = ["supportive", "neutral", "tough"] as const;
+export type NarrativeToneKey = (typeof NARRATIVE_TONE_KEYS)[number];
+
+export const PHASE_KEYS = ["plan_30", "plan_60", "plan_90"] as const;
+export type PhaseKey = (typeof PHASE_KEYS)[number];
+
+export const PHASE_PROGRESS_KEYS = [
+  "not_started",
+  "in_progress",
+  "blocked",
+  "done",
+] as const;
+export type PhaseProgressKey = (typeof PHASE_PROGRESS_KEYS)[number];
+
+export const STRATEGY_STATUS_KEYS = [
+  "not_started",
+  "improving",
+  "stable",
+  "rework_required",
+] as const;
+export type StrategyStatusKey = (typeof STRATEGY_STATUS_KEYS)[number];
+
+export const MARKET_PRESSURE_KEYS = ["low", "medium", "high"] as const;
+export type MarketPressureKey = (typeof MARKET_PRESSURE_KEYS)[number];
+
+export const CONFIDENCE_LEVEL_KEYS = ["low", "medium", "high"] as const;
+export type ConfidenceLevelKey = (typeof CONFIDENCE_LEVEL_KEYS)[number];
+
+export const SITE_ROLE_KEYS = ["self", "competitor"] as const;
+export type SiteRoleKey = (typeof SITE_ROLE_KEYS)[number];
+
+export const PAGE_TYPE_KEYS = [
+  "top",
+  "pricing",
+  "feature",
+  "comparison",
+  "case_study",
+  "faq",
+  "company",
+  "contact",
+  "product_index",
+  "product_detail",
+  "article",
+  "unknown",
+] as const;
+export type PageTypeKey = (typeof PAGE_TYPE_KEYS)[number];
+
+==================================================
+3. core/types.ts
+==================================================
+
+import type {
+  AnalysisModeKey,
+  AnalysisTypeKey,
+  AxisKey,
+  ConfidenceLevelKey,
+  JobStatusKey,
+  MarketPressureKey,
+  NarrativeToneKey,
+  PageTypeKey,
+  ProjectStatusKey,
+  SiteRoleKey,
+  StrategyStatusKey,
+} from "./enums";
+
+export type Uuid = string;
+export type UrlString = string;
+export type IsoDateTimeString = string;
+
+export type Score01 = number;
+export type Score100 = number;
+
+export type AxisScoreMap = Record<AxisKey, Score100 | null>;
+export type AxisScoreMapStrict = Record<AxisKey, Score100>;
+
+export interface ConfidenceBand {
+  score: number; // 0..1
+  level: ConfidenceLevelKey;
+}
+
+export interface CandidateScore<T extends string> {
+  key: T;
+  label: string;
+  score: number; // 0..1
+}
+
+export interface EvidenceBundle {
+  keywords: string[];
+  signals: string[];
+  page_types: PageTypeKey[];
+  notes: string[];
+}
+
+export interface ProjectRef {
+  project_id: Uuid;
+  org_id: Uuid;
+  current_snapshot_id: Uuid | null;
+  project_status: ProjectStatusKey;
+}
+
+export interface AnalysisJobRef {
+  analysis_job_id: Uuid;
+  analysis_type: AnalysisTypeKey;
+  mode: AnalysisModeKey;
+  job_status: JobStatusKey;
+}
+
+export interface SiteRef {
+  site_id: Uuid;
+  site_role: SiteRoleKey;
+  site_url: UrlString;
+  normalized_site_url: UrlString;
+}
+
+export interface StrategyStateRef {
+  strategy_plan_id: Uuid;
+  strategy_status: StrategyStatusKey;
+  current_strategy_theme: string;
+}
+
+export interface MarketTypeDescriptor {
+  market_type_key: string;
+  market_type_label: string;
+  market_type_confidence: number;
+  market_type_confidence_level: ConfidenceLevelKey;
+  market_type_tags: string[];
+}
+
+export interface PositionSummary {
+  position_label: string;
+  market_pressure_level: MarketPressureKey;
+  delta_vs_industry_total: number | null;
+  gap_to_leader: number | null;
+  rank_position: number | null;
+}
+
+export interface LayeredAxisScores {
+  total_axis_scores: AxisScoreMap;
+  internal_axis_scores: AxisScoreMap;
+  visual_axis_scores: AxisScoreMap;
+}
+
+export interface LayerScores {
+  internal_score: Score100 | null;
+  visual_score: Score100 | null;
+  total_score: Score100 | null;
+}
+
+export interface NarrativeBlock {
+  summary_short: string;
+  summary_long: string;
+  strengths: string[];
+  issues: string[];
+  strategy_comment: string;
+  tone_mode: NarrativeToneKey;
+}
+
+==================================================
+4. core/schemas.ts
+==================================================
+
+import { z } from "zod";
+import {
+  ANALYSIS_MODE_KEYS,
+  ANALYSIS_TYPE_KEYS,
+  AXIS_KEYS,
+  CONFIDENCE_LEVEL_KEYS,
+  JOB_STATUS_KEYS,
+  LAYER_KEYS,
+  MARKET_PRESSURE_KEYS,
+  NARRATIVE_TONE_KEYS,
+  PAGE_TYPE_KEYS,
+  PHASE_KEYS,
+  PHASE_PROGRESS_KEYS,
+  PROJECT_STATUS_KEYS,
+  SITE_ROLE_KEYS,
+  SITE_SIZE_KEYS,
+  STRATEGY_STATUS_KEYS,
+  STRUCTURE_TYPE_KEYS,
+} from "./enums";
+
+export const uuidSchema = z.string().uuid();
+export const urlSchema = z.string().url();
+export const isoDateTimeSchema = z.string().datetime({ offset: true });
+
+export const score01Schema = z.number().min(0).max(1);
+export const score100Schema = z.number().min(0).max(100);
+
+export const axisKeySchema = z.enum(AXIS_KEYS);
+export const layerKeySchema = z.enum(LAYER_KEYS);
+export const siteSizeKeySchema = z.enum(SITE_SIZE_KEYS);
+export const structureTypeKeySchema = z.enum(STRUCTURE_TYPE_KEYS);
+export const projectStatusKeySchema = z.enum(PROJECT_STATUS_KEYS);
+export const jobStatusKeySchema = z.enum(JOB_STATUS_KEYS);
+export const analysisTypeKeySchema = z.enum(ANALYSIS_TYPE_KEYS);
+export const analysisModeKeySchema = z.enum(ANALYSIS_MODE_KEYS);
+export const narrativeToneKeySchema = z.enum(NARRATIVE_TONE_KEYS);
+export const phaseKeySchema = z.enum(PHASE_KEYS);
+export const phaseProgressKeySchema = z.enum(PHASE_PROGRESS_KEYS);
+export const strategyStatusKeySchema = z.enum(STRATEGY_STATUS_KEYS);
+export const marketPressureKeySchema = z.enum(MARKET_PRESSURE_KEYS);
+export const confidenceLevelKeySchema = z.enum(CONFIDENCE_LEVEL_KEYS);
+export const siteRoleKeySchema = z.enum(SITE_ROLE_KEYS);
+export const pageTypeKeySchema = z.enum(PAGE_TYPE_KEYS);
+
+export const axisScoreMapSchema = z.object({
+  value_proposition: score100Schema.nullable(),
+  information_hierarchy: score100Schema.nullable(),
+  navigation_strength: score100Schema.nullable(),
+  trust_proof: score100Schema.nullable(),
+  differentiation: score100Schema.nullable(),
+  decision_support: score100Schema.nullable(),
+});
+
+export const confidenceBandSchema = z.object({
+  score: score01Schema,
+  level: confidenceLevelKeySchema,
+});
+
+export const candidateScoreSchema = <T extends z.ZodTypeAny>(keySchema: T) =>
+  z.object({
+    key: keySchema,
+    label: z.string().min(1),
+    score: score01Schema,
+  });
+
+export const evidenceBundleSchema = z.object({
+  keywords: z.array(z.string()),
+  signals: z.array(z.string()),
+  page_types: z.array(pageTypeKeySchema),
+  notes: z.array(z.string()),
+});
+
+export const marketTypeDescriptorSchema = z.object({
+  market_type_key: z.string().min(1),
+  market_type_label: z.string().min(1),
+  market_type_confidence: score01Schema,
+  market_type_confidence_level: confidenceLevelKeySchema,
+  market_type_tags: z.array(z.string()),
+});
+
+export const positionSummarySchema = z.object({
+  position_label: z.string().min(1),
+  market_pressure_level: marketPressureKeySchema,
+  delta_vs_industry_total: z.number().nullable(),
+  gap_to_leader: z.number().nullable(),
+  rank_position: z.number().int().positive().nullable(),
+});
+
+export const narrativeBlockSchema = z.object({
+  summary_short: z.string().min(1),
+  summary_long: z.string().min(1),
+  strengths: z.array(z.string()),
+  issues: z.array(z.string()),
+  strategy_comment: z.string().min(1),
+  tone_mode: narrativeToneKeySchema,
+});
+
+==================================================
+5. inference/types.ts
+==================================================
+
+import type {
+  ConfidenceBand,
+  EvidenceBundle,
+  SiteSizeKey,
+  StructureTypeKey,
+} from "../core/types";
+
+export interface IndustryPrediction {
+  industry_key: string;
+  industry_label: string;
+  confidence: number;
+  confidence_level: ConfidenceBand["level"];
+  evidence_keywords: string[];
+  alternate_candidates: Array<{
+    industry_key: string;
+    industry_label: string;
+    score: number;
+  }>;
+}
+
+export interface StructureTypePrediction {
+  structure_type_key: StructureTypeKey;
+  structure_type_label: string;
+  confidence: number;
+  confidence_level: ConfidenceBand["level"];
+  evidence_signals: string[];
+  alternate_candidates: Array<{
+    structure_type_key: StructureTypeKey;
+    structure_type_label: string;
+    score: number;
+  }>;
+}
+
+export interface SiteSizePrediction {
+  site_size_key: SiteSizeKey;
+  site_size_label: string;
+  confidence: number;
+  confidence_level: ConfidenceBand["level"];
+  evidence_signals: string[];
+}
+
+export interface InferenceResult {
+  industry_prediction: IndustryPrediction;
+  structure_type_prediction: StructureTypePrediction;
+  site_size_prediction: SiteSizePrediction;
+  shared_evidence: EvidenceBundle;
+}
+
+==================================================
+6. inference/schemas.ts
+==================================================
+
+import { z } from "zod";
+import {
+  confidenceLevelKeySchema,
+  evidenceBundleSchema,
+  score01Schema,
+  siteSizeKeySchema,
+  structureTypeKeySchema,
+} from "../core/schemas";
+
+export const industryPredictionSchema = z.object({
+  industry_key: z.string().min(1),
+  industry_label: z.string().min(1),
+  confidence: score01Schema,
+  confidence_level: confidenceLevelKeySchema,
+  evidence_keywords: z.array(z.string()),
+  alternate_candidates: z.array(
+    z.object({
+      industry_key: z.string().min(1),
+      industry_label: z.string().min(1),
+      score: score01Schema,
+    })
+  ),
+});
+
+export const structureTypePredictionSchema = z.object({
+  structure_type_key: structureTypeKeySchema,
+  structure_type_label: z.string().min(1),
+  confidence: score01Schema,
+  confidence_level: confidenceLevelKeySchema,
+  evidence_signals: z.array(z.string()),
+  alternate_candidates: z.array(
+    z.object({
+      structure_type_key: structureTypeKeySchema,
+      structure_type_label: z.string().min(1),
+      score: score01Schema,
+    })
+  ),
+});
+
+export const siteSizePredictionSchema = z.object({
+  site_size_key: siteSizeKeySchema,
+  site_size_label: z.string().min(1),
+  confidence: score01Schema,
+  confidence_level: confidenceLevelKeySchema,
+  evidence_signals: z.array(z.string()),
+});
+
+export const inferenceResultSchema = z.object({
+  industry_prediction: industryPredictionSchema,
+  structure_type_prediction: structureTypePredictionSchema,
+  site_size_prediction: siteSizePredictionSchema,
+  shared_evidence: evidenceBundleSchema,
+});
+
+==================================================
+7. engine/types.ts
+==================================================
+
+import type { AxisKey, AxisScoreMap, Score100 } from "../core/types";
+
+export interface ConfidenceScores {
+  c_internal: number;
+  c_visual: number;
+  c_benchmark: number;
+  c_delta: number;
+  c_total: number;
+}
+
+export interface CoherenceScores {
+  coherence_nav: number | null;
+  coherence_dec: number | null;
+  coherence_msg: number | null;
+  coherence_average: number | null;
+}
+
+export interface OpportunityScores {
+  opportunity_by_axis: Record<AxisKey, number>;
+  priority_by_axis: Record<AxisKey, number>;
+  top_opportunity_axis: AxisKey;
+  top_priority_axis: AxisKey;
+  improvement_headroom_percent: number;
+}
+
+export interface DeltaScores {
+  delta_vs_industry: AxisScoreMap;
+  delta_vs_competitor_set: AxisScoreMap;
+  delta_vs_industry_total: number | null;
+}
+
+export interface SiteEngineResult {
+  total_score: Score100 | null;
+  internal_score: Score100 | null;
+  visual_score: Score100 | null;
+  total_axis_scores: AxisScoreMap;
+  internal_axis_scores: AxisScoreMap;
+  visual_axis_scores: AxisScoreMap;
+  confidence_scores: ConfidenceScores;
+  coherence_scores: CoherenceScores;
+  delta_scores: DeltaScores;
+  opportunity_scores: OpportunityScores;
+}
+
+export interface IndustryEngineResult {
+  market_type_key: string;
+  market_type_label: string;
+  market_type_confidence: number;
+  industry_axis_averages: AxisScoreMap;
+  industry_internal_axis_averages: AxisScoreMap;
+  industry_visual_axis_averages: AxisScoreMap;
+  structure_stability_score: number;
+  differentiation_headroom_score: number;
+}
+
+==================================================
+8. payloads/types.ts
+==================================================
+
+import type {
+  AxisKey,
+  AxisScoreMap,
+  ConfidenceLevelKey,
+  MarketPressureKey,
+  NarrativeBlock,
+  Score100,
+  SiteSizeKey,
+  StrategyStatusKey,
+  StructureTypeKey,
+  Uuid,
+} from "../core/types";
+
+export interface CompetitorCardView {
+  site_id: Uuid;
+  site_name: string;
+  site_url: string;
+  market_type_label: string;
+  structure_type_label: string;
+  site_size_label: string;
+  total_score: Score100 | null;
+  internal_score: Score100 | null;
+  visual_score: Score100 | null;
+  position_label: string;
+  summary_short: string;
+  selected_tags: string[];
+}
+
+export interface CompetitorDetailView {
+  site_id: Uuid;
+  site_name: string;
+  site_url: string;
+  market_type_label: string;
+  structure_type_label: string;
+  structure_type_key: StructureTypeKey;
+  site_size_key: SiteSizeKey;
+  site_size_label: string;
+  total_score: Score100 | null;
+  internal_score: Score100 | null;
+  visual_score: Score100 | null;
+  total_axis_scores: AxisScoreMap;
+  required_elements: string[];
+  ai_summary: string;
+}
+
+export interface CompetitorsTabPayload {
+  cards: CompetitorCardView[];
+  selected_site_id: Uuid | null;
+  selected_detail: CompetitorDetailView | null;
+}
+
+export interface IndustryAxisAverageView {
+  axis_key: AxisKey;
+  axis_label: string;
+  total_average: Score100 | null;
+  internal_average: Score100 | null;
+  visual_average: Score100 | null;
+  emphasis: "high" | "low" | "neutral";
+}
+
+export interface PositionMapPoint {
+  site_id: Uuid;
+  site_name: string;
+  x_delta_vs_industry: number;
+  y_strategy_fit_index: number;
+  position_label: string;
+  is_self: boolean;
+}
+
+export interface PositionMapView {
+  points: PositionMapPoint[];
+  self_position_label: string;
+  self_position_summary: string;
+  leader_gap_summary: string;
+}
+
+export interface StructureTypeDistributionItem {
+  structure_type_key: StructureTypeKey;
+  structure_type_label: string;
+  percentage: number;
+  description: string;
+}
+
+export interface OpportunityCardView {
+  opportunity_key: string;
+  title: string;
+  rationale: string;
+  competitor_gaps: string[];
+  self_fit_summary: string;
+  target_axes: AxisKey[];
+}
+
+export interface IndustryTabPayload {
+  market_type_key: string;
+  market_type_label: string;
+  market_type_confidence: number;
+  market_type_confidence_level: ConfidenceLevelKey;
+  market_type_tags: string[];
+  analyzed_at: string;
+
+  industry_axis_averages: IndustryAxisAverageView[];
+  structure_stability_label: string;
+  structure_stability_score: number;
+  differentiation_headroom_label: string;
+  differentiation_headroom_score: number;
+  industry_summary_text: string;
+
+  position_map: PositionMapView;
+  market_pressure_level: MarketPressureKey;
+  market_pressure_summary: string;
+
+  structure_type_distribution: StructureTypeDistributionItem[];
+  industry_cluster_summary: string;
+  type_distribution_summary: string;
+
+  opportunity_cards: OpportunityCardView[];
+  market_battleground_summary: string;
+  priority_theme_summary: string;
+  industry_ai_summary: string;
+}
+
+export interface SelfAxisDetailView {
+  axis_key: AxisKey;
+  axis_label: string;
+  total_score: Score100 | null;
+  internal_score: Score100 | null;
+  visual_score: Score100 | null;
+  delta_vs_industry: number | null;
+}
+
+export interface TechnicalBaselineCheck {
+  has_pricing_page: boolean | null;
+  has_case_study_page: boolean | null;
+  has_faq_page: boolean | null;
+  has_company_page: boolean | null;
+  has_contact_path: boolean | null;
+}
+
+export interface StrategyProposalCardView {
+  rank: 1 | 2 | 3;
+  strategy_key: string;
+  title: string;
+  strategy_intent: string;
+  rationale: string[];
+  action_items: string[];
+  expected_impact: {
+    target_axes: AxisKey[];
+    score_lift_estimate: Record<AxisKey, number>;
+  };
+}
+
+export interface SelfTabPayload {
+  total_score: Score100 | null;
+  internal_score: Score100 | null;
+  visual_score: Score100 | null;
+  delta_vs_industry_total: number | null;
+  market_type_label: string;
+
+  top_strengths: string[];
+  top_issues: string[];
+
+  axis_details: SelfAxisDetailView[];
+  radar_chart_values: AxisScoreMap;
+  technical_baseline_check: TechnicalBaselineCheck;
+
+  strategy_proposals: StrategyProposalCardView[];
+  ai_summary: string;
+}
+
+export interface PhaseTaskView {
+  task_key: string;
+  task_label: string;
+  task_status: "not_started" | "in_progress" | "done" | "blocked";
+  display_order: number;
+}
+
+export interface PhasePlanView {
+  phase_key: "plan_30" | "plan_60" | "plan_90";
+  phase_label: string;
+  phase_theme: string;
+  phase_objective: string;
+  progress_status: "not_started" | "in_progress" | "blocked" | "done";
+  completed_task_count: number;
+  total_task_count: number;
+  assignee_status_label: string;
+  next_action: string;
+  tasks: PhaseTaskView[];
+}
+
+export interface ProjectSidebarItemView {
+  project_id: Uuid;
+  project_name: string;
+  day_count: number;
+  selected: boolean;
+  strategy_status_label: string;
+}
+
+export interface StrategyTabPayload {
+  strategy_fit_index: Score100 | null;
+  market_pressure_level: MarketPressureKey;
+  delta_vs_industry_total: number | null;
+  strategy_status_label: StrategyStatusKey;
+  previous_strategy_fit_index: Score100 | null;
+  current_strategy_theme: string;
+  structural_risk_label: string;
+  improvement_headroom_percent: number;
+
+  selected_strategy_card: StrategyProposalCardView | null;
+  panoptes_ai_strategy_summary: string;
+
+  project_day_count: number;
+  plan_30: PhasePlanView;
+  plan_60: PhasePlanView;
+  plan_90: PhasePlanView;
+
+  sidebar_projects: ProjectSidebarItemView[];
+}
+
+export interface PanoAIContextPayload {
+  project_id: Uuid;
+  project_name: string;
+  target_url: string;
+  market_type_label: string;
+  structure_type_label: string;
+  site_size_label: string;
+
+  latest_total_score: Score100 | null;
+  latest_delta_vs_industry_total: number | null;
+  latest_top_strengths: string[];
+  latest_top_issues: string[];
+
+  current_strategy_theme: string | null;
+  current_strategy_status: StrategyStatusKey | null;
+  phase_plan_summaries: Array<{
+    phase_key: "plan_30" | "plan_60" | "plan_90";
+    phase_label: string;
+    next_action: string;
+    progress_status: "not_started" | "in_progress" | "blocked" | "done";
+  }>;
+
+  latest_narrative: NarrativeBlock;
+}
+
+export interface SnapshotViewPayload {
+  competitors: CompetitorsTabPayload;
+  industry: IndustryTabPayload;
+  self: SelfTabPayload;
+  strategy: StrategyTabPayload;
+  panoai: PanoAIContextPayload;
+}
+
+==================================================
+9. payloads/schemas.ts
+==================================================
+
+import { z } from "zod";
+import {
+  axisKeySchema,
+  axisScoreMapSchema,
+  confidenceLevelKeySchema,
+  marketPressureKeySchema,
+  narrativeBlockSchema,
+  phaseProgressKeySchema,
+  score100Schema,
+  strategyStatusKeySchema,
+  structureTypeKeySchema,
+  siteSizeKeySchema,
+  uuidSchema,
+} from "../core/schemas";
+
+export const competitorCardViewSchema = z.object({
+  site_id: uuidSchema,
+  site_name: z.string().min(1),
+  site_url: z.string().url(),
+  market_type_label: z.string().min(1),
+  structure_type_label: z.string().min(1),
+  site_size_label: z.string().min(1),
+  total_score: score100Schema.nullable(),
+  internal_score: score100Schema.nullable(),
+  visual_score: score100Schema.nullable(),
+  position_label: z.string().min(1),
+  summary_short: z.string().min(1),
+  selected_tags: z.array(z.string()),
+});
+
+export const competitorDetailViewSchema = z.object({
+  site_id: uuidSchema,
+  site_name: z.string().min(1),
+  site_url: z.string().url(),
+  market_type_label: z.string().min(1),
+  structure_type_label: z.string().min(1),
+  structure_type_key: structureTypeKeySchema,
+  site_size_key: siteSizeKeySchema,
+  site_size_label: z.string().min(1),
+  total_score: score100Schema.nullable(),
+  internal_score: score100Schema.nullable(),
+  visual_score: score100Schema.nullable(),
+  total_axis_scores: axisScoreMapSchema,
+  required_elements: z.array(z.string()),
+  ai_summary: z.string().min(1),
+});
+
+export const competitorsTabPayloadSchema = z.object({
+  cards: z.array(competitorCardViewSchema),
+  selected_site_id: uuidSchema.nullable(),
+  selected_detail: competitorDetailViewSchema.nullable(),
+});
+
+export const industryAxisAverageViewSchema = z.object({
+  axis_key: axisKeySchema,
+  axis_label: z.string().min(1),
+  total_average: score100Schema.nullable(),
+  internal_average: score100Schema.nullable(),
+  visual_average: score100Schema.nullable(),
+  emphasis: z.enum(["high", "low", "neutral"]),
+});
+
+export const positionMapPointSchema = z.object({
+  site_id: uuidSchema,
+  site_name: z.string().min(1),
+  x_delta_vs_industry: z.number(),
+  y_strategy_fit_index: z.number(),
+  position_label: z.string().min(1),
+  is_self: z.boolean(),
+});
+
+export const positionMapViewSchema = z.object({
+  points: z.array(positionMapPointSchema),
+  self_position_label: z.string().min(1),
+  self_position_summary: z.string().min(1),
+  leader_gap_summary: z.string().min(1),
+});
+
+export const structureTypeDistributionItemSchema = z.object({
+  structure_type_key: structureTypeKeySchema,
+  structure_type_label: z.string().min(1),
+  percentage: z.number().min(0).max(100),
+  description: z.string().min(1),
+});
+
+export const opportunityCardViewSchema = z.object({
+  opportunity_key: z.string().min(1),
+  title: z.string().min(1),
+  rationale: z.string().min(1),
+  competitor_gaps: z.array(z.string()),
+  self_fit_summary: z.string().min(1),
+  target_axes: z.array(axisKeySchema),
+});
+
+export const industryTabPayloadSchema = z.object({
+  market_type_key: z.string().min(1),
+  market_type_label: z.string().min(1),
+  market_type_confidence: z.number().min(0).max(1),
+  market_type_confidence_level: confidenceLevelKeySchema,
+  market_type_tags: z.array(z.string()),
+  analyzed_at: z.string(),
+
+  industry_axis_averages: z.array(industryAxisAverageViewSchema),
+  structure_stability_label: z.string().min(1),
+  structure_stability_score: z.number(),
+  differentiation_headroom_label: z.string().min(1),
+  differentiation_headroom_score: z.number(),
+  industry_summary_text: z.string().min(1),
+
+  position_map: positionMapViewSchema,
+  market_pressure_level: marketPressureKeySchema,
+  market_pressure_summary: z.string().min(1),
+
+  structure_type_distribution: z.array(structureTypeDistributionItemSchema),
+  industry_cluster_summary: z.string().min(1),
+  type_distribution_summary: z.string().min(1),
+
+  opportunity_cards: z.array(opportunityCardViewSchema),
+  market_battleground_summary: z.string().min(1),
+  priority_theme_summary: z.string().min(1),
+  industry_ai_summary: z.string().min(1),
+});
+
+export const selfAxisDetailViewSchema = z.object({
+  axis_key: axisKeySchema,
+  axis_label: z.string().min(1),
+  total_score: score100Schema.nullable(),
+  internal_score: score100Schema.nullable(),
+  visual_score: score100Schema.nullable(),
+  delta_vs_industry: z.number().nullable(),
+});
+
+export const technicalBaselineCheckSchema = z.object({
+  has_pricing_page: z.boolean().nullable(),
+  has_case_study_page: z.boolean().nullable(),
+  has_faq_page: z.boolean().nullable(),
+  has_company_page: z.boolean().nullable(),
+  has_contact_path: z.boolean().nullable(),
+});
+
+export const strategyProposalCardViewSchema = z.object({
+  rank: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  strategy_key: z.string().min(1),
+  title: z.string().min(1),
+  strategy_intent: z.string().min(1),
+  rationale: z.array(z.string()),
+  action_items: z.array(z.string()),
+  expected_impact: z.object({
+    target_axes: z.array(axisKeySchema),
+    score_lift_estimate: z.object({
+      value_proposition: z.number(),
+      information_hierarchy: z.number(),
+      navigation_strength: z.number(),
+      trust_proof: z.number(),
+      differentiation: z.number(),
+      decision_support: z.number(),
+    }),
+  }),
+});
+
+export const selfTabPayloadSchema = z.object({
+  total_score: score100Schema.nullable(),
+  internal_score: score100Schema.nullable(),
+  visual_score: score100Schema.nullable(),
+  delta_vs_industry_total: z.number().nullable(),
+  market_type_label: z.string().min(1),
+
+  top_strengths: z.array(z.string()),
+  top_issues: z.array(z.string()),
+
+  axis_details: z.array(selfAxisDetailViewSchema),
+  radar_chart_values: axisScoreMapSchema,
+  technical_baseline_check: technicalBaselineCheckSchema,
+
+  strategy_proposals: z.array(strategyProposalCardViewSchema),
+  ai_summary: z.string().min(1),
+});
+
+export const phaseTaskViewSchema = z.object({
+  task_key: z.string().min(1),
+  task_label: z.string().min(1),
+  task_status: z.enum(["not_started", "in_progress", "done", "blocked"]),
+  display_order: z.number().int().min(0),
+});
+
+export const phasePlanViewSchema = z.object({
+  phase_key: z.enum(["plan_30", "plan_60", "plan_90"]),
+  phase_label: z.string().min(1),
+  phase_theme: z.string().min(1),
+  phase_objective: z.string().min(1),
+  progress_status: phaseProgressKeySchema,
+  completed_task_count: z.number().int().min(0),
+  total_task_count: z.number().int().min(0),
+  assignee_status_label: z.string().min(1),
+  next_action: z.string().min(1),
+  tasks: z.array(phaseTaskViewSchema),
+});
+
+export const projectSidebarItemViewSchema = z.object({
+  project_id: uuidSchema,
+  project_name: z.string().min(1),
+  day_count: z.number().int().min(0),
+  selected: z.boolean(),
+  strategy_status_label: strategyStatusKeySchema,
+});
+
+export const strategyTabPayloadSchema = z.object({
+  strategy_fit_index: score100Schema.nullable(),
+  market_pressure_level: marketPressureKeySchema,
+  delta_vs_industry_total: z.number().nullable(),
+  strategy_status_label: strategyStatusKeySchema,
+  previous_strategy_fit_index: score100Schema.nullable(),
+  current_strategy_theme: z.string().min(1),
+  structural_risk_label: z.string().min(1),
+  improvement_headroom_percent: z.number().min(0).max(100),
+
+  selected_strategy_card: strategyProposalCardViewSchema.nullable(),
+  panoptes_ai_strategy_summary: z.string().min(1),
+
+  project_day_count: z.number().int().min(0),
+  plan_30: phasePlanViewSchema,
+  plan_60: phasePlanViewSchema,
+  plan_90: phasePlanViewSchema,
+
+  sidebar_projects: z.array(projectSidebarItemViewSchema),
+});
+
+export const panoAIContextPayloadSchema = z.object({
+  project_id: uuidSchema,
+  project_name: z.string().min(1),
+  target_url: z.string().url(),
+  market_type_label: z.string().min(1),
+  structure_type_label: z.string().min(1),
+  site_size_label: z.string().min(1),
+
+  latest_total_score: score100Schema.nullable(),
+  latest_delta_vs_industry_total: z.number().nullable(),
+  latest_top_strengths: z.array(z.string()),
+  latest_top_issues: z.array(z.string()),
+
+  current_strategy_theme: z.string().nullable(),
+  current_strategy_status: strategyStatusKeySchema.nullable(),
+  phase_plan_summaries: z.array(
+    z.object({
+      phase_key: z.enum(["plan_30", "plan_60", "plan_90"]),
+      phase_label: z.string().min(1),
+      next_action: z.string().min(1),
+      progress_status: phaseProgressKeySchema,
+    })
+  ),
+
+  latest_narrative: narrativeBlockSchema,
+});
+
+export const snapshotViewPayloadSchema = z.object({
+  competitors: competitorsTabPayloadSchema,
+  industry: industryTabPayloadSchema,
+  self: selfTabPayloadSchema,
+  strategy: strategyTabPayloadSchema,
+  panoai: panoAIContextPayloadSchema,
+});
+
+==================================================
+10. 実装メモ
+==================================================
+
+UI変更により、strategy payload は phase plan の中に task state を持つ前提で固定する。
+今後の strategy/types.ts では以下も追加で設計する。
+- SelectedStrategyState
+- PhaseTaskState
+- PhaseTaskStateTransition
+- ReanalysisTaskMergeResult
+
+MVPでは「task の CRUD 完全実装」までは不要でも、
+少なくとも snapshot 由来の task list と current progress state を分離できる構造にしておくこと。

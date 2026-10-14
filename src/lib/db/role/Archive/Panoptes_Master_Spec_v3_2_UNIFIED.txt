@@ -1,0 +1,765 @@
+Panoptes Master Specification v3.2
+Unified Product / Crawl / Engine / Strategy / API Contract
+統合版・強化版
+
+0. Document Control
+0.1 文書名
+Panoptes Master Specification v3.2
+
+0.2 役割
+本書は Panoptes の唯一の親仕様書とする。
+実装、UI、推定、分析、保存、クローリング、戦略生成、Engine、API、型定義はすべて本書を基準とする。
+
+0.3 優先順位
+1. 本書 v3.2
+2. 現在の確定UIデザイン
+3. Strategic Engine Complete Spec v1.0
+4. Python Crawler Implementation Specification v1.0
+5. TypeScript / Zod Foundation v1.1
+6. Strategy Types & Schemas v1.0
+7. API Types & Schemas v1.1
+8. 旧 Master Spec / 旧派生資料
+
+0.4 v3.2 の目的
+- v3.0 / v3.1 の重複を解消する
+- crawler / engine / strategy / API 契約を1本に統合する
+- strategy UI revision（30/60/90 task管理）を正規仕様へ昇格する
+- naming rule と response rule を明示固定する
+
+1. Product Definition
+1.1 Panoptesとは何か
+Panoptesは、
+「競合・業界・自社の構造を読み、戦略を可視化し、実行優先順位まで導く戦略OS」
+である。
+
+Panoptesは以下ではない
+- トラフィック推定ツール
+- アナリティクスツール
+- Similarweb系
+- SEOツール
+- LP改善ツール
+
+Panoptesは以下である
+- 構造理解装置
+- 因果説明装置
+- 戦略提案装置
+- 実行優先順位エンジン
+- 思考圧縮UI
+- 戦略OS
+
+1.2 MVPの目的
+- URL入力から、競合・業界・自社の構造分析を実行する
+- Internal / Visual の2レイヤーで6軸評価を行う
+- 同格比較を軸に競合10社を分析する
+- 業界構造を推定する
+- 自社の差分と改善余地を示す
+- 戦略提案3件を生成する
+- 30/60/90日プランを task 管理付きで生成する
+- snapshot として保存し、再分析で更新できるようにする
+
+1.3 MVPでやらないこと
+- 流入流出推定
+- 滞在時間推定
+- CVR推定
+- 広告チャネル分析
+- 指名検索推定
+- GA / Search Console 統合
+- Panoptes独自タグによる行動収集
+- リアルタイム更新
+- 自動改善実行
+- 実行代行
+
+2. MVP Absolute Rules
+2.1 データ原則
+MVPで使用するのは以下のみ
+- サイトの内部構造
+- サイトのビジュアル構造
+- 競合比較ロジック
+- Engine計算
+- AIによる抽出と文章化
+
+MVPで使用しない
+- 外部推定データ
+- アナリティクスデータ
+- 流入/流出
+- 滞在時間
+- 属性推定
+- 売上/市場シェア推定
+
+2.2 観測レイヤー
+Panoptesは常に以下の2レイヤーで観測する
+- Internal
+- Visual
+
+2.3 戦略軸
+固定6軸
+- 価値訴求
+- 情報階層
+- 導線強度
+- 信頼構造
+- 差別化明確性
+- 意思決定支援
+
+2.4 LLM原則
+LLMの役割
+- 構造意味理解
+- visual意味理解
+- evidence整理
+- narrative生成
+- 提案文の文章化
+- 戦略要約
+
+LLMにやらせてはいけないもの
+- スコア計算
+- delta計算
+- priority算出
+- opportunity算出
+- confidence算出
+- coherence算出
+- 業界平均計算
+- 外部データ補完
+
+2.5 保存原則
+Panoptesは分析のたびに snapshot を保存する。
+各タブは個別計算ではなく、同じ snapshot を参照して表示される。
+
+2.6 API返却原則
+APIは raw engine result を返さない。
+返すのは以下のみ
+- analysis job status
+- snapshot view payload
+- strategy state
+- usage state
+
+3. Supported Site Scope
+3.1 対象サイト
+- SaaSサイト
+- サービスサイト
+- 比較検討が発生するB2Bサイト
+- コーポレートサイト
+- D2C / ECサイト
+- 情報設計と意思決定導線が重要なサイト
+
+3.2 対象の考え方
+PanoptesはLP専用ではない。
+ただしMVPは「判断を前に進める構造を持つサイト」を得意とする。
+
+3.3 相性が弱い対象
+- 純ポートフォリオ
+- 採用専用サイト
+- ギャラリー専用ブランドサイト
+- 行動導線をほとんど持たない展示サイト
+
+4. UI Canon
+4.1 PC UI構成
+- competitors
+- industry
+- self
+- strategy
+- panoai
+
+4.2 各タブの責務
+competitors
+競合群の一覧と比較対象の理解
+
+industry
+市場構造・競争構造・型分布・市場余白の理解
+
+self
+自社の高解像度診断
+
+strategy
+実行司令室。戦略状態・改善余地・選択中戦略・AI評価・30/60/90実行管理・再分析の中核。
+30/60/90は phase 単位の要約表示ではなく、task進行管理を伴う実行UIとする。
+
+panoai
+保存済み snapshot を文脈として使う対話補助
+
+4.3 スマホViewer
+スマホ版はPC版の縮小ではなく、専用Viewerとする。
+役割
+- 戦略適合指数の確認
+- 現在のテーマ確認
+- 構造リスク確認
+- 改善余地確認
+- 戦略カード確認
+- 30/60/90確認
+- プロジェクト一覧確認
+- 再分析
+
+5. Initial Analysis Flow
+1. URL入力
+2. bootstrap crawl
+3. site type / page type 推定
+4. 業界推定
+5. 構造タイプ推定
+6. サイト規模推定
+7. confidence算出
+8. 競合候補生成
+9. 競合10社選定
+10. analysis crawl
+11. Observation Bundle 生成
+12. AI understanding
+13. Strategic Engine 計算
+14. 戦略提案生成
+15. 30/60/90生成
+16. snapshot保存
+
+6. Crawling Architecture
+6.1 クローリング方針
+PanoptesはAIクローリングを行わない。
+すべてのクロールは機械的クローリングで行う。
+クローリングエンジンは Python crawler とする。
+
+6.2 Crawl Modes
+- bootstrap crawl
+- analysis crawl
+- monitoring crawl
+
+6.3 bootstrap crawl
+目的
+- サイトの基本推定
+- 業界
+- サイトタイプ
+- 構造タイプ
+- 競合候補
+
+対象
+- top
+- navリンク
+- footerリンク
+- 代表ページ
+
+最大
+- 10 pages
+
+6.4 analysis crawl
+目的
+- 完全分析
+- Internal evidence取得
+- Visual evidence取得
+
+対象
+- 最大30ページ
+- 優先: top / pricing / feature / faq / case / contact
+
+6.5 monitoring crawl
+目的
+- 競合監視
+- 差分検知
+- Feed生成
+- Radar生成
+
+対象
+- 主要ページのみ
+- 最大10ページ
+
+6.6 URL Discovery Rules
+取得対象
+- 同一ドメイン
+- HTMLページ
+- nav / footer / CTA から辿れるページ
+
+除外
+- ログイン
+- cart
+- checkout
+- session URL
+- PDF
+- 画像
+- zip
+- 外部リンク
+- 検索ページ
+
+URL正規化
+- tracking削除
+- fragment削除
+- canonical優先
+- duplicate除外
+
+6.7 Page Type Routing
+page_type
+- top
+- pricing
+- feature
+- comparison
+- faq
+- case
+- company
+- contact
+- article
+- product
+- unknown
+
+6.8 Internal Evidence Extraction
+抽出対象
+- title
+- meta description
+- h1 / h2 / h3
+- CTA
+- CTAリンク
+- form
+- faq
+- pricing block
+- compare block
+- trust block
+- case block
+- nav
+- footer
+- internal links
+- section count
+- cta count
+- heading depth
+- nav categories
+- decision support blocks
+
+6.9 Visual Observation
+Visualは capture → AI理解 の順序で行う。
+AIが直接クロールすることは禁止。
+
+取得
+- first view screenshot
+- full page screenshot
+
+Visual評価対象
+- 視覚階層
+- CTA目立ち
+- 視線誘導
+- レイアウト密度
+- 比較要素
+- 証拠ブロック
+- 信頼表示
+
+6.10 Diff Detection
+4段階
+- Level1 URL差分
+- Level2 HTML hash差分
+- Level3 構造差分
+- Level4 意味差分（AI）
+
+7. Inference System
+7.1 業界推定
+主な証拠
+- title
+- meta description
+- h1 / h2
+- ナビ項目
+- CTA文言
+- サービス説明
+- FAQ語彙
+- 事例語彙
+- URL path
+- ビジュアル特徴
+
+7.2 構造タイプ推定
+主な構造タイプ
+- 比較検討型
+- 信頼構築型
+- 訴求特化型
+- 構造優位型
+- 平均優位型
+
+証拠
+- 価格表
+- 比較表
+- FAQ
+- 導入事例
+- 実績数値
+- ロゴ
+- ヒーローコピー
+- CTA設計
+- ナビ構造
+- 6軸 preliminary score
+
+7.3 サイト規模推定
+構造規模を small / medium / large で推定する。
+
+7.4 confidence
+内部では 0〜1 で保持し、UIでは 高 / 中 / 低 に変換可能にする。
+
+8. Competitor Set Construction
+8.1 競合候補生成
+- 業界一致候補
+- テキスト類似候補
+- サービス説明類似候補
+- 構造タイプ類似候補
+- サイト規模類似候補
+- ユーザー指定競合
+
+8.2 同格比較の原則
+単純な業界上位10社比較をしない。
+優先
+- 業界一致
+- 構造タイプ一致
+- サイト規模一致
+
+8.3 競合10社の決定
+fit_score 構成
+- 業界一致度
+- 構造タイプ一致度
+- サイト規模一致度
+- テキスト類似度
+- ページ種別類似度
+- ナビ構造類似度
+
+9. Observation Bundle
+Engine入力
+- site_info
+- page_list
+- page_type_map
+- page_role_map
+- internal_observations
+- visual_observations
+- flow_summary
+- diff_summary
+- confidence_inputs
+- benchmark_context
+
+LLMには HTML全文を渡さない。
+整理された evidence のみ渡す。
+
+10. Unified Strategic Engine
+10.1 6軸固定
+内部キー
+- value_proposition
+- information_hierarchy
+- navigation_strength
+- trust_proof
+- differentiation
+- decision_support
+
+10.2 Submetric
+各軸は複数submetricで構成し、0.0〜1.0で評価する。
+取得不能は null 許容。
+
+10.3 Layer別スコア
+各軸について
+- internal_axis_score
+- visual_axis_score
+を算出する。
+
+10.4 Layer総合
+- internal_score
+- visual_score
+
+10.5 総合スコア
+T = 1 / ((0.6 / I) + (0.4 / V))
+
+10.6 Confidence調整
+- c_internal
+- c_visual
+- c_benchmark
+- c_delta
+- c_total
+
+10.7 Coherence補正
+- coherence_nav
+- coherence_dec
+- coherence_msg
+- coherence_average
+
+10.8 delta
+- delta_vs_industry per axis
+- delta_vs_competitor_set per axis
+- delta_vs_industry_total
+
+10.9 opportunity
+構造的改善余地を 0〜100 で算出する。
+
+10.10 priority
+優先施策の軸優先度を 0〜100 で算出する。
+
+10.11 Flow評価
+- stage completeness
+- trust timing
+- compare timing
+- CTA progression
+
+これらを A3 / A6 / coherence に反映する。
+
+10.12 市場タイプ推定
+Engine側では tags として保持し、narrative と industry tab に表示する。
+
+10.13 型分布推定
+基本型例
+- 平均優位型
+- 構造優位型
+- 訴求特化型
+- 信頼特化型
+- 価格決断型
+- 比較検討型
+
+10.14 ポジションマップ
+候補軸
+- X = 差別化明確性 + 価値訴求
+- Y = 信頼構造 + 意思決定支援
+
+10.15 flags
+例
+- BRAND_UNFORMED
+- OVER_DESIGNED_UNDER_CONVERTING
+- UNIQUE_BUT_UNCLEAR
+- PROOF_TOO_LATE
+- CTA_TOO_EARLY
+- COMPARE_MISSING
+- PRICE_DECISION_GAP
+
+11. Strategy System
+11.1 戦略提案の役割
+戦略提案 = WHAT
+30/60/90 = HOW / WHEN
+
+11.2 戦略提案件数
+MVPでは原則3件。
+
+11.3 戦略カード構成
+- title
+- strategy_intent
+- rationale
+- action_items
+- expected_impact
+
+11.4 戦略カード制約
+MVPで使わない
+- CVR改善値
+- 自然流入増加
+- CPA改善
+- 指名検索増加
+- 広告効率改善
+
+MVPで使う
+- 導線強度スコア改善
+- 信頼構造スコア改善
+- 差別化明確性改善
+- 意思決定支援改善
+- 情報階層改善
+
+11.5 strategy と phase task の責務
+- strategy = 選択中の戦略テーマ
+- phase plan = 30/60/90 の実行管理
+- task = 各フェーズ内の具体タスク
+- task transition = 状態変更履歴
+- reanalysis merge = 再分析時の引き継ぎ判定
+
+11.6 Selected Strategy State
+保持項目
+- strategy_plan_id
+- source_snapshot_id
+- selected_strategy_key
+- selected_strategy_rank
+- current_strategy_theme
+- strategy_status
+- previous_strategy_fit_index
+- current_strategy_fit_index
+- structural_risk_label
+- improvement_headroom_percent
+
+11.7 30/60/90
+各 phase は実行管理単位とする。
+phase plan 必須項目
+- phase_key
+- phase_label
+- phase_theme
+- phase_objective
+- progress_status
+- completed_task_count
+- total_task_count
+- assignee_status_label
+- next_action
+- tasks[]
+
+task 必須項目
+- task_key
+- task_label
+- task_status
+- display_order
+
+task_status
+- not_started
+- in_progress
+- done
+- blocked
+
+11.8 Reanalysis relation
+再分析時は strategy plan と phase task state を破壊しない。
+判定
+- strategy_keep
+- strategy_update_recommended
+- strategy_rework_required
+
+task引き継ぎ
+- exact / semantic / none
+- obsolete task は archived 扱い
+- new task は not_started で追加
+
+12. Snapshot System
+12.1 snapshot 基準
+1回の本分析 = 1 snapshot
+
+12.2 snapshot の役割
+- competitors tab
+- industry tab
+- self tab
+- strategy tab
+- panoai context
+
+12.3 current snapshot
+project は current_snapshot_id を持つ。
+
+12.4 strategy memory
+selected strategy、phase plans、phase tasks は snapshot に紐づくが、
+current strategy state として project にも反映される。
+「snapshot由来の推奨プラン」と「現在の実行状態」を分離保持する。
+
+13. Naming Canon
+13.1 固定ルール
+- DBカラム / API request-response / snapshot payload は snake_case
+- アプリ内部の関数名 / 変数名 / utility は camelCase
+- Type / Interface 名は PascalCase
+
+13.2 forbidden names
+禁止
+- data
+- result
+- info
+- obj
+- temp
+- score1
+- score2
+
+推奨
+- snapshot_payload
+- strategy_plan
+- phase_task
+- phase_task_transition
+- inference_result
+- competitor_card_view
+
+13.3 forbidden UX terms
+禁止
+- 検索流入
+- 広告流入
+- リファラル
+- 直流入
+- 指名検索
+- CVR
+- CPA
+- SEO依存率
+- 獲得単価
+
+14. API Contract
+14.1 required API
+- POST /api/project/create
+- POST /api/project/select
+- POST /api/analysis/start
+- GET /api/analysis/:job_id
+- GET /api/project/:project_id/dashboard
+- POST /api/project/:project_id/strategy/select
+- POST /api/project/:project_id/reanalyze
+- POST /api/strategy/task/update-status
+- GET /api/usage/current
+
+14.2 request / response 基本方針
+通信と保存は snake_case とする。
+
+14.3 dashboard API
+dashboard は SnapshotViewPayload を返す。
+UIは engine 結果を再計算しない。
+
+14.4 strategy API
+- select strategy は current strategy の採用保存
+- update phase task status は task状態だけ更新
+- task transition は server側で自動記録
+
+15. Security and Access Rules
+15.1 access unit
+org を基準とする。
+
+15.2 read rule
+同一 org の active member は project と snapshot を読める。
+
+15.3 write rule
+分析結果系テーブルは原則 server-only write。
+クライアントから直接 insert / update させない。
+
+15.4 admin
+admin UI は URL 隠しではなく allowlist / role / server guard で制御する。
+
+15.5 secrets
+- service role key
+- llm api keys
+- crawler secrets
+は server-side のみ保持する。
+
+15.6 audit
+重要操作は audit log に残す。
+最低対象
+- waitlist approval
+- admin action
+- project delete
+- reanalysis trigger
+- strategy selection
+- task status change
+
+16. Implementation Contracts
+16.1 required DB groups
+- org / member / plan / usage
+- project
+- site_entity
+- analysis_job
+- analysis_snapshot_header
+- analysis_snapshot_payload
+- strategy_plan
+- phase_task
+- phase_task_transition
+- admin / audit
+
+16.2 required TypeScript model groups
+- inference
+- crawl
+- engine
+- snapshot
+- payloads
+- strategy
+- api
+
+16.3 job lifecycle
+analysis job status
+- queued
+- running
+- completed
+- failed
+- cancelled
+
+16.4 retries
+crawl / extract / narrative は限定的 retry を許可する。
+Engine calculation は deterministic とし retry不要を原則とする。
+
+16.5 force low mode
+SPU制約時は analysis を停止せず、forced_low_mode = true として実行継続する。
+
+17. Reserved Future Fields
+MVPでは内部保持のみ行い、UIでは必須表示しない。
+- avg_global_i
+- avg_industry_i
+- avg_mechanism_i
+- cluster_id
+- gap_to_leader
+- rank_position
+- c_internal
+- c_visual
+- c_benchmark
+- c_delta
+- coherence_nav
+- coherence_dec
+- coherence_msg
+- advantage_mechanism_label
+
+18. Out of Scope for MVP
+- GA / Search Console integration
+- Panoptes tag
+- real-time update
+- external traffic modeling
+- automated ads/media recommendation
+- advanced strategic pressure model
+- autonomous execution

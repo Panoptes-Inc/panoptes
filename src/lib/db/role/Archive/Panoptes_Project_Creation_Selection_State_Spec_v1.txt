@@ -1,0 +1,258 @@
+Panoptes Project Creation / Selection State Spec v1.0
+for Panoptes Master Specification v3.2 Unified
+
+適用対象:
+- Panoptes_Master_Spec_v3_2_UNIFIED.txt
+
+目的:
+- 進行中プロジェクトが既に存在する状態で、新規プロジェクト分析を開始しても
+  クラッシュ・UI破綻・状態不整合が起きないようにする
+- strategy タブ右側の project list + 「+」導線を正式仕様化する
+- current project state と create project flow state を分離する
+
+==================================================
+1. 追加する設計原則
+==================================================
+
+1.1 Current Project State と Create Project Flow State は分離する
+新規プロジェクト作成中でも、現在閲覧中の project / snapshot / tab state は保持する。
+「+」押下は current_project_id の即時切替を意味しない。
+
+1.2 Snapshot 未生成 project を正式に許容する
+project は current_snapshot_id = null の状態を許容する。
+analysis 未完了の project をUI上の正式状態として扱う。
+
+1.3 Project card は snapshot 前提で描画しない
+右側 project list の card は、snapshot がなくても描画可能でなければならない。
+
+==================================================
+2. Master Spec v3.2 への追加差し込み案
+==================================================
+
+[追加A] 4.2 各タブの責務 の strategy 末尾に追加
+
+strategy タブは project selection と project creation の起点を持つ。
+右側 project list では既存 project の選択を行い、
+「+」導線では新規 project 作成フローを開始する。
+新規作成フローは current project 表示状態から分離された一時状態として扱う。
+
+--------------------------------------------------
+
+[追加B] 新規章 4.4 Project Shell Behavior
+
+4.4 Project Shell Behavior
+Panoptes app shell は以下の3状態を分離保持する。
+
+- app_shell_state
+  - selected_project_id
+  - selected_snapshot_id
+  - active_tab
+
+- project_list_state
+  - projects[]
+  - loading_projects
+  - selected_project_id
+
+- create_project_flow_state
+  - is_create_project_open
+  - draft_project_name
+  - draft_target_url
+  - is_submitting
+  - create_error
+  - pending_analysis_job_id
+
+ルール:
+- create_project_flow_state は selected_project_id を直接変更しない
+- project 作成と analysis 開始が成功するまで current 表示を維持する
+- 新規作成成功後にはじめて project list に追加する
+- 遷移は「自動遷移」または「この project を開く」導線で行う
+
+--------------------------------------------------
+
+[追加C] 12.4 の後に追加
+
+12.5 Project Display State
+project は以下の display_state を持つ。
+
+- ready
+- creating
+- queued
+- analyzing
+- completed
+- failed
+- empty
+
+定義:
+- ready / completed: current_snapshot_id が存在し、表示可能
+- queued: analysis_job 作成済み、実行待ち
+- analyzing: analysis 実行中
+- failed: 最新 analysis が失敗
+- empty: project は存在するが snapshot 未生成
+- creating: create_project_flow 上の一時状態
+
+UIルール:
+- ready / completed は通常描画
+- queued / analyzing は loading / progress 表示
+- failed は error state + retry 導線
+- empty は start-analysis empty state を表示
+
+--------------------------------------------------
+
+[追加D] 12.6 strategy memory の後に追加
+
+12.7 Project Creation and Selection Safety Rules
+以下を固定ルールとする。
+
+- 「+」押下では selected_project_id を変更しない
+- create project 成功前に既存 project を unmount しない
+- current_snapshot_id = null をエラー扱いしない
+- snapshot 未生成 project 選択時は empty state / analyzing state / failed state を表示する
+- strategy / industry / self / panoai は has_snapshot に応じて guarded rendering を行う
+
+--------------------------------------------------
+
+[追加E] 14.1 required API に追加
+
+- POST /api/project/create-and-start-analysis
+- GET /api/project/list
+
+--------------------------------------------------
+
+[追加F] 14.4 の後に追加
+
+14.5 Project Creation API Rule
+create-and-start-analysis は以下を一体化してよい。
+- project 作成
+- 初回 analysis_job 発行
+
+返却例:
+- project_id
+- analysis_job_id
+- project_display_state
+- current_snapshot_id = null
+
+フロントはこれを受けて、
+- project list に新規 card を追加
+- current project を維持する、または新規 project に遷移する
+のいずれかを選択する。
+
+--------------------------------------------------
+
+[追加G] 16.1 required DB groups を更新
+
+- org / member / plan / usage
+- project
+- site_entity
+- analysis_job
+- analysis_snapshot_header
+- analysis_snapshot_payload
+- strategy_plan
+- phase_task
+- phase_task_transition
+- admin / audit
+- project_list_view または project_summary_view
+
+--------------------------------------------------
+
+[追加H] 16.1 project に関する補足
+
+project 必須項目:
+- project_id
+- org_id
+- project_name
+- target_url
+- project_status
+- current_snapshot_id nullable
+- latest_analysis_job_id nullable
+- created_at
+- updated_at
+
+project summary view 推奨項目:
+- project_id
+- project_name
+- target_url
+- current_snapshot_id
+- latest_analysis_job_id
+- latest_job_status
+- has_snapshot
+- project_display_state
+- day_count
+- strategy_status_label nullable
+
+==================================================
+3. UI Guard Rendering Rule
+==================================================
+
+各タブは以下で描画分岐する。
+
+3.1 has_snapshot = true
+- competitors / industry / self / strategy / panoai を通常描画
+
+3.2 has_snapshot = false and latest_job_status in (queued, running)
+- analyzing state を表示
+- skeleton / progress /「分析中」表示
+
+3.3 has_snapshot = false and latest_job_status = failed
+- failed state を表示
+- retry 導線
+- target_url 再確認導線
+
+3.4 has_snapshot = false and latest_job_status is null
+- empty state を表示
+- 「URLを入力して分析開始」
+
+==================================================
+4. 追加すべき型定義（次工程向け）
+==================================================
+
+推奨 TypeScript 追加型:
+
+export type ProjectDisplayState =
+  | "ready"
+  | "creating"
+  | "queued"
+  | "analyzing"
+  | "completed"
+  | "failed"
+  | "empty";
+
+export interface ProjectListItemView {
+  project_id: string;
+  project_name: string;
+  target_url: string;
+  current_snapshot_id: string | null;
+  latest_analysis_job_id: string | null;
+  latest_job_status: "queued" | "running" | "completed" | "failed" | "cancelled" | null;
+  has_snapshot: boolean;
+  project_display_state: ProjectDisplayState;
+  day_count: number;
+  strategy_status_label: "not_started" | "improving" | "stable" | "rework_required" | null;
+  selected: boolean;
+}
+
+export interface CreateAndStartAnalysisRequest {
+  org_id: string;
+  project_name: string;
+  target_url: string;
+  tone_mode: "supportive" | "neutral" | "tough";
+  mode: "low" | "mid" | "high";
+}
+
+export interface CreateAndStartAnalysisResponse {
+  project_id: string;
+  analysis_job_id: string;
+  project_display_state: ProjectDisplayState;
+  current_snapshot_id: string | null;
+  latest_job_status: "queued" | "running" | "completed" | "failed" | "cancelled";
+}
+
+==================================================
+5. 実装メモ
+==================================================
+
+- 「+」は new project modal / drawer の open trigger とする
+- 作成成功前に route 遷移しない設計でもよい
+- 一覧追加後に toast で
+  「分析を開始しました。完了まで他の project を確認できます」
+  を表示するとUXが良い
+- project list card は常に nullable-safe に描画する

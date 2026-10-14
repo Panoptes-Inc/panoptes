@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: panoptes_api_development
+      POSTGRES_USER: panoptes
+      POSTGRES_PASSWORD: panoptes_development_only
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U panoptes -d panoptes_api_development']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - panoptes-postgres:/var/lib/postgresql/data
+
+  api:
+    build: .
+    environment:
+      RAILS_ENV: development
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: panoptes
+      POSTGRES_PASSWORD: panoptes_development_only
+      SUPABASE_JWT_ISSUER: https://example.supabase.co/auth/v1
+      SUPABASE_JWT_AUDIENCE: authenticated
+      SUPABASE_JWKS_URL: https://example.supabase.co/auth/v1/.well-known/jwks.json
+      SUPABASE_JWT_ALGORITHMS: ES256,RS256
+    command: ['bundle', 'exec', 'rails', 'server', '-b', '0.0.0.0']
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'curl --fail --silent http://127.0.0.1:3000/api/v1/health >/dev/null']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  panoptes-postgres:

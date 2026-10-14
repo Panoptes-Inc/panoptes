@@ -1,0 +1,399 @@
+Panoptes API Types & Schemas Draft v1.1
+統合テキスト版（Naming Rule / Strategy-Task Responsibility / View Payload Rule 反映版）
+
+==================================================
+0. 固定前提
+==================================================
+
+0.1 命名ルール
+- DBカラム / API request-response / snapshot payload は snake_case
+- アプリ内部の関数名 / 変数名 / utility は camelCase
+- Type / Interface 名は PascalCase
+
+つまり、
+- 通信と保存は snake_case
+- 実装ロジックは camelCase
+で統一する。
+
+0.2 strategy と phase task の責務
+- strategy = 選択中の戦略テーマ
+- phase plan = 30/60/90 の実行管理
+- task = 各フェーズ内の具体タスク
+- task transition = 状態変更履歴
+- reanalysis merge = 再分析時の引き継ぎ判定
+
+この責務は固定し、以後ブレさせない。
+
+0.3 API の返却原則
+MVPのAPIは raw engine result を返さない。
+返すのは以下のみ。
+- job status
+- snapshot view payload
+- strategy state
+- usage state
+
+UIは生の engine 内部構造を直接読まない。
+読むのは整形済み payload のみとする。
+
+==================================================
+1. api/types.ts
+==================================================
+
+import type { AnalysisModeKey, Uuid } from "../core/types";
+import type { SnapshotViewPayload } from "../payloads/types";
+
+export interface CreateProjectRequest {
+  org_id: Uuid;
+  project_name: string;
+  target_url: string;
+  tone_mode: "supportive" | "neutral" | "tough";
+}
+
+export interface CreateProjectResponse {
+  project_id: Uuid;
+  current_snapshot_id: Uuid | null;
+  project_status: "active" | "archived" | "deleted";
+}
+
+export interface SelectProjectRequest {
+  project_id: Uuid;
+}
+
+export interface SelectProjectResponse {
+  project_id: Uuid;
+  current_snapshot_id: Uuid | null;
+  selected: true;
+}
+
+export interface StartAnalysisRequest {
+  project_id: Uuid;
+  target_url: string;
+  mode: AnalysisModeKey;
+  user_competitor_urls?: string[];
+}
+
+export interface StartAnalysisResponse {
+  analysis_job_id: Uuid;
+  project_id: Uuid;
+  job_status: "queued" | "running" | "completed" | "failed" | "cancelled";
+  forced_low_mode: boolean;
+  estimated_spu: number;
+}
+
+export interface GetAnalysisJobResponse {
+  analysis_job_id: Uuid;
+  project_id: Uuid;
+  job_status: "queued" | "running" | "completed" | "failed" | "cancelled";
+  error_code: string | null;
+  error_message: string | null;
+  current_snapshot_id: Uuid | null;
+}
+
+export interface GetProjectDashboardResponse {
+  project_id: Uuid;
+  current_snapshot_id: Uuid;
+  payload: SnapshotViewPayload;
+}
+
+export interface SelectStrategyRequest {
+  project_id: Uuid;
+  source_snapshot_id: Uuid;
+  strategy_key: string;
+  strategy_rank: 1 | 2 | 3;
+}
+
+export interface SelectStrategyResponse {
+  strategy_plan_id: Uuid;
+  project_id: Uuid;
+  source_snapshot_id: Uuid;
+  selected_strategy_key: string;
+  current_strategy_theme: string;
+  strategy_status: "not_started" | "improving" | "stable" | "rework_required";
+}
+
+export interface ReanalyzeProjectRequest {
+  project_id: Uuid;
+  mode: AnalysisModeKey;
+}
+
+export interface ReanalyzeProjectResponse {
+  analysis_job_id: Uuid;
+  project_id: Uuid;
+  job_status: "queued" | "running" | "completed" | "failed" | "cancelled";
+  forced_low_mode: boolean;
+}
+
+export interface UpdatePhaseTaskStatusRequest {
+  strategy_plan_id: Uuid;
+  task_id: Uuid;
+  to_status: "not_started" | "in_progress" | "done" | "blocked";
+  reason?: string | null;
+}
+
+export interface UpdatePhaseTaskStatusResponse {
+  strategy_plan_id: Uuid;
+  task_id: Uuid;
+  to_status: "not_started" | "in_progress" | "done" | "blocked";
+  changed_at: string;
+}
+
+export interface GetCurrentUsageResponse {
+  org_id: Uuid;
+  current_period_yyyymm: string;
+  total_spu_used: number;
+  spu_monthly_limit: number;
+  analyses_count: number;
+  screenshots_used: number;
+  forced_low_mode_active: boolean;
+}
+
+==================================================
+2. api/schemas.ts
+==================================================
+
+import { z } from "zod";
+import {
+  analysisModeKeySchema,
+  jobStatusKeySchema,
+  strategyStatusKeySchema,
+  uuidSchema,
+} from "../core/schemas";
+import { snapshotViewPayloadSchema } from "../payloads/schemas";
+
+export const createProjectRequestSchema = z.object({
+  org_id: uuidSchema,
+  project_name: z.string().min(1),
+  target_url: z.string().url(),
+  tone_mode: z.enum(["supportive", "neutral", "tough"]),
+});
+
+export const createProjectResponseSchema = z.object({
+  project_id: uuidSchema,
+  current_snapshot_id: uuidSchema.nullable(),
+  project_status: z.enum(["active", "archived", "deleted"]),
+});
+
+export const selectProjectRequestSchema = z.object({
+  project_id: uuidSchema,
+});
+
+export const selectProjectResponseSchema = z.object({
+  project_id: uuidSchema,
+  current_snapshot_id: uuidSchema.nullable(),
+  selected: z.literal(true),
+});
+
+export const startAnalysisRequestSchema = z.object({
+  project_id: uuidSchema,
+  target_url: z.string().url(),
+  mode: analysisModeKeySchema,
+  user_competitor_urls: z.array(z.string().url()).optional(),
+});
+
+export const startAnalysisResponseSchema = z.object({
+  analysis_job_id: uuidSchema,
+  project_id: uuidSchema,
+  job_status: jobStatusKeySchema,
+  forced_low_mode: z.boolean(),
+  estimated_spu: z.number().int().min(0),
+});
+
+export const getAnalysisJobResponseSchema = z.object({
+  analysis_job_id: uuidSchema,
+  project_id: uuidSchema,
+  job_status: jobStatusKeySchema,
+  error_code: z.string().nullable(),
+  error_message: z.string().nullable(),
+  current_snapshot_id: uuidSchema.nullable(),
+});
+
+export const getProjectDashboardResponseSchema = z.object({
+  project_id: uuidSchema,
+  current_snapshot_id: uuidSchema,
+  payload: snapshotViewPayloadSchema,
+});
+
+export const selectStrategyRequestSchema = z.object({
+  project_id: uuidSchema,
+  source_snapshot_id: uuidSchema,
+  strategy_key: z.string().min(1),
+  strategy_rank: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+});
+
+export const selectStrategyResponseSchema = z.object({
+  strategy_plan_id: uuidSchema,
+  project_id: uuidSchema,
+  source_snapshot_id: uuidSchema,
+  selected_strategy_key: z.string().min(1),
+  current_strategy_theme: z.string().min(1),
+  strategy_status: strategyStatusKeySchema,
+});
+
+export const reanalyzeProjectRequestSchema = z.object({
+  project_id: uuidSchema,
+  mode: analysisModeKeySchema,
+});
+
+export const reanalyzeProjectResponseSchema = z.object({
+  analysis_job_id: uuidSchema,
+  project_id: uuidSchema,
+  job_status: jobStatusKeySchema,
+  forced_low_mode: z.boolean(),
+});
+
+export const updatePhaseTaskStatusRequestSchema = z.object({
+  strategy_plan_id: uuidSchema,
+  task_id: uuidSchema,
+  to_status: z.enum(["not_started", "in_progress", "done", "blocked"]),
+  reason: z.string().nullable().optional(),
+});
+
+export const updatePhaseTaskStatusResponseSchema = z.object({
+  strategy_plan_id: uuidSchema,
+  task_id: uuidSchema,
+  to_status: z.enum(["not_started", "in_progress", "done", "blocked"]),
+  changed_at: z.string(),
+});
+
+export const getCurrentUsageResponseSchema = z.object({
+  org_id: uuidSchema,
+  current_period_yyyymm: z.string().regex(/^\d{6}$/),
+  total_spu_used: z.number().int().min(0),
+  spu_monthly_limit: z.number().int().min(0),
+  analyses_count: z.number().int().min(0),
+  screenshots_used: z.number().int().min(0),
+  forced_low_mode_active: z.boolean(),
+});
+
+==================================================
+3. API 設計ルール
+==================================================
+
+3.1 API は raw engine result を返さない
+返してよいもの:
+- analysis job status
+- snapshot view payload
+- strategy state
+- usage state
+
+返してはいけないもの:
+- engine の中間計算結果そのまま
+- raw submetric bundle
+- internal-only benchmark matrix
+- confidence calculation internals
+- coherence calculation internals
+- crawler raw dump
+
+3.2 dashboard API の責務
+GET /api/project/:project_id/dashboard は、
+UIがそのまま描画可能な SnapshotViewPayload を返す。
+フロント側で engine 結果を再計算しない。
+
+3.3 strategy API の責務
+- select strategy は「どの戦略を現在戦略として採用したか」を保存する
+- update phase task status は task の現在状態だけを更新する
+- task transition はサーバ側で自動記録する
+
+3.4 analysis API の責務
+- start analysis は job を発行する
+- get analysis job は job の進捗のみを返す
+- completed 後は dashboard API が current_snapshot_id を基準に payload を返す
+
+3.5 usage API の責務
+usage API は組織単位の現在状態を返す。
+MVPでは以下を返せば十分。
+- total_spu_used
+- spu_monthly_limit
+- analyses_count
+- screenshots_used
+- forced_low_mode_active
+
+==================================================
+4. 命名ルール適用メモ
+==================================================
+
+4.1 通信と保存
+以下は snake_case に統一する。
+- API request body
+- API response body
+- DB columns
+- JSONB payload keys
+- snapshot payload keys
+
+例:
+- project_id
+- current_snapshot_id
+- selected_strategy_key
+- previous_strategy_fit_index
+- forced_low_mode_active
+
+4.2 実装ロジック
+以下は camelCase に統一する。
+- function names
+- local variables
+- service methods
+- utility names
+
+例:
+- createProject
+- startAnalysisJob
+- getProjectDashboard
+- updatePhaseTaskStatus
+- buildSnapshotViewPayload
+
+4.3 型名
+Type / Interface / Schema export 名は PascalCase または lowerCamel + Schema に統一する。
+例:
+- CreateProjectRequest
+- CreateProjectResponse
+- SnapshotViewPayload
+- createProjectRequestSchema
+- getProjectDashboardResponseSchema
+
+==================================================
+5. Strategy / Phase Task Responsibility Memo
+==================================================
+
+- strategy = 選択中の戦略テーマ
+- phase plan = 30/60/90 の実行管理
+- task = 各フェーズ内の具体タスク
+- task transition = 状態変更履歴
+- reanalysis merge = 再分析時の引き継ぎ判定
+
+責務分離ルール:
+- strategy は「方針」
+- phase plan は「実行単位」
+- task は「最小アクション」
+- task transition は「履歴」
+- reanalysis merge は「前回状態の継承判定」
+
+==================================================
+6. 推奨 API Route 構成
+==================================================
+
+推奨:
+- POST /api/project/create
+- POST /api/project/select
+- POST /api/analysis/start
+- GET /api/analysis/:job_id
+- GET /api/project/:project_id/dashboard
+- POST /api/project/:project_id/strategy/select
+- POST /api/project/:project_id/reanalyze
+- POST /api/strategy/task/update-status
+- GET /api/usage/current
+
+==================================================
+7. 次に進む対象
+==================================================
+
+次のおすすめ順:
+1. DB migration SQL 完全版
+   - project
+   - site_entity
+   - analysis_job
+   - analysis_snapshot_header
+   - analysis_snapshot_payload
+   - strategy_plan
+   - phase_task
+   - phase_task_transition
+   - admin_audit_log

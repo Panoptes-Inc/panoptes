@@ -1,0 +1,477 @@
+Panoptes Master Specification v3.1
+Unified Crawling Architecture Integrated Edition
+
+0. Document Control
+
+0.1 文書名
+Panoptes Master Specification v3.1
+
+0.2 役割
+本書はPanoptesの唯一の親仕様書とする。
+
+実装、UI、推定、分析、保存、クローリング、戦略生成、
+Engine、API、型定義はすべて本書を基準とする。
+
+0.3 優先順位
+
+1. 本書 v3.1
+2. 現在のUIデザイン
+3. Unified Strategic Engine v1.1 Hardened
+4. Hardened DB
+5. Codex Addendum
+
+---
+
+1. Product Definition
+
+Panoptesは
+
+「競合・業界・自社の構造を読み、
+戦略を可視化し、
+実行優先順位まで導く戦略OS」
+
+である。
+
+Panoptesは以下ではない
+
+- トラフィック推定ツール
+- アナリティクスツール
+- Similarweb系
+- SEOツール
+- LP改善ツール
+
+Panoptesは以下である
+
+- 構造理解装置
+- 因果説明装置
+- 戦略提案装置
+- 実行優先順位エンジン
+- 思考圧縮UI
+- 戦略OS
+
+---
+
+2. MVP Absolute Rules
+
+MVPで使用するデータは以下のみ
+
+・サイト内部構造
+・サイトビジュアル構造
+・競合比較
+・Engine計算
+・AIによる理解と文章化
+
+MVPで使用しない
+
+・流入推定
+・滞在時間
+・CVR
+・広告データ
+・GA統合
+・外部市場データ
+
+---
+
+3. Observation Layers
+
+Panoptesは常に2レイヤーで観測する
+
+Internal Layer
+Visual Layer
+
+Internal
+HTML / DOM / Text / Structure
+
+Visual
+Layout / hierarchy / saliency
+
+最終的には同じ6軸に統合される
+
+---
+
+4. Strategy Axes
+
+Panoptesの戦略評価軸
+
+固定6軸
+
+1 価値訴求
+2 情報階層
+3 導線強度
+4 信頼構造
+5 差別化明確性
+6 意思決定支援
+
+Internal / Visual 両方で観測する
+
+---
+
+5. Crawling Architecture
+
+Panoptesは
+
+AIクローリングを行わない。
+
+すべてのクロールは
+機械的クローリングで行う。
+
+クローリングエンジン
+
+Python crawler
+
+理由
+
+・再現性
+・コスト
+・スケール
+・差分検知
+・Feed/Radar対応
+
+---
+
+6. Crawl Modes
+
+Panoptesは3種類のクロールを持つ
+
+1 bootstrap crawl
+2 analysis crawl
+3 monitoring crawl
+
+---
+
+bootstrap crawl
+
+目的
+
+サイトの基本推定
+
+取得
+
+・top
+・navリンク
+・footerリンク
+・代表ページ
+
+推定
+
+・業界
+・サイトタイプ
+・構造タイプ
+・競合候補
+
+---
+
+analysis crawl
+
+目的
+
+完全分析
+
+対象
+
+最大30ページ
+
+優先ページ
+
+・top
+・pricing
+・feature
+・faq
+・case
+・contact
+
+ここで
+
+Internal evidence
+Visual evidence
+
+を取得する
+
+---
+
+monitoring crawl
+
+目的
+
+競合監視
+
+・差分検知
+・Feed生成
+・Radar生成
+
+対象
+
+主要ページのみ
+
+最大10ページ
+
+---
+
+7. URL Discovery Rules
+
+取得対象
+
+・同一ドメイン
+・HTMLページ
+・nav / footer / CTAから辿れるページ
+
+除外
+
+・ログイン
+・cart
+・checkout
+・session URL
+・PDF
+・画像
+・zip
+・外部リンク
+・検索ページ
+
+URLは正規化する
+
+・tracking削除
+・fragment削除
+・canonical優先
+
+---
+
+8. Internal Evidence Extraction
+
+Python crawlerは以下を抽出
+
+title
+meta
+h1
+h2
+h3
+CTA
+CTAリンク
+form
+faq
+pricing block
+compare block
+trust block
+case block
+nav
+footer
+internal links
+
+追加構造特徴量
+
+section count
+cta count
+heading depth
+nav categories
+decision support blocks
+
+---
+
+9. Page Type Routing
+
+Panoptesはページ種別を分類する
+
+page_type
+
+top
+pricing
+feature
+comparison
+faq
+case
+company
+contact
+article
+product
+unknown
+
+---
+
+10. Visual Observation
+
+Visualは
+
+AI Vision
+
+を使用する
+
+ただし
+
+capture → AI理解
+
+の順序
+
+AIが直接クロールすることは禁止
+
+取得
+
+first view screenshot
+full page screenshot
+
+---
+
+Visual評価対象
+
+・視覚階層
+・CTA目立ち
+・視線誘導
+・レイアウト密度
+・比較要素
+・証拠ブロック
+・信頼表示
+
+---
+
+11. Diff Detection
+
+Panoptesは差分検知を行う
+
+4段階
+
+Level1
+URL差分
+
+Level2
+HTML hash差分
+
+Level3
+構造差分
+
+・h1変更
+・CTA変更
+・pricing追加
+・faq追加
+
+Level4
+意味差分
+
+ここだけAI
+
+---
+
+12. Monitoring / Radar / Feed
+
+Monitoringは
+
+競合監視機能
+
+イベント生成
+
+例
+
+・新pricingページ
+・CTA変更
+・FAQ増加
+・比較ページ追加
+
+Radar
+
+業界変化レーダー
+
+Feed
+
+競合更新タイムライン
+
+---
+
+13. Observation Bundle
+
+Engine入力
+
+Observation Bundle
+
+内容
+
+site info
+page list
+internal evidence
+visual evidence
+page_type
+page_role
+flow summary
+
+LLMには
+
+HTML全文は渡さない
+
+整理されたevidenceのみ
+
+---
+
+14. AI Roles
+
+AIの役割
+
+・構造意味理解
+・visual意味理解
+・evidence整理
+・narrative生成
+・戦略文章化
+
+AIに禁止
+
+・スコア計算
+・priority算出
+・delta算出
+
+---
+
+15. Strategic Engine Flow
+
+分析フロー
+
+1 URL入力
+2 bootstrap crawl
+3 業界推定
+4 競合生成
+5 analysis crawl
+6 visual capture
+7 evidence extraction
+8 AI理解
+9 Unified Engine
+10 業界構造生成
+11 自社差分分析
+12 戦略生成
+13 30/60/90生成
+14 snapshot保存
+
+---
+
+16. SPU Consumption Rules
+
+SPU消費対象
+
+・AI理解
+・Visual AI
+・戦略生成
+・PanoAI
+
+SPU対象外
+
+・URL取得
+・HTML取得
+・差分検知
+・構造抽出
+
+---
+
+17. Final Architecture
+
+Panoptesは
+
+Python crawler
+↓
+Observation extraction
+↓
+AI understanding
+↓
+Strategic Engine
+↓
+Strategy OS UI
+
+で構成される
+
+Panoptesの思想
+
+機械が観測する
+AIが理解する
+Engineが戦略に変える

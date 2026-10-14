@@ -1,0 +1,721 @@
+{
+  "meta": {
+    "name": "Panoptes Dummy Seed",
+    "version": "v1.1",
+    "locale": "ja-JP",
+    "updatedAt": "2026-03-14T12:00:00+09:00",
+    "sourceOfTruth": "json",
+    "mappingAligned": true,
+    "notes": [
+      "Aligned to Panoptes Display Metrics Mapping Spec v1.0",
+      "Aligned to Formula Spec v2.1 Precision Hardened",
+      "Use only in explicit dev-only mock mode"
+    ]
+  },
+  "brand": {
+    "appName": "Panoptes",
+    "colors": {
+      "primaryOrange": "#ff7a1a",
+      "primaryPurple": "#6d5df6",
+      "softOrange": "#f5d8c8",
+      "softPurple": "#c7c0ff",
+      "bg": "#f4f2f0",
+      "panel": "#f7f6f5",
+      "textMain": "#4b4b4b",
+      "textSub": "#7b7b7b"
+    }
+  },
+  "auth": {
+    "loginForm": {
+      "title": "Panoptesにログイン",
+      "email": "demo@panoptes-inc.jp",
+      "password": "password123",
+      "rememberMe": true
+    },
+    "signupForm": {
+      "title": "アカウントを作成",
+      "email": "new-user@example.jp",
+      "password": "password123",
+      "passwordConfirm": "password123",
+      "siteUrl": "https://example-service.jp/",
+      "agreeTerms": true
+    },
+    "contactForm": {
+      "title": "お問い合わせ",
+      "name": "山田 花子",
+      "email": "hanako@example.jp",
+      "company": "株式会社サンプル",
+      "message": "Panoptesの導入について相談したいです。"
+    }
+  },
+  "admin": {
+    "summary": {
+      "priorityRegisteredUsersCount": 25,
+      "priorityUserLimitCount": 50,
+      "normalRegisteredUsersCount": 0,
+      "todayRegisteredUsersCount": 0,
+      "approvedPriorityUsersCount": 25,
+      "freeUsersCount": 0,
+      "miniPlanUsersCount": 25,
+      "miniPlanRevenueJpy": 124500
+    },
+    "users": [
+      {
+        "id": "987654301",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 1,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654302",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 2,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654303",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 3,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654304",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 4,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654305",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 5,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654306",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 6,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654307",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 7,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654308",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 8,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654309",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 9,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654310",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 10,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654311",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 11,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      },
+      {
+        "id": "987654312",
+        "email": "info@panoptes-inc.jp",
+        "sortOrder": 12,
+        "planName": "Panoptes mini",
+        "createdAt": "2026/02/24",
+        "sourceLabel": "campaign_prelaunch",
+        "siteUrl": "https://xxx.xxx/",
+        "approvalStatusLabel": "承諾"
+      }
+    ]
+  },
+  "appShell": {
+    "route": "/app",
+    "heroSearchVisible": true,
+    "persistentShellMountedBelowHero": true,
+    "projectListVisible": true,
+    "mainSurfaceModes": [
+      "empty_state",
+      "analysis_flow",
+      "failed_state",
+      "snapshot_dashboard"
+    ],
+    "tabs": [
+      "競合",
+      "業界",
+      "自社",
+      "戦略",
+      "PanoAI"
+    ],
+    "topNav": [
+      "パノプテスについて",
+      "業界内を分析する",
+      "アンケート",
+      "お問い合わせ",
+      "QRコードでアプリを共有"
+    ]
+  },
+  "projectList": {
+    "items": [
+      {
+        "projectId": "proj_yuu_001",
+        "projectDisplayName": "株式会社YUU：○○サービス",
+        "targetUrl": "https://yuu-example.jp/",
+        "currentSnapshotId": "snap_yuu_001",
+        "latestAnalysisJobId": "job_yuu_003",
+        "projectStatusLabel": "ready",
+        "projectAgeDays": 24,
+        "snapshotImprovementDelta": 8,
+        "isSaved": true
+      },
+      {
+        "projectId": "proj_akari_002",
+        "projectDisplayName": "株式会社AKARI：比較LP",
+        "targetUrl": "https://akari-example.jp/",
+        "currentSnapshotId": null,
+        "latestAnalysisJobId": "job_akari_001",
+        "projectStatusLabel": "analyzing",
+        "projectAgeDays": 0,
+        "snapshotImprovementDelta": 0,
+        "isSaved": false
+      }
+    ]
+  },
+  "analysisFlow": {
+    "visibleStepItems": [
+      {
+        "visibleStepKey": "target_scan",
+        "visibleStepLabel": "分析対象URLを分析中です...",
+        "visibleStepIndex": 0,
+        "progressDotActiveIndex": 0
+      },
+      {
+        "visibleStepKey": "inference_review",
+        "visibleStepLabel": "業界・構造タイプ自動推定",
+        "visibleStepIndex": 1,
+        "progressDotActiveIndex": 1,
+        "inferenceReview": {
+          "inferredIndustryLabel": "水回り修理",
+          "inferredIndustryConfidenceLabel": "高",
+          "inferredIndustryConfidencePercent": 89,
+          "inferredStructureTypeLabel": "比較検討型",
+          "inferredStructureTypeConfidenceLabel": "中",
+          "inferredStructureTypeConfidencePercent": 81,
+          "inferredSiteScaleLabel": "中",
+          "inferredSiteScaleConfidenceLabel": "低",
+          "inferredSiteScaleConfidencePercent": 68,
+          "inferenceUiConfidencePercent": 87,
+          "inferenceUiConfidenceLabel": "高"
+        }
+      },
+      {
+        "visibleStepKey": "competitor_analysis",
+        "visibleStepLabel": "競合を分析中です...",
+        "visibleStepIndex": 2,
+        "progressDotActiveIndex": 2
+      },
+      {
+        "visibleStepKey": "industry_analysis",
+        "visibleStepLabel": "業界構造を分析中です...",
+        "visibleStepIndex": 3,
+        "progressDotActiveIndex": 3
+      },
+      {
+        "visibleStepKey": "strategy_synthesis",
+        "visibleStepLabel": "競合 × 業界 × 自社の差分を分析中です...",
+        "visibleStepIndex": 4,
+        "progressDotActiveIndex": 4
+      }
+    ]
+  },
+  "competitorAnalysisView": {
+    "competitorSummaryCards": [
+      {
+        "competitorId": "comp_01",
+        "companyName": "株式会社YUU 1",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      },
+      {
+        "competitorId": "comp_02",
+        "companyName": "株式会社YUU 2",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      },
+      {
+        "competitorId": "comp_03",
+        "companyName": "株式会社YUU 3",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      },
+      {
+        "competitorId": "comp_04",
+        "companyName": "株式会社YUU 4",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      },
+      {
+        "competitorId": "comp_05",
+        "companyName": "株式会社YUU 5",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      },
+      {
+        "competitorId": "comp_06",
+        "companyName": "株式会社YUU 6",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      },
+      {
+        "competitorId": "comp_07",
+        "companyName": "株式会社YUU 7",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      },
+      {
+        "competitorId": "comp_08",
+        "companyName": "株式会社YUU 8",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      },
+      {
+        "competitorId": "comp_09",
+        "companyName": "株式会社YUU 9",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      },
+      {
+        "competitorId": "comp_10",
+        "companyName": "株式会社YUU 10",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。"
+      }
+    ],
+    "openedCompetitorCards": [
+      {
+        "competitorId": "comp_01",
+        "companyName": "株式会社YUU",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionBucketLabel": "challenger",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。",
+        "considerationPeriodLabel": "比較検討期",
+        "funnelTypeLabel": "比較検討型",
+        "mustElementLabels": [
+          "価格",
+          "比較表",
+          "実績"
+        ],
+        "descriptorBadges": [
+          "# D2C",
+          "# 低価格帯",
+          "# 離脱ポイントあり"
+        ],
+        "competitorSummaryText": "業界内でのポジションは挑戦者です。強みは価格競争力、比較検討コンテンツに優れています。"
+      },
+      {
+        "competitorId": "comp_02",
+        "companyName": "株式会社YUU",
+        "serviceName": "○○サービス",
+        "overallScore": 76,
+        "internalScore": 76,
+        "visualScore": 68,
+        "marketTypeLabel": "成熟 × 比較検討型",
+        "marketPositionBucketLabel": "challenger",
+        "marketPositionSummaryLabel": "業界内でのポジションは挑戦者です。",
+        "considerationPeriodLabel": "比較検討期",
+        "funnelTypeLabel": "比較検討型",
+        "mustElementLabels": [
+          "価格",
+          "比較表",
+          "実績"
+        ],
+        "descriptorBadges": [
+          "# D2C",
+          "# 低価格帯",
+          "# 離脱ポイントあり"
+        ],
+        "competitorSummaryText": "業界内でのポジションは挑戦者です。強みは価格競争力、比較検討コンテンツに優れています。"
+      }
+    ]
+  },
+  "industryAnalysisView": {
+    "industryUiConfidencePercent": 87,
+    "industryUiConfidenceLabel": "高",
+    "marketTypeLabel": "成熟 × 比較検討型",
+    "marketTagLabels": [
+      "# 分散競争市場",
+      "# 二極化構造",
+      "# ブランド主導市場",
+      "# 成熟安定市場"
+    ],
+    "industryAxisBenchmarkScores": {
+      "valueProposition": 78,
+      "trustStructure": 82,
+      "informationHierarchy": 60,
+      "differentiationClarity": 58,
+      "funnelStrength": 62,
+      "decisionSupport": 73
+    },
+    "structureStabilityLabel": "高",
+    "structureStabilityScore": 84,
+    "differentiationSlackLabel": "大",
+    "differentiationSlackScore": 79,
+    "marketPressureLabel": "Low",
+    "marketPressureNormalized": 0.28,
+    "industrySummaryText": "この市場では、情報の整理と信頼の積み上げが勝敗に強く影響しています。一方で、差別化表現は全体的に弱く、似た訴求が並びやすい傾向があります。",
+    "positionMap": {
+      "marketPositionBucketLabel": "challenger_band",
+      "industryAverageDelta": -4,
+      "marketPressureLabel": "Low"
+    },
+    "opportunityItems": [
+      {
+        "opportunityTitle": "比較導線の余白",
+        "opportunitySummary": "比較検討フェーズへの導線が弱く、検討フェーズの設計が未成熟です。",
+        "opportunityScore": 78
+      },
+      {
+        "opportunityTitle": "信頼訴求の余白",
+        "opportunitySummary": "導入事例・実績・第三者評価の見せ方が弱い傾向があります。",
+        "opportunityScore": 74
+      },
+      {
+        "opportunityTitle": "差別化言語化の余白",
+        "opportunitySummary": "価値の言語化が弱く、見た目で似た競合が並びやすいです。",
+        "opportunityScore": 71
+      }
+    ]
+  },
+  "selfAnalysisView": {
+    "companyName": "株式会社YUU",
+    "serviceName": "○○サービス",
+    "overallScore": 76,
+    "internalScore": 76,
+    "visualScore": 68,
+    "marketTypeLabel": "成熟 × 比較検討型",
+    "selfVsIndustryAxisDeltaScores": {
+      "valueProposition": -12,
+      "funnelStrength": -12,
+      "differentiationClarity": -18,
+      "informationHierarchy": 10,
+      "trustStructure": 8,
+      "decisionSupport": -10
+    },
+    "strengthTopItems": [
+      "情報階層が整理されている（ナビも構造明確）",
+      "サービス説明の一貫性が高い（H1 / CTA整合）",
+      "滞在時間が業界平均を上回る"
+    ],
+    "issueTopItems": [
+      "指名検索流入が弱い",
+      "SEO流入の依存度が高い",
+      "料金ページへの導線が弱い"
+    ],
+    "structureBreakdownItems": [
+      {
+        "breakdownLabel": "情報設計",
+        "breakdownScore": 78,
+        "findingText": "階層は整理されている"
+      },
+      {
+        "breakdownLabel": "訴求一貫性",
+        "breakdownScore": 70,
+        "findingText": "ページ間で若干ブレあり"
+      },
+      {
+        "breakdownLabel": "回遊設計",
+        "breakdownScore": 65,
+        "findingText": "関連リンク不足"
+      },
+      {
+        "breakdownLabel": "技術基盤",
+        "breakdownScore": 75,
+        "findingText": "canonical / OGP適切"
+      }
+    ],
+    "selfSummaryText": "業界平均より構造は強い。ただし『ブランド蓄積』が弱く、検索依存から脱却できていない。まずは“構造勝ち”を固定し、その後に流入多様化へ拡張するべき。"
+  },
+  "strategyAnalysisView": {
+    "strategicFitScore": 82,
+    "strategicFitLabel": "高適合",
+    "marketPressureLabel": "Low",
+    "marketPressureNormalized": 0.28,
+    "industryAverageDelta": 4,
+    "previousOverallScore": 74,
+    "currentStrategyThemeLabel": "回遊導線の再設計",
+    "riskFamilyLabel": "比較導線不足",
+    "riskSeverityLabel": "高",
+    "riskScore": 81,
+    "projectAgeDays": 24,
+    "improvementSlackPercent": 22,
+    "strategySummaryText": "現在のポジションは『挑戦者』です。導線設計は業界平均以上ですが差別化が弱く、比較検討フェーズで競合に流れる可能性があります。次の重点は『差別化の明確化』です。",
+    "strategyCards": [
+      {
+        "strategyRank": 1,
+        "strategyTitle": "回遊導線の再設計",
+        "priorityScore": 84,
+        "strategicIntentText": "比較検討フェーズでの離脱を減らし、ユーザーを意思決定ページまで自然に進める。",
+        "strategyEvidenceItems": [
+          "導線強度：業界平均より -12",
+          "比較ページへの導線が弱い",
+          "サービス→料金→CTA の流れが分断されている"
+        ],
+        "executionActionItems": [
+          "比較ページへの導線を主要ページに追加",
+          "サービスページ内CTAの位置と文言を再設計",
+          "料金ページへの遷移を明確化"
+        ],
+        "expectedAxisLift": {
+          "funnelStrength": 8,
+          "decisionSupport": 6
+        }
+      },
+      {
+        "strategyRank": 2,
+        "strategyTitle": "信頼接点の拡張",
+        "priorityScore": 78,
+        "strategicIntentText": "比較検討段階の不安を減らし、『この会社なら任せられる』と判断できる材料を増やす。",
+        "strategyEvidenceItems": [
+          "信頼構造：業界平均より -8",
+          "導入事例・実績数値の提示が少ない",
+          "顧客コメント第三者評価の露出が弱い"
+        ],
+        "executionActionItems": [
+          "導入事例ページを整理・強化",
+          "実績数値や利用企業数の掲載を明確化",
+          "顧客ロゴ・レビュー・FAQへの導線を追加"
+        ],
+        "expectedAxisLift": {
+          "trustStructure": 10,
+          "decisionSupport": 5
+        }
+      },
+      {
+        "strategyRank": 3,
+        "strategyTitle": "差別化メッセージの明確化",
+        "priorityScore": 74,
+        "strategicIntentText": "競合と似た印象のまま埋もれる状態を避け、『なぜこのサービスなのか』を一目で伝える。",
+        "strategyEvidenceItems": [
+          "差別化指数：業界平均より -18",
+          "ファーストビューの訴求が抽象的",
+          "競合と似たコピー・見せ方が多い"
+        ],
+        "executionActionItems": [
+          "ヒーローコピーを再設計",
+          "USPを1〜2文で明文化",
+          "比較表で『違い』を明示"
+        ],
+        "expectedAxisLift": {
+          "differentiationClarity": 8,
+          "valueProposition": 6
+        }
+      }
+    ]
+  },
+  "roadmapView": {
+    "day30": {
+      "phaseLabel": "30日",
+      "phaseGoalText": "導線の土台を整える",
+      "phaseProgressFractionLabel": "1/3",
+      "phaseProgressPercent": 33,
+      "phaseOwnerStatusLabel": "タスク実行中",
+      "nextActionText": "比較ページ導線を再設計",
+      "phaseTaskItems": [
+        {
+          "taskTitle": "CTA整理",
+          "taskStatusLabel": "done"
+        },
+        {
+          "taskTitle": "比較ページ導線追加",
+          "taskStatusLabel": "doing"
+        },
+        {
+          "taskTitle": "料金ページ導線調整",
+          "taskStatusLabel": "todo"
+        }
+      ]
+    },
+    "day60": {
+      "phaseLabel": "60日",
+      "phaseGoalText": "比較を前に進める",
+      "phaseProgressFractionLabel": "0/3",
+      "phaseProgressPercent": 0,
+      "phaseOwnerStatusLabel": "タスク実行中",
+      "nextActionText": "事例ページ導線追加",
+      "phaseTaskItems": [
+        {
+          "taskTitle": "事例導線追加",
+          "taskStatusLabel": "doing"
+        },
+        {
+          "taskTitle": "FAQ拡張",
+          "taskStatusLabel": "todo"
+        },
+        {
+          "taskTitle": "比較情報整理",
+          "taskStatusLabel": "todo"
+        }
+      ]
+    },
+    "day90": {
+      "phaseLabel": "90日",
+      "phaseGoalText": "差別化を定着させる",
+      "phaseProgressFractionLabel": "0/3",
+      "phaseProgressPercent": 0,
+      "phaseOwnerStatusLabel": "未着手",
+      "nextActionText": "比較コンテンツ設計開始",
+      "phaseTaskItems": [
+        {
+          "taskTitle": "比較コンテンツ制作",
+          "taskStatusLabel": "todo"
+        },
+        {
+          "taskTitle": "訴求改善",
+          "taskStatusLabel": "todo"
+        },
+        {
+          "taskTitle": "料金ページ導線調整",
+          "taskStatusLabel": "todo"
+        }
+      ]
+    }
+  },
+  "analysisJobs": [
+    {
+      "analysisJobId": "job_akari_001",
+      "projectId": "proj_akari_002",
+      "analysisJobStatusLabel": "running",
+      "visibleStepKey": "competitor_analysis",
+      "visibleStepIndex": 2,
+      "backendPhaseKey": "competitor_analysis",
+      "progressPercent": 46
+    },
+    {
+      "analysisJobId": "job_yuu_003",
+      "projectId": "proj_yuu_001",
+      "analysisJobStatusLabel": "completed",
+      "visibleStepKey": "strategy_synthesis",
+      "visibleStepIndex": 4,
+      "backendPhaseKey": "completed",
+      "progressPercent": 100
+    }
+  ],
+  "feedViewPlaceholder": {
+    "enabledInCompletionVision": true,
+    "eventItems": [
+      {
+        "feedEventId": "feed_001",
+        "feedEventType": "competitor_change",
+        "eventImportanceLabel": "high",
+        "eventImportanceScore": 73,
+        "feedEventTitle": "競合A社が価格訴求ブロックを更新",
+        "feedEventSummary": "pricing セクションの訴求順と CTA の近接性が変更されました。"
+      },
+      {
+        "feedEventId": "feed_002",
+        "feedEventType": "industry_signal",
+        "eventImportanceLabel": "medium",
+        "eventImportanceScore": 54,
+        "feedEventTitle": "比較表の設置率が上昇傾向",
+        "feedEventSummary": "比較検討市場で意思決定支援型の構造が増加しています。"
+      }
+    ]
+  }
+}

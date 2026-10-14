@@ -1,0 +1,423 @@
+# Panoptes MVP 統合アップデート仕様書 vNext
+
+## 0. この資料の目的
+
+この資料は、Panoptes の現在の設計思想を反映した **MVP統合版仕様書** である。
+
+本資料は以下を明確に区別して定義する。
+
+1. MVPで実装する範囲
+2. MVP時点で固定しておく設計前提
+3. 完成版へ拡張するために、MVPの段階から破綻なく持っておくべき構造
+
+この資料により、Panoptes を単なる競合分析AIではなく、将来的に **戦略OS / 戦略データベース / 競争環境監視プラットフォーム** へ拡張できるようにする。
+
+---
+
+## 1. Panoptes の定義
+
+Panoptes は
+
+**「競合・業界・自社の構造を読み取り、戦略を可視化し、実行優先順位まで導く戦略OS」**
+
+である。
+
+Panoptes は以下ではない。
+
+* アナリティクスツール
+* SEOツール
+* トラフィック推定ツール
+* 汎用チャットAI
+
+Panoptes は以下である。
+
+* 構造理解装置
+* 戦略提案装置
+* 因果説明装置
+* 実行優先順位エンジン
+
+MVP においてもこの定義は固定であり、実装範囲が限定されるだけでプロダクトの本質は変わらない。
+
+---
+
+## 2. MVP のゴール
+
+MVP の目的は、URL入力を起点として、自社・競合・業界を構造的に理解し、戦略案と実行計画までを生成できることを証明することである。
+
+MVP で実現するコアフローは以下。
+
+1. URL入力
+2. 自社サイト構造分析
+3. 競合10社分析
+4. 業界構造推定
+5. 自社差分分析
+6. 戦略提案3件生成
+7. 30/60/90日計画生成
+8. 分析結果を snapshot として保存
+
+この一連の流れを、壊れず、再実行可能で、保存可能な形で成立させることが MVP の成功条件である。
+
+---
+
+## 3. MVP で実装する範囲
+
+### 3.1 分析入力
+
+* ユーザーが URL を入力できる
+* URL 到達確認ができる
+* 新規 project を作成できる
+* analysis job を開始できる
+
+### 3.2 自社分析
+
+* bootstrap crawl により対象サイトの初期把握を行う
+* 対象サイトの構造タイプ / 規模感 / 業界候補の推定を行う
+* inference review を UI 上で確認できる
+* ユーザーが推定確認後に分析続行できる
+
+### 3.3 競合・業界分析
+
+* 競合候補10社の抽出と分析
+* 競合群から業界構造を推定
+* 自社と競合群の差分を整理
+
+### 3.4 戦略生成
+
+* 上位 priority から戦略カード3件を生成
+* 各戦略カードに少なくとも以下を持つ
+
+  * 戦略意図
+  * 根拠
+  * 実行方針
+
+### 3.5 実行計画生成
+
+* 戦略カードから 30 / 60 / 90 日ロードマップを生成
+* task 単位の初期実行計画を持てる
+
+### 3.6 保存
+
+* 分析結果を snapshot として保存
+* project ごとに current snapshot を保持
+* snapshot がない project も正式に存在できる
+
+### 3.7 UI / 状態遷移
+
+* 白背景の中央パネルで分析進行を表示
+* visible step は server-confirmed milestone で進行
+* panel frame は unmount しない
+* stale job response を無視する
+* project 切替で UI が破綻しない
+
+---
+
+## 4. MVP 時点で固定する設計思想
+
+以下は、MVPで全部をフル実装しない場合でも、**設計思想として最初から固定** しておく。
+
+### 4.1 二層観測
+
+Panoptes は常に 2 レイヤーで観測する。
+
+* Internal
+
+  * HTML / DOM / 情報構造
+* Visual
+
+  * レイアウト / 視覚階層
+
+### 4.2 戦略評価6軸
+
+Panoptes は常に以下の6軸で評価する。
+
+1. 価値訴求
+2. 情報階層
+3. 導線強度
+4. 信頼構造
+5. 差別化明確性
+6. 意思決定支援
+
+Internal / Visual の両方から評価する。
+
+### 4.3 AIクローリングをしない
+
+Panoptes は AI クローリングを行わない。
+
+* Python crawler が機械的観測を行う
+* AI は理解と戦略生成のみを担当する
+
+理由：
+
+* コスト削減
+* 再現性
+* 差分検知のしやすさ
+* feed / radar / monitoring への拡張性
+
+### 4.4 3つの crawl mode
+
+MVP 時点から crawl mode は以下の3つで設計する。
+
+* bootstrap crawl
+* analysis crawl
+* monitoring crawl
+
+MVP で主に使うのは bootstrap / analysis だが、将来の監視機能を見越して monitoring crawl を前提構造として持つ。
+
+### 4.5 Strategic Engine の役割
+
+Strategic Engine は Observation Bundle を入力に、以下を計算する。
+
+* Internal score
+* Visual score
+* 総合スコア
+* Industry benchmark
+* Opportunity
+* Priority
+
+その上で、priority 上位から戦略カードを生成する。
+
+### 4.6 Snapshot 世界
+
+Panoptes は分析結果を一時出力ではなく snapshot 世界として扱う。
+
+* project
+* analysis job
+* snapshot
+* strategy plan
+* phase task
+
+が連動する構造を持つ。
+
+---
+
+## 5. MVP の観測仕様
+
+### 5.1 Internal 抽出
+
+Python crawler は少なくとも以下を抽出対象とする。
+
+* title
+* h1 / h2
+* CTA
+* form
+* faq
+* pricing
+* compare
+* trust block
+* case block
+* internal links
+
+### 5.2 Visual 分析
+
+Visual はページスクリーンショットを取得し、AI Vision により解釈する。
+
+評価対象の例：
+
+* 視覚階層
+* CTA 強度
+* レイアウト密度
+* 信頼要素
+
+### 5.3 Observation Bundle
+
+Strategic Engine へ渡す入力は Observation Bundle とする。
+
+内容：
+
+* site info
+* page list
+* internal observations
+* visual observations
+* flow summary
+
+---
+
+## 6. MVP の UI / 状態仕様
+
+### 6.1 分析進行ステップ
+
+MVP の visible step は以下を持つ。
+
+* target_scan
+* inference_review
+* competitor_analysis
+* industry_analysis
+* strategy_synthesis
+
+### 6.2 白パネルの原則
+
+* 中央の白パネル frame は常に mounted のまま
+* content のみ切り替える
+* step 遷移は backend milestone を根拠とする
+* local timer を真実として扱わない
+* 高さ崩れ / remount / flicker を防ぐ
+
+### 6.3 project 切替安全性
+
+* project 切替時に main surface を即 blank にしない
+* hydrate 成功までは last stable view を保持
+* hydrate 失敗時は last stable view に戻す
+
+### 6.4 reanalysis 安全性
+
+MVP で reanalysis を入れる場合も以下を守る。
+
+* 旧 snapshot は新 snapshot commit 成功まで保持
+* completed job だけでは ready にしない
+* current_snapshot_id が commit されて初めて ready
+
+---
+
+## 7. MVP の保存・履歴方針
+
+### 7.1 MVPで実装する保存
+
+* project 単位保存
+* snapshot 保存
+* current snapshot 参照
+* analysis job 保存
+* strategy plan / phase task 保存
+
+### 7.2 MVP 時点で固定する履歴思想
+
+Panoptes は将来、履歴を 2 種類に分けて保持する。
+
+* 汎用履歴
+
+  * 全ユーザー共通で再利用可能な抽象知見
+* ユニーク履歴
+
+  * 特定ユーザー / 特定 project / 特定競合群に固有の履歴
+
+MVP で両方をフル活用しなくても、**保存アーキテクチャ上この思想を壊さないこと** が重要。
+
+---
+
+## 8. MVP の非機能前提
+
+### 8.1 トークン設計
+
+Panoptes はトークン上限型で設計する。
+
+ユーザーは分析モードとして例えば以下を選ぶ。
+
+* 高負荷
+* 中負荷
+* 低負荷
+
+### 8.2 SPU の考え方
+
+SPU は AI 処理にのみ消費される。
+Crawler の実行自体は SPU 消費対象にしない。
+
+### 8.3 再現性
+
+MVP 段階でも、分析プロセスはできるだけ再実行可能で、差分検知へ接続しやすい構造を優先する。
+
+### 8.4 監視への接続性
+
+MVP の構造は、将来以下へ伸ばせる必要がある。
+
+* monitoring crawl
+* feed
+* radar
+* competitor watch
+* change history
+
+---
+
+## 9. MVP では本格実装しないが、設計上考慮するもの
+
+以下は完成版のコア候補だが、MVPではフル実装しなくてもよい。
+ただし、後付けで破綻しないよう前提だけは持つ。
+
+### 9.1 Feed / Radar
+
+* 競合の構造変化を feed として表示
+* 業界変化検知を radar として表示
+
+例：
+
+* pricing 変更
+* CTA 変更
+* FAQ 追加
+* trust 要素の増減
+
+### 9.2 monitoring crawl
+
+* 競合監視のための定期クロール
+* URL差分
+* HTML差分
+* 構造差分
+* 意味差分
+
+### 9.3 戦略データベース化
+
+* generic history
+* unique history
+* snapshot 履歴
+* decision history
+* change history
+
+### 9.4 チーム運用
+
+* 権限
+* コメント
+* 承認
+* 通知
+
+### 9.5 将来の入力拡張
+
+将来的に以下の読み込みも視野に入れる。
+
+* 決算書
+* 経営計画
+* KPI
+
+これにより Panoptes は AI 戦略コンサルへ拡張可能となる。
+
+---
+
+## 10. MVP 成功条件
+
+MVP が成功と見なせる条件は以下。
+
+1. URL 入力から snapshot 保存までの一連フローが安定して完走する
+2. 自社・競合・業界・戦略の流れが一気通貫でつながる
+3. 戦略カード3件と 30 / 60 / 90 計画が生成される
+4. project / snapshot / analysis job の状態が破綻しない
+5. stale response や project switch で UI が壊れない
+6. Panoptes の本質が「分析ツール」ではなく「戦略OS」として見える
+7. 完成版の monitoring / feed / history 二層構造へ無理なく伸ばせる
+
+---
+
+## 11. MVP の外に置くもの
+
+MVP では以下を主目的にしない。
+
+* analytics 的な詳細計測
+* SEO順位機能
+* 広告運用機能そのもの
+* CRM そのもの
+* MA そのもの
+* アクセス解析基盤そのもの
+* 汎用チャット機能
+
+Panoptes の芯はあくまで
+
+**観測 → 理解 → 計算 → 戦略 → 実行優先順位**
+
+である。
+
+---
+
+## 12. 結論
+
+Panoptes MVP は、完成版の縮小版ではなく、完成版の骨格を正しく持った最小成立形である。
+
+MVP で証明すべきことは、単なるサイト分析ではない。
+
+**構造を読み、競争環境を捉え、戦略案と実行順序を出し、snapshot 世界として保存できること**
+
+これが Panoptes MVP の本質である。

@@ -1,0 +1,27 @@
+owner_alpha:
+  id: aaaaaaaa-2222-4222-8222-aaaaaaaaaaaa
+  organization_id: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+  user_id: aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+  role: owner
+  status: active
+
+owner_suspended_org:
+  id: aaaaaaaa-3333-4333-8333-aaaaaaaaaaaa
+  organization_id: cccccccc-1111-4111-8111-cccccccccccc
+  user_id: aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+  role: viewer
+  status: active
+
+guest_alpha:
+  id: cccccccc-2222-4222-8222-cccccccccccc
+  organization_id: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+  user_id: cccccccc-cccc-4ccc-8ccc-cccccccccccc
+  role: guest
+  status: active
+
+viewer_beta_suspended:
+  id: dddddddd-2222-4222-8222-dddddddddddd
+  organization_id: bbbbbbbb-1111-4111-8111-bbbbbbbbbbbb
+  user_id: dddddddd-dddd-4ddd-8ddd-dddddddddddd
+  role: viewer
+  status: suspended

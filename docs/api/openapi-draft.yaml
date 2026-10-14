@@ -1,0 +1,1022 @@
+openapi: 3.1.0
+info:
+  title: Panoptes Business API
+  version: 1.0.0-draft
+  description: Phase A-5 business contract plus the Rails R-1 implemented identity boundary.
+servers:
+  - url: https://api.example.invalid/api/v1
+    description: Placeholder only; deployment host is undecided.
+security:
+  - bearerAuth: []
+tags:
+  - name: System
+  - name: Identity
+  - name: Organizations
+  - name: Projects
+  - name: AnalysisJobs
+  - name: Snapshots
+  - name: Strategy
+paths:
+  /health:
+    get:
+      tags: [System]
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: API process is available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthEnvelope'
+  /me:
+    get:
+      tags: [Identity]
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Current Rails user mapped by Supabase subject UUID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations:
+    get:
+      tags: [Organizations]
+      operationId: listCurrentUserOrganizations
+      responses:
+        '200':
+          description: Active organizations with active current-user memberships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationCollectionEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}:
+    get:
+      tags: [Organizations]
+      operationId: getCurrentUserOrganization
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+      responses:
+        '200':
+          description: Organization visible to the current member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/memberships/me:
+    get:
+      tags: [Organizations]
+      operationId: getCurrentOrganizationMembership
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+      responses:
+        '200':
+          description: Current user's active organization membership
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/projects:
+    get:
+      tags: [Projects]
+      operationId: listProjects
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/PageCursor'
+        - $ref: '#/components/parameters/PageLimit'
+      responses:
+        '200':
+          description: Organization-scoped projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectCollectionEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/projects/{project_id}/bootstrap:
+    get:
+      tags: [Projects]
+      operationId: getProjectBootstrap
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Project and its current committed view
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectBootstrapEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/projects/analysis-jobs:
+    post:
+      tags: [Projects, AnalysisJobs]
+      operationId: createProjectAnalysisJob
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectAnalysisJobRequest'
+      responses:
+        '202':
+          description: Project and asynchronous job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectAnalysisJobEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/projects/{project_id}/analysis-jobs:
+    post:
+      tags: [Projects, AnalysisJobs]
+      operationId: createProjectReanalysisJob
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: Reanalysis job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectAnalysisJobEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/analysis-jobs/{analysis_job_id}:
+    get:
+      tags: [AnalysisJobs]
+      operationId: getAnalysisJob
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/AnalysisJobId'
+      responses:
+        '200':
+          description: Canonical job state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisJobEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/analysis-jobs/{analysis_job_id}/inference-confirmation:
+    post:
+      tags: [AnalysisJobs]
+      operationId: confirmAnalysisInference
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/AnalysisJobId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferenceConfirmationRequest'
+      responses:
+        '200':
+          description: Inference accepted and job resumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisJobEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/analysis-jobs/{analysis_job_id}/cancel:
+    post:
+      tags: [AnalysisJobs]
+      operationId: cancelAnalysisJob
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/AnalysisJobId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: Cancellation requested
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisJobEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/analysis-snapshots/{snapshot_id}:
+    get:
+      tags: [Snapshots]
+      operationId: getAnalysisSnapshot
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/SnapshotId'
+      responses:
+        '200':
+          description: Committed analysis snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisSnapshotEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/projects/{project_id}/analysis-snapshots/latest:
+    get:
+      tags: [Snapshots]
+      operationId: getLatestProjectAnalysisSnapshot
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Latest committed snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisSnapshotEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/analysis-snapshots/{snapshot_id}/strategy-plans:
+    get:
+      tags: [Strategy]
+      operationId: listStrategyPlans
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/SnapshotId'
+      responses:
+        '200':
+          description: Generated and reviewed strategy plans
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StrategyPlanCollectionEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/projects/{project_id}/selected-strategy:
+    put:
+      tags: [Strategy]
+      operationId: selectProjectStrategy
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectStrategyRequest'
+      responses:
+        '200':
+          description: Strategy selected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StrategyPlanEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/strategy-plans/{strategy_plan_id}/roadmap:
+    get:
+      tags: [Strategy]
+      operationId: getStrategyRoadmap
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/StrategyPlanId'
+      responses:
+        '200':
+          description: Roadmap and phase tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+  /organizations/{organization_id}/roadmaps/{roadmap_id}/phase-tasks/{phase_task_id}:
+    patch:
+      tags: [Strategy]
+      operationId: updateRoadmapPhaseTask
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/RoadmapId'
+        - $ref: '#/components/parameters/PhaseTaskId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePhaseTaskRequest'
+      responses:
+        '200':
+          description: Phase task updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhaseTaskEnvelope'
+        default:
+          $ref: '#/components/responses/Error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase access token independently verified by Rails.
+  parameters:
+    OrganizationId:
+      name: organization_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Uuid'
+    ProjectId:
+      name: project_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Uuid'
+    AnalysisJobId:
+      name: analysis_job_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Uuid'
+    SnapshotId:
+      name: snapshot_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Uuid'
+    StrategyPlanId:
+      name: strategy_plan_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Uuid'
+    RoadmapId:
+      name: roadmap_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Uuid'
+    PhaseTaskId:
+      name: phase_task_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Uuid'
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+        pattern: '^[A-Za-z0-9._:-]+$'
+    PageCursor:
+      name: page[cursor]
+      in: query
+      required: false
+      schema:
+        type: [string, 'null']
+    PageLimit:
+      name: page[limit]
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+  responses:
+    Error:
+      description: Error envelope
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+  schemas:
+    Uuid:
+      type: string
+      format: uuid
+    Timestamp:
+      type: string
+      format: date-time
+    ResponseMeta:
+      type: object
+      additionalProperties: false
+      required: [request_id]
+      properties:
+        request_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        correlation_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+    PageMeta:
+      type: object
+      additionalProperties: false
+      required: [cursor, next_cursor, has_more]
+      properties:
+        cursor:
+          type: [string, 'null']
+        next_cursor:
+          type: [string, 'null']
+        has_more:
+          type: boolean
+    CollectionMeta:
+      allOf:
+        - $ref: '#/components/schemas/ResponseMeta'
+        - type: object
+          required: [page]
+          properties:
+            page:
+              $ref: '#/components/schemas/PageMeta'
+    Error:
+      type: object
+      additionalProperties: false
+      required: [code, message, details, retryable]
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z][A-Z0-9_]+$'
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        retryable:
+          type: boolean
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [error, meta]
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status, service]
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+          const: panoptes-rails-api
+    User:
+      type: object
+      additionalProperties: false
+      required: [id, supabase_user_id, email, status, system_admin]
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        supabase_user_id:
+          $ref: '#/components/schemas/Uuid'
+        email:
+          type: [string, 'null']
+          format: email
+        status:
+          type: string
+          enum: [active, suspended, deleted]
+        system_admin:
+          type: boolean
+    Membership:
+      type: object
+      additionalProperties: false
+      required: [id, organization_id, user_id, role, status]
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        organization_id:
+          $ref: '#/components/schemas/Uuid'
+        user_id:
+          $ref: '#/components/schemas/Uuid'
+        role:
+          type: string
+          enum: [owner, organization_admin, analyst, project_manager, viewer, guest]
+        status:
+          type: string
+          enum: [active, invited, suspended]
+    OrganizationMembershipSummary:
+      type: object
+      additionalProperties: false
+      required: [id, role, status]
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        role:
+          type: string
+          enum: [owner, organization_admin, analyst, project_manager, viewer, guest]
+        status:
+          type: string
+          enum: [active, invited, suspended]
+    Organization:
+      type: object
+      additionalProperties: false
+      required: [id, name, slug, status, membership]
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended]
+        membership:
+          $ref: '#/components/schemas/OrganizationMembershipSummary'
+    HealthEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/Health'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    UserEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/User'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    OrganizationEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/Organization'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    OrganizationCollectionEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    MembershipEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/Membership'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    Project:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - organization_id
+        - name
+        - target_url
+        - status
+        - current_snapshot_id
+        - latest_analysis_job_id
+        - lock_version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        organization_id:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        target_url:
+          type: string
+          format: uri
+          maxLength: 2048
+        status:
+          type: string
+          enum: [empty, analyzing, awaiting_confirmation, ready, failed, archived]
+        current_snapshot_id:
+          oneOf:
+            - $ref: '#/components/schemas/Uuid'
+            - type: 'null'
+        latest_analysis_job_id:
+          oneOf:
+            - $ref: '#/components/schemas/Uuid'
+            - type: 'null'
+        lock_version:
+          type: integer
+          minimum: 0
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+    AnalysisJobStatus:
+      type: string
+      enum:
+        - queued
+        - preparing
+        - crawling
+        - capturing
+        - internal_analysis
+        - awaiting_confirmation
+        - visual_analysis
+        - llm_analysis
+        - finalizing
+        - completed
+        - failed
+        - cancelled
+        - timed_out
+        - partially_completed
+    JobError:
+      type: [object, 'null']
+      additionalProperties: false
+      required: [code, message, retryable, failed_phase]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        retryable:
+          type: boolean
+        failed_phase:
+          type: [string, 'null']
+    AnalysisJob:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - organization_id
+        - project_id
+        - status
+        - phase
+        - progress_percent
+        - retry_count
+        - retryable
+        - sequence
+        - error
+        - committed_snapshot_id
+        - started_at
+        - finished_at
+        - created_at
+        - updated_at
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        organization_id:
+          $ref: '#/components/schemas/Uuid'
+        project_id:
+          $ref: '#/components/schemas/Uuid'
+        status:
+          $ref: '#/components/schemas/AnalysisJobStatus'
+        phase:
+          type: string
+        progress_percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        retry_count:
+          type: integer
+          minimum: 0
+        retryable:
+          type: boolean
+        sequence:
+          type: integer
+          minimum: 0
+        error:
+          $ref: '#/components/schemas/JobError'
+        committed_snapshot_id:
+          oneOf:
+            - $ref: '#/components/schemas/Uuid'
+            - type: 'null'
+        started_at:
+          oneOf:
+            - $ref: '#/components/schemas/Timestamp'
+            - type: 'null'
+        finished_at:
+          oneOf:
+            - $ref: '#/components/schemas/Timestamp'
+            - type: 'null'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+    AnalysisSnapshot:
+      type: object
+      additionalProperties: false
+      required: [id, organization_id, project_id, analysis_job_id, version, committed_at, payload]
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        organization_id:
+          $ref: '#/components/schemas/Uuid'
+        project_id:
+          $ref: '#/components/schemas/Uuid'
+        analysis_job_id:
+          $ref: '#/components/schemas/Uuid'
+        version:
+          type: integer
+          minimum: 1
+        committed_at:
+          $ref: '#/components/schemas/Timestamp'
+        payload:
+          type: object
+          description: MVP aggregate view; split into typed sections before Rails implementation.
+          additionalProperties: true
+    StrategyPlan:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          analysis_snapshot_id,
+          strategy_key,
+          title,
+          lifecycle_status,
+          is_selected,
+          lock_version,
+          created_at,
+          updated_at
+        ]
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        analysis_snapshot_id:
+          $ref: '#/components/schemas/Uuid'
+        strategy_key:
+          type: string
+        title:
+          type: string
+        lifecycle_status:
+          type: string
+          enum: [generated, reviewed, approved, superseded]
+        is_selected:
+          type: boolean
+        lock_version:
+          type: integer
+          minimum: 0
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+    PhaseTask:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          roadmap_id,
+          phase_code,
+          title,
+          task_status,
+          sort_order,
+          lock_version,
+          created_at,
+          updated_at
+        ]
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        roadmap_id:
+          $ref: '#/components/schemas/Uuid'
+        phase_code:
+          type: string
+          enum: [day_30, day_60, day_90]
+        title:
+          type: string
+        task_status:
+          type: string
+          enum: [todo, in_progress, blocked, done, cancelled]
+        sort_order:
+          type: integer
+        lock_version:
+          type: integer
+          minimum: 0
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+    Roadmap:
+      type: object
+      additionalProperties: false
+      required: [id, strategy_plan_id, phase_tasks, lock_version, created_at, updated_at]
+      properties:
+        id:
+          $ref: '#/components/schemas/Uuid'
+        strategy_plan_id:
+          $ref: '#/components/schemas/Uuid'
+        phase_tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhaseTask'
+        lock_version:
+          type: integer
+          minimum: 0
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+    CreateProjectAnalysisJobRequest:
+      type: object
+      additionalProperties: false
+      required: [project]
+      properties:
+        project:
+          type: object
+          additionalProperties: false
+          required: [name, target_url]
+          properties:
+            name:
+              type: string
+              minLength: 1
+              maxLength: 200
+            target_url:
+              type: string
+              format: uri
+              maxLength: 2048
+    InferenceConfirmationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          inferred_industry,
+          inferred_structure_type,
+          inferred_site_scale,
+          user_override_note,
+          lock_version
+        ]
+      properties:
+        inferred_industry:
+          type: string
+          maxLength: 200
+        inferred_structure_type:
+          type: string
+          maxLength: 200
+        inferred_site_scale:
+          type: string
+          maxLength: 200
+        user_override_note:
+          type: [string, 'null']
+          maxLength: 2000
+        lock_version:
+          type: integer
+          minimum: 0
+    SelectStrategyRequest:
+      type: object
+      additionalProperties: false
+      required: [strategy_plan_id, lock_version]
+      properties:
+        strategy_plan_id:
+          $ref: '#/components/schemas/Uuid'
+        lock_version:
+          type: integer
+          minimum: 0
+    UpdatePhaseTaskRequest:
+      type: object
+      additionalProperties: false
+      required: [task_status, reason, lock_version]
+      properties:
+        task_status:
+          type: string
+          enum: [todo, in_progress, blocked, done, cancelled]
+        reason:
+          type: [string, 'null']
+          maxLength: 1000
+        lock_version:
+          type: integer
+          minimum: 0
+    ProjectAnalysisJob:
+      type: object
+      additionalProperties: false
+      required: [project, analysis_job]
+      properties:
+        project:
+          $ref: '#/components/schemas/Project'
+        analysis_job:
+          $ref: '#/components/schemas/AnalysisJob'
+    ProjectBootstrap:
+      type: object
+      additionalProperties: false
+      required: [project, latest_analysis_job, current_snapshot, strategy_plans, roadmap]
+      properties:
+        project:
+          $ref: '#/components/schemas/Project'
+        latest_analysis_job:
+          oneOf:
+            - $ref: '#/components/schemas/AnalysisJob'
+            - type: 'null'
+        current_snapshot:
+          oneOf:
+            - $ref: '#/components/schemas/AnalysisSnapshot'
+            - type: 'null'
+        strategy_plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/StrategyPlan'
+        roadmap:
+          oneOf:
+            - $ref: '#/components/schemas/Roadmap'
+            - type: 'null'
+    ProjectCollectionEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+        meta:
+          $ref: '#/components/schemas/CollectionMeta'
+    ProjectBootstrapEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/ProjectBootstrap'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ProjectAnalysisJobEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/ProjectAnalysisJob'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    AnalysisJobEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/AnalysisJob'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    AnalysisSnapshotEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/AnalysisSnapshot'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    StrategyPlanEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/StrategyPlan'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    StrategyPlanCollectionEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StrategyPlan'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    RoadmapEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/Roadmap'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    PhaseTaskEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/PhaseTask'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'

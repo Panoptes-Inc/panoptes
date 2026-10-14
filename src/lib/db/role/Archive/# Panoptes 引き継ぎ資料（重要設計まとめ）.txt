@@ -1,0 +1,366 @@
+# Panoptes 引き継ぎ資料（重要設計まとめ）
+
+作成目的：
+このドキュメントは、新しいチャットや開発環境へ **Panoptesの重要設計思想と仕様を完全に引き継ぐための要約資料** である。
+
+---
+
+# 1. Panoptesとは
+
+Panoptesは
+
+**「競合・業界・自社の構造を読み取り、戦略を可視化し、実行優先順位まで導く戦略OS」**
+
+である。
+
+Panoptesは以下ではない
+
+* アナリティクスツール
+* SEOツール
+* トラフィック推定ツール
+
+Panoptesは
+
+* 構造理解装置
+* 戦略提案装置
+* 因果説明装置
+* 実行優先順位エンジン
+
+である。
+
+---
+
+# 2. MVPの目的
+
+MVPでは以下を実現する
+
+1. URL入力
+2. 自社サイト構造分析
+3. 競合10社分析
+4. 業界構造推定
+5. 自社差分分析
+6. 戦略提案3件
+7. 30/60/90日計画生成
+
+分析データは **snapshotとして保存** される。
+
+---
+
+# 3. 観測レイヤー
+
+Panoptesは常に2レイヤーで観測する
+
+Internal
+
+HTML / DOM / 情報構造
+
+Visual
+
+レイアウト / 視覚階層
+
+---
+
+# 4. 戦略評価6軸
+
+Panoptesは常に6軸で評価する
+
+1 価値訴求
+2 情報階層
+3 導線強度
+4 信頼構造
+5 差別化明確性
+6 意思決定支援
+
+Internal / Visual両方から評価する
+
+---
+
+# 5. クローリングアーキテクチャ
+
+Panoptesは
+
+**AIクローリングを行わない**
+
+Pythonクローラーで機械的観測を行う
+
+理由
+
+* コスト削減
+* 再現性
+* 差分検知
+* Feed/Radar
+
+AIは
+
+**理解と戦略生成のみ**
+
+---
+
+# 6. Crawlモード
+
+Panoptesは3つのクロールを持つ
+
+bootstrap crawl
+
+サイト構造推定
+
+analysis crawl
+
+完全分析
+
+monitoring crawl
+
+競合監視
+
+---
+
+# 7. Internal抽出
+
+Python crawlerは以下を抽出
+
+* title
+* h1/h2
+* CTA
+* form
+* faq
+* pricing
+* compare
+* trust block
+* case block
+* internal links
+
+---
+
+# 8. Visual分析
+
+Visualは
+
+スクリーンショット取得
+
+→ AI Vision解析
+
+評価対象
+
+* 視覚階層
+* CTA強度
+* レイアウト密度
+* 信頼要素
+
+---
+
+# 9. 差分検知
+
+Panoptesは競合監視のため差分検知を行う
+
+URL差分
+
+HTML差分
+
+構造差分
+
+意味差分
+
+---
+
+# 10. Feed / Radar
+
+Panoptesは
+
+競合の構造変化をFeedとして表示
+
+例
+
+* pricing変更
+* CTA変更
+* FAQ追加
+
+Radarは業界変化検知
+
+---
+
+# 11. Strategic Engine
+
+Strategic Engineは
+
+観測結果
+
+→ 数学計算
+
+→ 戦略生成
+
+を行う
+
+---
+
+# 12. Strategic Engine入力
+
+Observation Bundle
+
+内容
+
+* site info
+* page list
+* internal observations
+* visual observations
+* flow summary
+
+---
+
+# 13. Engine計算
+
+Internal score
+
+Visual score
+
+総合スコア
+
+Industry benchmark
+
+Opportunity
+
+Priority
+
+---
+
+# 14. 戦略生成
+
+Priority上位から
+
+戦略カード3件生成
+
+各カード
+
+* 戦略意図
+* 根拠
+* 実行
+
+---
+
+# 15. Roadmap生成
+
+戦略カードから
+
+30日
+
+60日
+
+90日
+
+ロードマップ生成
+
+---
+
+# 16. トークン設計
+
+Panoptesは
+
+トークン上限型
+
+ユーザーは
+
+高負荷
+
+中負荷
+
+低負荷
+
+分析モードを選択
+
+---
+
+# 17. プラン設計
+
+prime
+
+89800円
+
+AI標準
+
+dominion
+
+129800円
+
+高精度AI
+
+sovereign
+
+249800円
+
+ホワイトラベル
+
+---
+
+# 18. SPU
+
+SPUは
+
+AI処理のみ消費
+
+Crawlerは消費しない
+
+---
+
+# 19. データ保存
+
+Panoptesは
+
+履歴を2種類保存
+
+汎用履歴
+
+全ユーザー共有
+
+ユニーク履歴
+
+ユーザー専用
+
+---
+
+# 20. 将来拡張
+
+将来
+
+Panoptesは
+
+決算書
+
+経営計画
+
+KPI
+
+を読み込み
+
+AI戦略コンサルへ拡張可能
+
+---
+
+# 21. Panoptesの本質
+
+Panoptesは
+
+AIツールではない
+
+戦略OSである
+
+観測
+
+理解
+
+計算
+
+戦略
+
+を一貫して行うシステム
+
+---
+
+# 引き継ぎ用メモ
+
+Panoptesの核心
+
+1 Crawler
+2 Strategic Engine
+3 Snapshot世界
+4 Strategy生成
+
+この4つがPanoptesの心臓である
