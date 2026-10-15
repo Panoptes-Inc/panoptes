@@ -5,9 +5,9 @@ Phase: `TB-26`
 Difficulty: `INTERMEDIATE`  
 Prerequisites: `M01`–`M24`（direct curriculum dependencies: `M07`–`M15`, `M18`, `M23`, `M24`）
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. ObservabilityをLoggingだけでなくLogs、Metrics、Correlation/Traces、Alertsを組み合わせる能力として説明する。
 2. EventをLog、Metric、Alert、Audit、Lineage、Heartbeat、Canonical Business Stateへ正しく分類する。
@@ -18,11 +18,20 @@ Prerequisites: `M01`–`M24`（direct curriculum dependencies: `M07`–`M15`, `M
 7. Secret、token、個人情報、外部contentをLogへ無条件保存しない。
 8. CURRENTの部分実装、TARGET observability、DEFERRED運用設計を混同しない。
 
-本教材はDocumentation-onlyである。Monitoring vendor選定、Logging/Tracing導入、Alert/SLO/Retention設定、Source変更、build/test/qualityは行わない。
+本教材はDocumentation-onlyです。Monitoring vendor選定、Logging/Tracing導入、Alert/SLO/Retention設定、Source変更、build/test/qualityは行いません。
+
+## 用語ガイド
+
+- **Logging:** 個々の処理で起きたtechnical eventを記録し、調査できるようにすること。
+- **Monitoring:** metricやhealthを継続的に観測し、異常や傾向を把握すること。
+- **Observability（可観測性）:** log、metric、traceなどから、System内部で何が起きているか説明できる性質。
+- **Audit:** 誰が、いつ、何に対して、どの操作を行ったかを追跡する業務・security上の記録。
+- **Lineage:** 結果がどのinput、Job、version、Evidenceから導かれたかを示す由来の記録。
+- **Correlation ID:** 複数Systemをまたぐ同じ処理を、log上で結び付ける識別子。
 
 ## 2. Observability fundamentals
 
-Observabilityは、System内部で何が起きているかを、外部へ出されたsignalから理解・診断できる能力である。
+Observability（可観測性）は、log、metric、traceなどの出力から、System内部で何が起きているかを理解し、原因を調べられる性質です。
 
 | Signal              | Main question                               |
 | ------------------- | ------------------------------------------- |
@@ -37,11 +46,11 @@ Telemetryを集めた量 != 診断できる能力
 Dashboardの数 != Product healthの理解
 ```
 
-必要な問いからsignalを設計する。「分析が遅いか」「どこで詰まったか」「誰が重要Actionを行ったか」は、それぞれ異なるsignalを必要とする。
+何を知りたいかに応じて、収集する情報を設計します。「分析が遅いか」「どこで詰まったか」「誰が重要な操作を行ったか」には、それぞれ異なる情報が必要です。
 
 ## 3. Why Panoptes needs cross-system visibility
 
-PanoptesのTarget flowはHTTP request、SvelteKit BFF、Rails、PostgreSQL、Queue、Worker、External Web、Chromium、External LLM、Artifact、Result/Snapshotを跨ぐ。HTTP responseが返った後もAnalysisJobは続くため、単一processのLogだけでは全体を追跡できない。
+Panoptesの目標とする処理の流れは、HTTP request、SvelteKit BFF、Rails、PostgreSQL、Queue、Worker、外部Web、Chromium、外部LLM、Artifact、Result/Snapshotにまたがります。HTTP responseを返した後もAnalysisJobは続くため、一つのprocessのLogだけでは全体を追跡できません。
 
 特に区別するidentity:
 
@@ -51,11 +60,11 @@ PanoptesのTarget flowはHTTP request、SvelteKit BFF、Rails、PostgreSQL、Que
 - Attempt identity: 一つのtechnical execution
 - Artifact / Result / Snapshot ID: 生成物と履歴
 
-`1 Request = 1 Job = 1 Attempt`とは限らない。
+`1 Request = 1 Job = 1 Attempt`とは限りません。
 
 ## 4. Logging model
 
-Logは個別eventや処理状況を時系列で残すtechnical recordであり、diagnostics、debugging、incident investigationに使う。
+Logは個別eventや処理状況を時系列で残すtechnical recordであり、diagnostics、debugging、incident investigationに使います。
 
 Candidate events:
 
@@ -68,15 +77,15 @@ Candidate events:
 - upstream API returned an error
 - invariant violation detected
 
-LogはBusiness Stateの正本ではない。`worker_started`というLogがあっても、RailsのCanonical Job Stateを置き換えない。
+LogはBusiness Stateの正本ではありません。`worker_started`というLogがあっても、RailsのCanonical Job Stateを置き換えません。
 
 ## 5. Structured logging
 
-Free-textだけでなくmachine-readable fieldを使えば、検索・集計・correlationが容易になる。
+自由な文章に加えて、機械が読み取れるfieldを使うと、検索・集計や、別の処理記録との関連付けが容易になります。
 
 Candidate fields（formal schemaの新規決定ではない）:
 
-| Field                    | Purpose              | Caution                       |
+| 項目                     | 目的                 | 注意点                        |
 | ------------------------ | -------------------- | ----------------------------- |
 | `timestamp`              | event時刻            | clock/timezone consistency    |
 | `level`                  | severity             | 何でもErrorにしない           |
@@ -89,7 +98,7 @@ Candidate fields（formal schemaの新規決定ではない）:
 | `duration_ms`            | latency              | unitを明示                    |
 | `result` / `error_code`  | outcome/category     | raw exception/payloadを避ける |
 
-Organization contextが必要な場合も、privacy、data minimization、access restrictionを考慮する。
+Organization contextが必要な場合も、privacy、data minimization、access restrictionを考慮します。
 
 ## 6. Log levels and error semantics
 
@@ -100,7 +109,7 @@ Organization contextが必要な場合も、privacy、data minimization、access
 - Warn: degraded/retryable/attention-worthyだが直ちに失敗とは限らない。
 - Error: 処理失敗やunexpected invariant violation。
 
-Attempt 1のretryable timeoutと、全Attemptを使い切ったfinal Job failureは同じ意味ではない。全retryable eventをError Alertへ直結するとalert fatigueと誤集計を生む。
+最初のAttemptで再試行可能なtimeoutが起きた場合と、すべてのAttemptを使い切ってJobが最終的に失敗した場合は、意味が異なります。再試行可能なeventをすべてError通知へ直結すると、通知が多すぎて重要な異常を見落としたり、失敗件数を誤集計したりします。
 
 Exact level policyは未決定のため、本教材では概念に留める。
 
@@ -113,21 +122,21 @@ User:    “The application service is unavailable.”
 Internal: service, request_id, error_class, duration, dependency category
 ```
 
-Internalだからraw access token、password、Secret、Cookie、不要なpersonal data、External HTML全文を残してよいわけではない。User responseとdiagnosticをrequest/correlation identityで結ぶ。
+内部向けのLogであっても、生のaccess token、password、secret、Cookie、不要な個人情報、外部HTMLの全文を残してよいわけではありません。ユーザーへの応答と内部の調査情報は、request IDやcorrelation IDで関連付けます。
 
-CURRENT Rails `ApplicationController`はunhandled errorを`event`、`error_class`、`request_id`で記録し、Userへはgeneric `INTERNAL_ERROR`を返す。この分離は確認できるが、centralized log platformや全error taxonomyの完成を意味しない。
+CURRENT Rails `ApplicationController`はunhandled errorを`event`、`error_class`、`request_id`で記録し、Userへはgeneric `INTERNAL_ERROR`を返します。この分離は確認できるが、centralized log platformや全error taxonomyの完成を意味しません。
 
 ## 8. Metrics model
 
-Metricは時間経過に沿って集計・監視できる数値である。
+Metricは時間経過に沿って集計・監視できる数値です。
 
-| Type                     | Meaning     | Panoptes candidate                      |
+| Type                     | 意味        | Panoptes candidate                      |
 | ------------------------ | ----------- | --------------------------------------- |
 | Counter                  | 累積event数 | accepted/completed/timed-out jobs total |
 | Gauge                    | 現在値      | queue depth、active workers             |
 | Histogram / Distribution | 値の分布    | request/analysis duration               |
 
-Logは個別event、Metricは集約behaviorである。すべてのLogをMetricにする必要はなく、high-cardinality IDをMetric labelへ無制限に入れると運用負荷が増える。
+Logは個別event、Metricは集約behaviorです。すべてのLogをMetricにする必要はなく、high-cardinality IDをMetric labelへ無制限に入れると運用負荷が増えます。
 
 Candidate metrics:
 
@@ -141,7 +150,7 @@ Candidate metrics:
 
 ## 9. Monitoring and Golden Signals
 
-MonitoringはMetricやstatusを継続的に観測し、正常性や異常を把握する仕組みである。Dashboard作成そのものではなく、「何を正常とみなすか」「異常時に何を判断するか」が中心となる。
+MonitoringはMetricやstatusを継続的に観測し、正常性や異常を把握する仕組みです。Dashboard作成そのものではなく、「何を正常とみなすか」「異常時に何を判断するか」が中心となります。
 
 一般的なGolden Signals:
 
@@ -150,11 +159,11 @@ MonitoringはMetricやstatusを継続的に観測し、正常性や異常を把�
 - Errors: failed/timed_out/dependency error等
 - Saturation: queue backlog、worker CPU/memory/concurrency、DB connection等
 
-これらは出発点であり、正式なPanoptes SLI/SLOではない。
+これらは出発点であり、正式なPanoptes SLI/SLOではありません。
 
 ## 10. Product health is more than HTTP availability
 
-HTTP 200だけでProductがhealthyとは限らない。Panoptesでは、少なくとも概念上:
+HTTP 200だけでProductがhealthyとは限りません。Panoptesでは、少なくとも概念上:
 
 ```text
 Analysisを受付できる
@@ -163,11 +172,11 @@ Analysisを受付できる
   + UserがResultを取得できる
 ```
 
-がProduct healthに関係する。Health endpointはprocess availabilityのsignalであり、end-to-end Analysis successを単独では保証しない。
+がProduct healthに関係します。Health endpointはprocess availabilityのsignalであり、end-to-end Analysis successを単独では保証しません。
 
 ## 11. Alerting model
 
-Alertは、Operator actionが必要なmeaningful conditionを適切なurgencyで通知する仕組みである。
+Alertは、Operator actionが必要なmeaningful conditionを適切なurgencyで通知する仕組みです。
 
 良いAlertは:
 
@@ -182,20 +191,20 @@ Alertは、Operator actionが必要なmeaningful conditionを適切なurgencyで
 queue ageとcompletion latencyが継続悪化 -> Alert candidate
 ```
 
-全Errorを通知するとalert fatigueになり、重要Alertが埋もれる。Exact threshold、severity、notification channelは本Moduleで決定しない。
+全Errorを通知するとalert fatigueになり、重要Alertが埋もれる。Exact threshold、severity、notification channelは本Moduleで決定しません。
 
 ## 12. Symptom and cause signals
 
-User-visible symptomを示すAlertと、原因候補を示すMetricを区別する。
+User-visible symptomを示すAlertと、原因候補を示すMetricを区別します。
 
 - Symptom: Analysis completion latency悪化、Result取得失敗率増加
 - Cause candidate: queue age増加、worker saturation、external timeout増加、DB latency
 
-Worker CPUだけでIncidentと断定せず、User impactと複数signalを関連付ける。Cause signalはdiagnosisに重要だが、必ずしもpage条件ではない。
+Worker CPUだけでIncidentと断定せず、User impactと複数signalを関連付ける。Cause signalはdiagnosisに重要だが、必ずしもpage条件ではありません。
 
 ## 13. Correlation / tracing model
 
-Full distributed tracingを導入しなくても、Request ID、Correlation ID、Job ID、Attemptを一貫して運べば処理を追跡できる。
+Full distributed tracingを導入しなくても、Request ID、Correlation ID、Job ID、Attemptを一貫して運べば処理を追跡できます。
 
 ```mermaid
 flowchart LR
@@ -213,13 +222,13 @@ flowchart LR
     W2 -.lineage.-> O
 ```
 
-Request IDは一つのHTTP requestを追跡する。AnalysisJob IDはrequest終了後も残るBusiness identityである。Attempt identityはretryごとのtechnical executionを区別する。
+Request IDは一つのHTTP requestを追跡します。AnalysisJob IDはrequest終了後も残るBusiness identityです。Attempt identityはretryごとのtechnical executionを区別します。
 
-CURRENT BFFはincoming IDをpattern検証または生成し、Railsへ`x-request-id`と`x-correlation-id`を転送する。Railsはrequest IDをresponse metaへ含め、`Current.correlation_id`をresponseへ含める構造を持つ。ただし限定確認では`request.env["panoptes.correlation_id"]`を設定するmiddlewareを確認できず、correlationのend-to-end完成は断定しない。M11に残るplacement/contract判断も本Moduleで解決しない。
+CURRENT BFFはincoming IDをpattern検証または生成し、Railsへ`x-request-id`と`x-correlation-id`を転送します。Railsはrequest IDをresponse metaへ含め、`Current.correlation_id`をresponseへ含める構造を持ちます。ただし限定確認では`request.env["panoptes.correlation_id"]`を設定するmiddlewareを確認できず、correlationのend-to-end完成は断定しません。M11に残るplacement/contract判断も本Moduleで解決しません。
 
 ## 14. AnalysisJob observability
 
-M12のCanonical lifecycleと観測signalを分離する。
+M12のCanonical lifecycleと観測signalを分離します。
 
 観測Candidate:
 
@@ -232,19 +241,19 @@ M12のCanonical lifecycleと観測signalを分離する。
 - error category
 - committed Snapshot identity
 
-MetricはBusiness Stateから安全に集計できるが、Metric自体を正本にしない。`completed_jobs_total`の値から特定JobのCanonical stateを復元しない。
+MetricはBusiness Stateから安全に集計できるが、Metric自体を正本にしません。`completed_jobs_total`の値から特定JobのCanonical stateを復元しません。
 
 ## 15. Progress, heartbeat, and canonical state
 
-| Concept             | Meaning                        | Not equivalent to           |
+| 概念                | 意味                           | Not equivalent to           |
 | ------------------- | ------------------------------ | --------------------------- |
 | Progress            | technical step/percent/message | canonical business decision |
 | Heartbeat           | Worker/Attemptのliveness       | progress or success         |
 | Canonical Job State | Rails-owned lifecycle          | UI animation/Worker log     |
 
-`Progress 60%`は特定Canonical stateや残時間を保証しない。Heartbeatがあっても処理が前進しているとは限らず、Heartbeatが一度欠けても即座にBusiness failureとは限らない。timeout/staleness contractと組み合わせる。
+`Progress 60%`は特定Canonical stateや残時間を保証しません。Heartbeatがあっても処理が前進しているとは限らず、Heartbeatが一度欠けても即座にBusiness failureとは限りません。timeout/staleness contractと組み合わせる。
 
-CURRENT Frontend runtimeはJob/Session identity、monotonic step/progress、`lastProgressEventAt`、terminal reasonを扱うが、これはFrontend state mappingであり、Worker heartbeat implementationやmonitoring backendではない。
+CURRENT Frontend runtimeはJob/Session identity、monotonic step/progress、`lastProgressEventAt`、terminal reasonを扱うが、これはFrontend state mappingであり、Worker heartbeat implementationやmonitoring backendではありません。
 
 ## 16. Retry-aware and partial-aware monitoring
 
@@ -256,7 +265,7 @@ Attempt A2: success            -> successful attempt log
 Job J1: completed              -> final business outcome
 ```
 
-このJobをfailed Jobとして数えない。Attempt error rateとJob failure rateを別Metricにする価値がある。
+このJobをfailed Jobとして数えない。Attempt error rateとJob failure rateを別Metricにする価値があります。
 
 `partially_completed`も`completed`または`failed`へ押し込まない。Partial rate、missing component、reason category、downstream eligibilityを独立して観測できれば、degradationを失敗率だけでは見落としにくい。
 
@@ -272,9 +281,9 @@ Candidate signals:
 - dead-letter count
 - consumer availability
 
-Queue depth単体ではBusiness healthを判断できない。Traffic surgeで一時的に増える場合も、consumer停止で増える場合もある。Age、throughput、completion latency、worker capacityと組み合わせる。
+Queueの件数だけでは、業務処理が正常かを判断できません。アクセスの急増で一時的に増える場合も、Consumerが停止して増える場合もあります。待ち時間、処理量、完了までの時間、Workerの処理能力と組み合わせて判断します。
 
-Queue/Attempt runtimeはTARGET領域が含まれるため、既存実装済みとは表現しない。
+Queue/Attempt runtimeはTARGET領域が含まれるため、既存実装済みとは表現しません。
 
 ## 18. Worker / External Web / Chromium observability
 
@@ -308,15 +317,15 @@ External LLM candidate:
 - token/usage where provider contract permits
 - output validation/rejection category
 
-Prompt、Evidence、Model output全文を無条件保存しない。diagnosisに必要なmetadataとcontent retentionを分ける。
+Prompt、Evidence、Model output全文を無条件保存しません。diagnosisに必要なmetadataとcontent retentionを分けます。
 
-Worker compute、Chromium、LLM、Storage、External serviceはcost driverになり得る。Operational usageをCost diagnosisへ接続する価値はあるが:
+Worker compute、Chromium、LLM、Storage、External serviceはcost driverになり得ます。Operational usageをCost diagnosisへ接続する価値はあるが:
 
 ```text
 Usage Metric != Customer Charge
 ```
 
-Customer chargeはBilling contractの正本に従い、Worker counterだけで確定しない。
+Customer chargeはBilling contractの正本に従い、Worker counterだけで確定しません。
 
 ## 20. API / BFF / Rails observability
 
@@ -329,9 +338,9 @@ Candidate signals:
 - response size where useful
 - route/operation context（high-cardinalityに注意）
 
-4xxと5xxを同じSystem Errorにしない。401/403の増加はmisconfiguration、expired session、legitimate deny、attack attemptなど複数解釈がある。Logだけで攻撃と即断せず、rate、source、route、tenant-safe context、time patternと関連付ける。
+4xxと5xxを同じSystem Errorにしません。401/403の増加はmisconfiguration、expired session、legitimate deny、attack attemptなど複数解釈があります。Logだけで攻撃と即断せず、rate、source、route、tenant-safe context、time patternと関連付ける。
 
-CURRENT BFFはRails timeoutを制御し、safe `UPSTREAM_UNAVAILABLE`とrequest IDを返す。CURRENT RailsはApiError category、response meta、unhandled error eventを持つ。専用Metric/Alert backendは確認していない。
+CURRENT BFFはRails timeoutを制御し、safe `UPSTREAM_UNAVAILABLE`とrequest IDを返します。CURRENT RailsはApiError category、response meta、unhandled error eventを持ちます。専用Metric/Alert backendは確認していません。
 
 ## 21. Database and Artifact observability
 
@@ -351,11 +360,11 @@ Artifact candidate:
 - lineage link failure
 - retention/deletion outcome
 
-Artifact existenceはSnapshot completionやBusiness validityと同じではない。DB/Storageのexact monitoring implementationはInfrastructure Moduleへhandoffする。
+Artifact existenceはSnapshot completionやBusiness validityと同じではありません。DB/Storageのexact monitoring implementationはInfrastructure Moduleへhandoffします。
 
 ## 22. Audit fundamentals
 
-AuditはUserまたはSystem Actorによる重要Actionを、accountabilityと追跡のために残す記録である。
+Auditは、ユーザーやSystemの実行主体が行った重要な操作を、誰が何をしたか後から説明・追跡できるように残す記録です。
 
 Candidate actions（formal event catalogではない）:
 
@@ -375,7 +384,7 @@ Candidate fields:
 - result
 - approved reason/context where relevant
 
-AuditはDebug Logではない。Retention、immutability、access restriction、queryability等の要求が異なり得る。RailsがBusiness mutationとAuthorizationを所有するため、Canonical Auditの主要ownerもRails側になる。
+AuditはDebug Logではありません。Retention、immutability、access restriction、queryability等の要求が異なり得ます。RailsがBusiness mutationとAuthorizationを所有するため、Canonical Auditの主要ownerもRails側になります。
 
 ## 23. Logging, Audit, and Lineage separation
 
@@ -390,26 +399,26 @@ flowchart TB
     N -.references.-> C
 ```
 
-| Record  | Core question        | Example                                   |
+| 記録    | 中心となる問い       | 例                                        |
 | ------- | -------------------- | ----------------------------------------- |
 | Logging | Systemがどう動いたか | WorkerがArtifact保存に失敗                |
 | Audit   | 誰が何をしたか       | UserがReanalysisを要求                    |
 | Lineage | 何から何が作られたか | Snapshot SはJob J/Result R/Evidence E由来 |
 
-Audit record数をMetricへ集計することは可能だが、概念は別である。Repositoryの`docs/audit/`はengineering review/decision documentationであり、runtime Business Audit trailではない。
+Audit record数をMetricへ集計することは可能だが、概念は別です。Repositoryの`docs/audit/`はengineering review/decision documentationであり、runtime Business Audit trailではありません。
 
 ## 24. Monitoring vs Audit
 
-MonitoringはSystem healthとoperationを理解する。Auditはactor actionとaccountabilityを追跡する。
+MonitoringはSystem healthとoperationを理解します。Auditはactor actionとaccountabilityを追跡します。
 
 - Monitoring: failed Job rateが上昇しているか。
 - Audit: 誰がどのJobをcancelしたか。
 
-同じIDを参照してもpurpose、retention、access、integrity requirementが異なる。Debug LogをそのままAudit正本にしない。
+同じIDを参照してもpurpose、retention、access、integrity requirementが異なります。Debug LogをそのままAudit正本にしません。
 
 ## 25. Error taxonomy and diagnosis
 
-診断では少なくとも概念上、次を区別する価値がある。
+診断では少なくとも概念上、次を区別する価値があります。
 
 - validation
 - authentication / authorization
@@ -420,11 +429,11 @@ MonitoringはSystem healthとoperationを理解する。Auditはactor actionとa
 - cancellation
 - partial/missing evidence
 
-Exact enumは本Moduleで新設しない。Existing safe error codeを尊重し、user message、retryability、technical category、final outcomeを別fieldとして考える。
+Exact enumは本Moduleで新設しません。Existing safe error codeを尊重し、user message、retryability、technical category、final outcomeを別fieldとして考えます。
 
 ## 26. Missing-aware monitoring
 
-M18のMissingはLow Scoreではない。Missing Evidence増加はExternal Website、Chromium、Worker/parser、Artifact storage、contract drift等の兆候になり得る。
+M18のMissingはLow Scoreではありません。Missing Evidence増加はExternal Website、Chromium、Worker/parser、Artifact storage、contract drift等の兆候になり得ます。
 
 観測時も:
 
@@ -434,7 +443,7 @@ M18のMissingはLow Scoreではない。Missing Evidence増加はExternal Websit
 - unknown
 - partial
 
-を混ぜない。Score低下AlertへMissingを含めると、Product meaningとtechnical failureを誤認する。
+を混ぜません。Score低下AlertへMissingを含めると、Product meaningとtechnical failureを誤認します。
 
 ## 27. SLI, SLO, SLA concepts
 
@@ -442,28 +451,28 @@ M18のMissingはLow Scoreではない。Missing Evidence増加はExternal Websit
 - SLO: SLIに対するinternal objective。
 - SLA: Customerとの契約上のcommitmentとconsequenceを含み得る。
 
-Panoptes candidate SLIとしてAnalysis successful completion latency等は考えられるが、正式definition、対象母集団、success criteria、window、目標値は決めない。Metricを取得しただけでSLOが確定するわけではない。
+Panoptes candidate SLIとしてAnalysis successful completion latency等は考えられるが、正式definition、対象母集団、success criteria、window、目標値は決めません。Metricを取得しただけでSLOが確定するわけではありません。
 
 ## 28. Dashboard, runbook, and incident
 
-Dashboardは問いへ答える表示手段である。
+Dashboardは問いへ答える表示手段です。
 
 ```text
 Question: 分析が遅くなっているか？
 Signals: completion latency + queue age + worker saturation + external latency
 ```
 
-RunbookはAlert時の確認先、immediate check、safe action、escalationを整理する。IncidentはUser/Business impactを伴うmeaningful operational problemであり、単発Errorと同義ではない。
+RunbookはAlert時の確認先、immediate check、safe action、escalationを整理します。IncidentはUser/Business impactを伴うmeaningful operational problemであり、単発Errorと同義ではありません。
 
-Exact dashboard、runbook、severity、on-call processは未決定のため新設しない。
+Exact dashboard、runbook、severity、on-call processは未決定のため新設しません。
 
 ## 29. Retention, privacy, and access
 
-Debug Log、Metric、Audit、Evidence/Artifact、Historical Snapshotはpurposeが異なり、同じRetentionを適用しない。保持期間は法務・Product・Security・運用要件を確認して決める。
+Debug Log、Metric、Audit、Evidence/Artifact、Historical Snapshotはpurposeが異なり、同じRetentionを適用しません。保持期間は法務・Product・Security・運用要件を確認して決めます。
 
-Log/Audit accessもAuthorization対象である。Tenant contextを含むrecordを全Organizationへ公開しない。削除・retentionがLineage/Audit要件と衝突する場合は、明示的なpolicy decisionが必要になる。
+Log/Audit accessもAuthorization対象です。Tenant contextを含むrecordを全Organizationへ公開しません。削除・retentionがLineage/Audit要件と衝突する場合は、明示的なpolicy decisionが必要になります。
 
-Exact retention durationは本Moduleで決定しない。
+Exact retention durationは本Moduleで決定しません。
 
 ## 30. Redaction and untrusted content
 
@@ -476,23 +485,23 @@ Logへ残さないCandidate:
 - unnecessary prompt/Evidence/HTML/Screenshot content
 - card security code等のsensitive value
 
-CURRENT Rails parameter filterはauthorization、cookie、password系、email、secret、token、JWT、key、crypt、salt、certificate、OTP、SSN、CVV/CVC等を対象にする。これは有効なcontrolだが、nested/raw body/custom loggerなど全経路の漏洩不存在を保証しない。
+CURRENT Rails parameter filterはauthorization、cookie、password系、email、secret、token、JWT、key、crypt、salt、certificate、OTP、SSN、CVV/CVC等を対象にします。これは有効なcontrolだが、nested/raw body/custom loggerなど全経路の漏洩不存在を保証しません。
 
-External contentにはcontrol character、巨大payload、misleading stringが含まれ得る。サイズ制限、encoding、structured field、sanitization/redactionを考え、raw HTML全文をInfo Logへ無条件出力しない。
+External contentにはcontrol character、巨大payload、misleading stringが含まれ得る。サイズ制限、encoding、structured field、sanitization/redactionを考え、raw HTML全文をInfo Logへ無条件出力しません。
 
 ## 31. Observability failure and reliability
 
-Telemetry pipeline自体も失敗する。通常のBusiness Transactionを、best-effort Log送信失敗だけで失敗扱いにするとAvailabilityを損なう場合がある。一方、法的・security上必要なAudit persistenceではfail behaviorが異なり得る。
+Telemetry pipeline自体も失敗します。通常のBusiness Transactionを、best-effort Log送信失敗だけで失敗扱いにするとAvailabilityを損なう場合があります。一方、法的・security上必要なAudit persistenceではfail behaviorが異なり得ます。
 
 ```text
 Debug telemetry reliability != Mandatory audit durability
 ```
 
-用途ごとのdelivery、buffering、backpressure、loss tolerance、failure behaviorが必要だが、exact contractは本Moduleで決めない。
+用途ごとのdelivery、buffering、backpressure、loss tolerance、failure behaviorが必要だが、exact contractは本Moduleで決めません。
 
 ## 32. Ownership map
 
-| Layer          | Observability ownership                                       | Must not become                               |
+| 層（Layer）    | 観測に関する責任                                              | 混同してはいけない役割                        |
 | -------------- | ------------------------------------------------------------- | --------------------------------------------- |
 | Frontend       | client-visible failure context、approved client telemetry     | Secret/payload dump、Business audit authority |
 | SvelteKit BFF  | request/session/proxy/timeout diagnostics、ID forwarding      | Canonical Job/Audit owner                     |
@@ -515,7 +524,7 @@ Situation: Userから「分析が終わらない」と報告された。
 7. Outcome: Attempt failure後retry中ならfinal Job failureとして数えない。
 8. User impact: result未取得時間と同種Jobへの影響範囲を確認する。
 
-Signalsを組み合わせることで、「API failure」「Worker dead」「Business failed」を一つのLogだけから誤断しない。
+Signalsを組み合わせることで、「API failure」「Worker dead」「Business failed」を一つのLogだけから誤断しません。
 
 ## 34. CURRENT / TARGET / DEFERRED
 
@@ -531,7 +540,7 @@ Signalsを組み合わせることで、「API failure」「Worker dead」「Bus
 - GitHub Actions logsとして残るFrontend/Rails CI execution
 - Development Logと`docs/audit/`のengineering history（runtime Auditではない）
 
-限定確認ではcentral log/metric/tracing vendor、Alert、Dashboard、persistent Business Audit trail、Worker/Queue runtime observabilityを確認していない。Correlation header forwardingはあるが、Railsの`panoptes.correlation_id`設定経路は確認できず、end-to-end実装済みとはしない。
+限定確認ではcentral log/metric/tracing vendor、Alert、Dashboard、persistent Business Audit trail、Worker/Queue runtime observabilityを確認していません。Correlation header forwardingはあるが、Railsの`panoptes.correlation_id`設定経路は確認できず、end-to-end実装済みとはしません。
 
 ### TARGET
 
@@ -559,7 +568,7 @@ Signalsを組み合わせることで、「API failure」「Worker dead」「Bus
 
 ## 35. Representative repository mapping
 
-| Representative                                                 | Observable concern                                  | Owner/category                      | Status                                      |
+| Representative                                                 | Observable concern                                  | Owner/category                      | 状態                                        |
 | -------------------------------------------------------------- | --------------------------------------------------- | ----------------------------------- | ------------------------------------------- |
 | `src/lib/server/rails/client.ts`                               | request/correlation ID、timeout、upstream status    | BFF / correlation+diagnostic        | `CURRENT`                                   |
 | `rails/app/controllers/application_controller.rb`              | request context、safe error、response meta          | Rails / log+correlation             | `CURRENT`                                   |
@@ -608,13 +617,13 @@ Signalsを組み合わせることで、「API failure」「Worker dead」「Bus
 
 ### A. Knowledge Check
 
-1. ObservabilityがLoggingだけではない理由を説明せよ。
-2. LogとMetric、Alertの目的を区別せよ。
-3. Request ID、Job ID、Attempt identityを区別せよ。
+1. ObservabilityがLoggingだけではない理由を説明してください。
+2. LogとMetric、Alertの目的を区別してください。
+3. Request ID、Job ID、Attempt identityを区別してください。
 
 ### B. Classification
 
-次をLog、Metric、Alert candidate、Audit、Lineage、Heartbeatへ分類せよ。
+次をLog、Metric、Alert candidate、Audit、Lineage、Heartbeatへ分類してください。
 
 1. Worker Attempt A1がbrowser crashで終了。
 2. 過去15分のAnalysis completion latency分布。
@@ -625,19 +634,19 @@ Signalsを組み合わせることで、「API failure」「Worker dead」「Bus
 
 ### C. Correlation Exercise
 
-Request R1からJob J1を作り、Attempt A1が失敗、A2が成功しSnapshot S1をcommitした。各Log/Audit/Lineage recordにどのidentityを持たせるか表にせよ。
+Request R1からJob J1を作り、Attempt A1が失敗、A2が成功しSnapshot S1をcommitした。各Log/Audit/Lineage recordにどのidentityを持たせるか表にしてください。
 
 ### D. Retry Exercise
 
-A1 timeout後にA2が成功した場合、Attempt error counter、retry counter、Job completion counter、failed Job counterをどう更新するか説明せよ。
+A1 timeout後にA2が成功した場合、Attempt error counter、retry counter、Job completion counter、failed Job counterをどう更新するか説明してください。
 
 ### E. Monitoring Exercise
 
-Analysis completion latencyが増加した。API latency、queue age、worker utilization、external dependency latency、DB latency、Job state/heartbeatのどれを、なぜ組み合わせるか説明せよ。
+Analysis completion latencyが増加した。API latency、queue age、worker utilization、external dependency latency、DB latency、Job state/heartbeatのどれを、なぜ組み合わせるか説明してください。
 
 ### F. Audit Exercise
 
-Login failure、Membership change、Snapshot view、Reanalysis request、Worker retry、Strategy selectionをAudit候補・technical log・access log等へ分類し、Product/Compliance決定が必要な箇所を示せ。
+Login failure、Membership change、Snapshot view、Reanalysis request、Worker retry、Strategy selectionをAudit候補・technical log・access log等へ分類し、Product/Compliance決定が必要な箇所を示してください。
 
 ### G. Security Exercise
 
@@ -645,7 +654,7 @@ Login failure、Membership change、Snapshot view、Reanalysis request、Worker 
 
 ### H. Partial Exercise
 
-`partially_completed`が増加したとき、Job final outcome、missing Evidence category、Worker stage failure、External dependency、downstream eligibilityをどう観測するか説明せよ。
+`partially_completed`が増加したとき、Job final outcome、missing Evidence category、Worker stage failure、External dependency、downstream eligibilityをどう観測するか説明してください。
 
 ### I. Violation Detection
 
@@ -660,25 +669,25 @@ Login failure、Membership change、Snapshot view、Reanalysis request、Worker 
 
 ### J. Architecture Explanation
 
-「なぜPanoptesではLogging、Monitoring、Audit、Lineageを分け、IDで関連付けるのか」を、diagnostics、health、accountability、reproducibility、privacyの観点から説明せよ。
+「なぜPanoptesではLogging、Monitoring、Audit、Lineageを分け、IDで関連付けるのか」を、diagnostics、health、accountability、reproducibility、privacyの観点から説明してください。
 
 ## 39. Answers / explanation guide
 
 ### A. Knowledge Check
 
-Logは個別event、Metricは集約behavior、Correlationはcross-system relation、Alertはaction requirementを扱うため、Logだけではtrendやimpactを十分判断できない。Request IDは一つのHTTP request、Job IDは非同期Business work、Attempt identityはretryごとのtechnical executionである。
+Logは個別event、Metricは集約behavior、Correlationはcross-system relation、Alertはaction requirementを扱うため、Logだけではtrendやimpactを十分判断できません。Request IDは一つのHTTP request、Job IDは非同期Business work、Attempt identityはretryごとのtechnical executionです。
 
 ### B. Classification
 
-1 Log、2 Metric、3 Alert candidate、4 Audit、5 Lineage、6 Heartbeat。実装では同じeventからMetricを派生できるが、元のpurposeを混同しない。
+1 Log、2 Metric、3 Alert candidate、4 Audit、5 Lineage、6 Heartbeat。実装では同じeventからMetricを派生できるが、元のpurposeを混同しません。
 
 ### C. Correlation Exercise
 
-R1は受付request、J1はRails/Queue/Worker/Resultを跨ぐBusiness work、A1/A2はattempt log、S1はLineageに持つ。User request actionをAudit対象とする場合はactor/org/resource/J1を参照し、LineageはJ1/A2/Evidence/Result/S1のderived relationを持つ。
+R1は受付request、J1はRails/Queue/Worker/Resultを跨ぐBusiness work、A1/A2はattempt log、S1はLineageに持ちます。User request actionをAudit対象とする場合はactor/org/resource/J1を参照し、LineageはJ1/A2/Evidence/Result/S1のderived relationを持ちます。
 
 ### D. Retry Exercise
 
-Attempt errorとretryは1増える。Job completionは最終success時に1増え、failed Jobは増やさない。最終outcome集計とattempt event集計を分離する。
+Attempt errorとretryは1増える。Job completionは最終success時に1増え、failed Jobは増やしません。最終outcome集計とattempt event集計を分離します。
 
 ### E. Monitoring Exercise
 
@@ -686,23 +695,23 @@ API正常でもQueue wait、Worker saturation、External latency、DB bottleneck
 
 ### F. Audit Exercise
 
-Membership change、Reanalysis request、Strategy selectionは重要Business mutationとしてAudit候補。Worker retryはtechnical Log/Metric。Login failureはsecurity/access signalであり、formal Audit採否はpolicy次第。Snapshot viewもsensitivity/compliance requirementによりaccess Audit判断が必要で、教材では確定しない。
+Membership change、Reanalysis request、Strategy selectionは重要Business mutationとしてAudit候補。Worker retryはtechnical Log/Metric。Login failureはsecurity/access signalであり、formal Audit採否はpolicy次第。Snapshot viewもsensitivity/compliance requirementによりaccess Audit判断が必要で、教材では確定しません。
 
 ### G. Security Exercise
 
-Request ID、approved error code、durationは通常安全なmetadata候補。Access tokenは保存禁止、email/Organization IDは必要性・access・redactionを判断する。HTML全文とLLM promptはsensitive/untrusted contentを含み得るため通常Logへ無条件保存しない。
+Request ID、approved error code、durationは通常安全なmetadata候補。Access tokenは保存禁止、email/Organization IDは必要性・access・redactionを判断します。HTML全文とLLM promptはsensitive/untrusted contentを含み得るため通常Logへ無条件保存しません。
 
 ### H. Partial Exercise
 
-Partialをcompleted/failedへ統合せずfinal outcomeとして数え、missing type、failed stage、dependency category、attempt、eligibilityを関連付ける。MissingをLow Scoreへ変換しない。
+Partialをcompleted/failedへ統合せずfinal outcomeとして数え、missing type、failed stage、dependency category、attempt、eligibilityを関連付ける。MissingをLow Scoreへ変換しません。
 
 ### I. Violation Detection
 
-順にcredential leak、identity conflation、retry-aware aggregation欠如、purpose/retention conflation、provenance loss、single-signal diagnosis、privacy/log injection/volume risk、Billing authority violationである。
+順にcredential leak、identity conflation、retry-aware aggregation欠如、purpose/retention conflation、provenance loss、single-signal diagnosis、privacy/log injection/volume risk、Billing authority violationです。
 
 ### J. Architecture Explanation
 
-Loggingは個別diagnosis、Monitoringはsystem/product health、Auditはactor accountability、Lineageはderived resultの再現性を守る。それぞれretention、access、durabilityが異なる。Request/Job/Attempt/Artifact identityで関連付ければ、同一recordへ全責務を詰め込まず、必要な範囲でend-to-end investigationできる。
+Loggingは個別diagnosis、Monitoringはsystem/product health、Auditはactor accountability、Lineageはderived resultの再現性を守ります。それぞれretention、access、durabilityが異なります。Request/Job/Attempt/Artifact identityで関連付ければ、同一recordへ全責務を詰め込まず、必要な範囲でend-to-end investigationできます。
 
 ## 40. Completion criteria
 
@@ -719,13 +728,13 @@ Loggingは個別diagnosis、Monitoringはsystem/product health、Auditはactor a
 |   9 | Repository mapping + diagrams included     | `PASS` |
 |  10 | Exercises + answers included               | `PASS` |
 
-M25 authoring result: `10 / 10 PASS`。教材完成はMonitoring/Logging/Tracing導入、SLO/Alert/Retention決定、Production observability readinessの完了を意味しない。
+M25 authoring result: `10 / 10 PASS`。教材完成はMonitoring/Logging/Tracing導入、SLO/Alert/Retention決定、Production observability readinessの完了を意味しません。
 
 ## 41. M26 handoff
 
 Recommended next phase: `TB-27 — Module 26: Infrastructure / Cloud Boundary`。
 
-M26ではruntime/service/network/storage/environment/secret/deployment boundary、managed serviceとapplication ownership、availability/scaling/backup等を扱う。Cloud vendor選定やInfrastructure変更は教材作成と分離する。
+M26ではruntime/service/network/storage/environment/secret/deployment boundary、managed serviceとapplication ownership、availability/scaling/backup等を扱います。Cloud vendor選定やInfrastructure変更は教材作成と分離します。
 
 ## References
 

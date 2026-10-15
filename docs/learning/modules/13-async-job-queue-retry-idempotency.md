@@ -5,9 +5,9 @@ Phase: `TB-14`
 Difficulty: `ADVANCED`  
 Prerequisites: `M01`–`M12`
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. 長時間処理をHTTP lifecycleから分離する理由と、AsyncがParallelを意味しないことを説明する。
 2. Queue、Producer、Consumer、acknowledgement、lease/visibilityを説明する。
@@ -18,6 +18,15 @@ Prerequisites: `M01`–`M12`
 7. Rails、Queue、Workerのownerを区別する。
 8. CURRENT、TARGET、DEFERREDを混同せず、安全な非同期設計を評価する。
 
+## 用語ガイド
+
+- **Async（非同期）:** HTTP responseを待たせ続けず、時間のかかる処理を別の実行単位へ渡す方式。
+- **Queue:** 実行待ちのmessageを保持し、Workerへ配送する仕組み。業務状態の正本ではない。
+- **Retry（再試行）:** 同じJobの処理を、失敗後にもう一度試すこと。
+- **Attempt（試行）:** 一つのJobに対する個々の実行回。Jobそのものとは区別する。
+- **Idempotency（冪等性）:** 重複配送やRetryが起きても、結果や副作用を不必要に重複させない性質。
+- **DLQ（Dead Letter Queue）:** 通常のRetryでは処理できなかったmessageを隔離し、調査や再処理へつなげる置き場。
+
 ## 2. Sync vs Async
 
 ### 2.1 General model
@@ -27,17 +36,17 @@ Synchronous:  request -> processing -> response
 Asynchronous: request -> accepted/job identity -> background processing -> later status/result read
 ```
 
-同期処理ではcallerが処理完了まで接続を待つ。非同期処理では受付と実行完了を分離し、callerはJob identityを使って後から状態を読む。
+同期処理では、呼び出した側が処理の完了を待ちます。非同期処理では、要求の受付と実行の完了を分け、呼び出した側はJobの識別子を使って後から状態を取得します。
 
-Panoptesのcrawl、Chromium capture、HTML extraction、internal/visual analysis、LLM processingは、外部依存・実行時間・失敗点が多い。これらを1回のHTTP lifecycleへ閉じ込めると、HTTP timeout後に処理が継続しているか、再送で二重実行されたか、途中経過や取消をどう扱うかが不明確になる。
+Panoptesのcrawl、Chromium capture、HTML extraction、internal/visual analysis、LLM processingは、外部依存・実行時間・失敗点が多い。これらを1回のHTTP lifecycleへ閉じ込めると、HTTP timeout後に処理が継続しているか、再送で二重実行されたか、途中経過や取消をどう扱うかが不明確になります。
 
 > **Async != Parallel.** Asyncはcallerとcompletionの時間的分離であり、複数処理の同時実行を保証しない。1 Consumerで逐次処理しても非同期であり得る。
 
 ## 3. Queue fundamentals
 
-Queueは「処理すべき仕事をProducerからConsumerへ引き渡すdelivery mechanism」である。
+Queueは、処理すべき仕事をProducer（仕事を登録する側）からConsumer（受け取って処理する側）へ引き渡す配送の仕組みです。
 
-| Term               | Meaning                                                       |
+| Term               | 意味                                                          |
 | ------------------ | ------------------------------------------------------------- |
 | Producer           | 実行依頼をmessageとしてenqueueする側                          |
 | Message            | Consumerへ渡すexecution delivery unit                         |
@@ -48,11 +57,11 @@ Queueは「処理すべき仕事をProducerからConsumerへ引き渡すdelivery
 | Redelivery         | ack欠落やlease expiry等により同じmessageを再配送すること      |
 | DLQ                | 通常retryで回復しないmessageを隔離する場所                    |
 
-Queueはbuffering、delivery、redeliveryを助ける。しかし、AnalysisJobのcanonical status、Organization authorization、usage、Result/Snapshot lineageを決めるBusiness Databaseではない。
+Queueは、messageの待機・配送・再配送を支えます。ただし、AnalysisJobの正式な状態、Organizationの認可、Usage、Result/Snapshotの由来を決める業務用DBではありません。
 
 ## 4. Producer / Consumer and dispatch
 
-PanoptesのTarget責務は次の通りである。
+PanoptesのTarget責務は次の通りです。
 
 - Rails: User intentを検証し、canonical AnalysisJobを永続化し、実行依頼をdispatchするProducer
 - Queue: execution deliveryを仲介する仕組み
@@ -83,7 +92,7 @@ sequenceDiagram
     Rails-->>UI: Status / eligible result
 ```
 
-DB persist前にQueue送信だけ成功すると、messageはあるのにcanonical Jobがない状態になり得る。逆にDB commit後のdispatchが失敗すると、Jobはあるのに実行されない。既存Target文書はtransaction + outboxを整合性候補として示すが、Production実装済みではない。本Moduleでは新しい方式やQueue製品を決定しない。
+DB persist前にQueue送信だけ成功すると、messageはあるのにcanonical Jobがない状態になり得ます。逆にDB commit後のdispatchが失敗すると、Jobはあるのに実行されません。既存Target文書はtransaction + outboxを整合性候補として示すが、Production実装済みではありません。本Moduleでは新しい方式やQueue製品を決定しません。
 
 ## 5. AnalysisJob, Queue Message, Attempt
 
@@ -91,14 +100,14 @@ DB persist前にQueue送信だけ成功すると、messageはあるのにcanonic
 AnalysisJob != Queue Message != Attempt
 ```
 
-| Identity        | Purpose                                                  | Lifetime / multiplicity                             | Source of Truth                               |
+| 識別する対象    | 目的                                                     | 生存期間・個数の関係                                | 正本                                          |
 | --------------- | -------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------- |
 | AnalysisJob     | 1つのbusiness executionとcanonical lifecycle             | Reanalysisごとに新規。1 Jobに複数delivery/attempt可 | Rails/PostgreSQL                              |
 | Queue Message   | technical executionを届ける単位                          | redeliveryで同一内容が複数回届き得る                | Queue delivery metadata。Business SoTではない |
 | Attempt         | 同じJobをtechnicalに実行する1試行                        | Retryごとに増え得る                                 | TARGET concept。Production model未実装        |
 | Idempotency key | 同一operation requestの重複business effectを防ぐ相関キー | operation scope内で再送に利用                       | server-side enforcementが必要                 |
 
-`1 Job -> Attempt 1 -> Attempt 2 -> Attempt 3`はあり得る。Retryはsame Jobのtechnical recoveryであり、Reanalysisはnew Job/new lineageのbusiness executionである。Queue retryが新しいAnalysisJobを勝手に作ってはならない。
+`1 Job -> Attempt 1 -> Attempt 2 -> Attempt 3`はあり得ます。Retryはsame Jobのtechnical recoveryであり、Reanalysisはnew Job/new lineageのbusiness executionです。Queue retryが新しいAnalysisJobを勝手に作ってはなりません。
 
 ## 6. Delivery semantics
 
@@ -108,11 +117,11 @@ AnalysisJob != Queue Message != Attempt
 | at-least-once | 処理されるまで再配送し得る         | duplicate deliveryを前提にConsumerを安全化する                              |
 | exactly-once  | 観測上1回の効果を目指す            | 分散境界全体の物理的一回実行は現実的に難しく、idempotent effect等で構成する |
 
-Panoptesの特定delivery guaranteeは未決定である。ただし、どの製品を選んでもtimeout、network partition、ack lossは起こり得るため、「duplicate deliveryは起きない」を正しさの前提にしない。
+Panoptesで採用する具体的な配送保証は未決定です。ただし、どの製品でもtimeout、networkの分断、受領確認の消失は起こり得るため、同じmessageが重複配送されないことを前提に正しさを設計しません。
 
 ## 7. Retry model
 
-Retryは一時的なtechnical failureからsame AnalysisJobを回復させる再試行である。
+Retryは一時的なtechnical failureからsame AnalysisJobを回復させる再試行です。
 
 | Candidate                          | Default classification | Reason                                                        |
 | ---------------------------------- | ---------------------- | ------------------------------------------------------------- |
@@ -125,13 +134,13 @@ Retryは一時的なtechnical failureからsame AnalysisJobを回復させる再
 | permanently unsupported target     | Do not retry           | capability/policy判断が必要                                   |
 | malformed persisted payload        | Do not blindly retry   | poison messageの可能性。隔離・修復・調査が必要                |
 
-一般的なpolicy要素はmax attempts、exponential backoff、jitter、retryable classification、whole-job deadlineである。無限retryはcapacity、cost、failure visibilityを損なう。具体値は本Phaseでは決めず、既存契約の設計値もProduction設定済みとは扱わない。
+一般的なpolicy要素はmax attempts、exponential backoff、jitter、retryable classification、whole-job deadlineです。無限retryはcapacity、cost、failure visibilityを損なう。具体値は本Phaseでは決めず、既存契約の設計値もProduction設定済みとは扱いません。
 
-LLM retryはさらにcost、rate limit、nondeterminism、model/prompt/version lineageを伴う。同じpromptを再送しても同じoutputとは限らず、通常のHTTP GET retryと同一視しない。
+LLMのRetryでは、cost、rate limit、出力が一定とは限らない性質、Model・prompt・versionの由来も考慮します。同じpromptを再送しても同じ出力になるとは限らないため、通常のHTTP GETのRetryと同一視しません。
 
 ## 8. Idempotency model
 
-Idempotencyは、同じoperationが複数回試行されてもcanonicalなbusiness effectを重複させない性質である。
+Idempotency（冪等性）は、同じ操作を複数回試しても、正式な業務上の効果を重複させない性質です。
 
 > **Idempotency != physical execution exactly once.** Worker codeが2回動いても、承認されるSnapshot、Usage、billing effect、canonical transitionは1つに保てる設計を目指す。
 
@@ -143,7 +152,7 @@ Panoptesで守る対象:
 - stale/duplicate lifecycle updateでterminal stateを上書きしない
 - artifactをJob/attempt/versionと関連付け、canonical selectionを曖昧にしない
 
-Frontendのidempotency key生成だけでは不十分である。Serverがscope、payload signature、保存済みresponse/effectを検証して初めてbusiness idempotencyになる。CURRENT mockは同一endpoint + key + payloadなら既存Project/Jobを返し、同じkeyで異なるpayloadなら409にするが、これはProduction enforcementの証拠ではない。
+Frontendのidempotency key生成だけでは不十分です。Serverがscope、payload signature、保存済みresponse/effectを検証して初めてbusiness idempotencyになります。CURRENT mockは同一endpoint + key + payloadなら既存Project/Jobを返し、同じkeyで異なるpayloadなら409にするが、これはProduction enforcementの証拠ではありません。
 
 ## 9. Duplicate delivery and atomic claim
 
@@ -161,7 +170,7 @@ flowchart TD
     E --> S[Canonical status / Snapshot / Usage]
 ```
 
-Scenario: Worker AがJob Xを受信し、ack前にtimeoutする。lease expiry後にWorker Bへredeliveryされる。Aが遅れて結果を返す可能性もある。
+Scenario: Worker AがJob Xを受信し、ack前にtimeoutします。lease expiry後にWorker Bへredeliveryされる。Aが遅れて結果を返す可能性もある。
 
 防御候補:
 
@@ -172,9 +181,9 @@ Scenario: Worker AがJob Xを受信し、ack前にtimeoutする。lease expiry�
 - artifact naming/commitをidempotentまたはversionedにする
 - terminal stateやcurrent Snapshotを無条件上書きしない
 
-ここでいうclaimはtechnical execution ownershipである。M12のcanonical state setへ`processing`等の新stateは追加しない。exact lock/lease/schemaはDEFERREDである。
+ここでいうclaimはtechnical execution ownershipです。M12のcanonical state setへ`processing`等の新stateは追加しません。exact lock/lease/schemaはDEFERREDです。
 
-Queue arrival orderも常に保証されない。Attempt Aの古いresultがAttempt B成功後に届いても、Railsはidentity、sequence、現在state、Organizationを検証し、canonical stateを逆行させない。
+Queue arrival orderも常に保証されません。Attempt Aの古いresultがAttempt B成功後に届いても、Railsはidentity、sequence、現在state、Organizationを検証し、canonical stateを逆行させない。
 
 ## 10. Timeout and cancellation
 
@@ -187,7 +196,7 @@ Queue arrival orderも常に保証されない。Attempt Aの古いresultがAtte
 | Worker step timeout           | crawl/capture/LLM等の1 step   | Retryable factかもしれない                           |
 | Whole Job timeout             | Job全体の許容時間             | Railsがfacts/policyを評価し`timed_out`を確定する候補 |
 
-Technical timeoutが発生しただけでWorker/Queueが即座にbusiness `timed_out`を決めない。canonical outcome ownerはRailsである。
+Technical timeoutが発生しただけでWorker/Queueが即座にbusiness `timed_out`を決めません。canonical outcome ownerはRailsです。
 
 ### 10.2 Cooperative cancellation
 
@@ -201,11 +210,11 @@ User cancel intent
 -> Rails finalizes cancelled outcome
 ```
 
-Cancel clickはinstant process killではない。cooperative cancellationはartifact/transaction境界を安全に終えやすい一方、checkpointまで遅延する。強制killは速いが、中間artifact、lease、外部request、整合性cleanupを残す危険がある。Production propagation mechanismは未実装である。
+Cancel clickはinstant process killではありません。cooperative cancellationはartifact/transaction境界を安全に終えやすい一方、checkpointまで遅延します。強制killは速いが、中間artifact、lease、外部request、整合性cleanupを残す危険があります。Production propagation mechanismは未実装です。
 
 ## 11. DLQ, poison message, heartbeat, and progress
 
-DLQはmax retryを超えた、またはpoisonと判断されたmessageを通常deliveryから隔離し、調査・修復・controlled replayするためのoperations mechanismである。
+DLQは、最大再試行回数を超えたmessageや、繰り返しても正常に処理できないと判断されたmessageを、通常の配送から隔離する運用の仕組みです。原因を調べ、修復したうえで、条件を確認しながら再投入するために使います。
 
 Poison messageの例:
 
@@ -214,7 +223,7 @@ Poison messageの例:
 - deterministic parser crash
 - 修復されない参照不整合
 
-`DLQ != failed AnalysisJob list`である。DLQはdelivery failureの隔離先で、Business outcomeはRails/PostgreSQLへ残す。DLQ messageを無検証で再投入したり、`completed`へ変えたりしない。
+`DLQ != failed AnalysisJob list`です。DLQはdelivery failureの隔離先で、Business outcomeはRails/PostgreSQLへ残します。DLQ messageを無検証で再投入したり、`completed`へ変えたりしません。
 
 | Signal                    | Answers                          | Must not be confused with   |
 | ------------------------- | -------------------------------- | --------------------------- |
@@ -222,38 +231,38 @@ Poison messageの例:
 | Progress checkpoint       | technical stepがどこまで進んだか | canonical lifecycleの決定権 |
 | Job state                 | canonical lifecycleは何か        | process healthそのもの      |
 
-Heartbeat欠落はstuck/crashの疑いを示すが、それだけで`failed`や`timed_out`を確定しない。exact interval、threshold、schemaはDEFERREDである。
+Heartbeat欠落はstuck/crashの疑いを示すが、それだけで`failed`や`timed_out`を確定しません。exact interval、threshold、schemaはDEFERREDです。
 
 ## 12. Rails / Queue / Worker boundary
 
-| Layer      | Owns                                                                                                                                      | Does not own                                                                           | Failure responsibility                                            |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Rails      | Job creation、authorization、canonical lifecycle、retry eligibility/business policy、cancellation decision、terminal outcome、Usage/Audit | crawl/Chromiumの実行、delivery transport                                               | factを検証し、canonical persistenceとresponseを整合させる         |
-| Queue      | delivery、buffering、redelivery、supported retry scheduling、lease/visibility metadata                                                    | Business authorization、canonical outcome、Snapshot/Usage truth                        | delivery failureを観測可能にし、exhausted messageを隔離可能にする |
-| Worker     | technical attempt、crawl/capture/analysis、heartbeat/progress facts、artifact production、technical error classification                  | Business statusの無条件確定、Usage/billing decision、Organization authorization policy | retry-safeに実行し、identity付きfactsをRailsへ報告する            |
-| PostgreSQL | durable Job、business status、lineage、accepted Result/Snapshot、Usage/Audit                                                              | execution delivery                                                                     | transaction/constraintによりcanonical effectを保護する            |
+| 層（Layer） | 担当すること                                                                                                                              | 担当しないこと                                                                         | 失敗時の責務                                                      |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Rails       | Job creation、authorization、canonical lifecycle、retry eligibility/business policy、cancellation decision、terminal outcome、Usage/Audit | crawl/Chromiumの実行、delivery transport                                               | factを検証し、canonical persistenceとresponseを整合させる         |
+| Queue       | delivery、buffering、redelivery、supported retry scheduling、lease/visibility metadata                                                    | Business authorization、canonical outcome、Snapshot/Usage truth                        | delivery failureを観測可能にし、exhausted messageを隔離可能にする |
+| Worker      | technical attempt、crawl/capture/analysis、heartbeat/progress facts、artifact production、technical error classification                  | Business statusの無条件確定、Usage/billing decision、Organization authorization policy | retry-safeに実行し、identity付きfactsをRailsへ報告する            |
+| PostgreSQL  | durable Job、business status、lineage、accepted Result/Snapshot、Usage/Audit                                                              | execution delivery                                                                     | transaction/constraintによりcanonical effectを保護する            |
 
-Queueからmessageが消えてもAnalysisJob historyは残らなければならない。QueueはDurable Business Databaseではない。Worker successも、validation・eligibility・persistenceを経たProduct successと同義ではない。
+Queueからmessageが消えてもAnalysisJob historyは残らなければなりません。QueueはDurable Business Databaseではありません。Worker successも、validation・eligibility・persistenceを経たProduct successと同義ではありません。
 
 ## 13. Artifact and Usage boundaries
 
-Screenshot、HTML、extraction、analysis outputはRetryで複数生成され得る。必要な設計観点はdeterministic identity、versioned artifact、attempt association、canonical selectionである。exact object key/schemaはM14以降のWorker/lineage教材へhandoffする。
+Screenshot、HTML、extraction、analysis outputはRetryで複数生成され得る。必要な設計観点はdeterministic identity、versioned artifact、attempt association、canonical selectionです。exact object key/schemaはM14以降のWorker/lineage教材へhandoffします。
 
-同様に、`Attempt count != Usage count`である。technical retryのたびにBusiness Usageを加算すると、system failureをUserへ重複請求する危険がある。何をusageとして確定するかはRails business policyであり、Billing Moduleへhandoffする。
+同様に、`Attempt count != Usage count`です。技術的なRetryのたびにBusiness Usageを加算すると、Systemの失敗によってユーザーへ重複請求する危険があります。何をUsageとして確定するかはRailsの業務policyが決め、詳細はBilling Moduleへ引き継ぎます。
 
 ## 14. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope                                                                                                                                                                                                                                                                                                                                               |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CURRENT        | FrontendがAnalysis command用idempotency keyを生成する。mock clientがkey/payload signatureを保持し、same request replay/different payload conflictを模擬する。polling controllerはone in-flight、timeout/backoff、stop decisionを扱う。adapter/runtime projectionはterminal/stale updateを防御する。Production business clientは未接続時503でfail closedする。 |
-| TARGET         | Railsがcanonical Job/business decisionを所有し、Queueがdelivery、Workerがtechnical executionを担当する。Job/attempt/sequence検証、idempotent commit、outbox等でdispatch/persistence consistencyを保護する方向が文書化されている。                                                                                                                             |
-| DEFERRED       | Production Queue製品/guarantee、Worker orchestration、Attempt persistence、claim/lease方式、retry具体値、DLQ、heartbeat、cancellation propagation、artifact identity、production server-side idempotency enforcement。                                                                                                                                        |
+| 分類     | Confirmed scope                                                                                                                                                                                                                                                                                                                                               |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT  | FrontendがAnalysis command用idempotency keyを生成する。mock clientがkey/payload signatureを保持し、same request replay/different payload conflictを模擬する。polling controllerはone in-flight、timeout/backoff、stop decisionを扱う。adapter/runtime projectionはterminal/stale updateを防御する。Production business clientは未接続時503でfail closedする。 |
+| TARGET   | Railsがcanonical Job/business decisionを所有し、Queueがdelivery、Workerがtechnical executionを担当する。Job/attempt/sequence検証、idempotent commit、outbox等でdispatch/persistence consistencyを保護する方向が文書化されている。                                                                                                                             |
+| DEFERRED | Production Queue製品/guarantee、Worker orchestration、Attempt persistence、claim/lease方式、retry具体値、DLQ、heartbeat、cancellation propagation、artifact identity、production server-side idempotency enforcement。                                                                                                                                        |
 
-承認済み設計原則はProduction実装完了を意味しない。特にCURRENTのtimer pollingやmock runtime progressionはQueue/Worker実装ではない。
+承認済み設計原則はProduction実装完了を意味しません。特にCURRENTのtimer pollingやmock runtime progressionはQueue/Worker実装ではありません。
 
 ## 15. Representative repository mapping
 
-| Representative source                                                | Role                          | Job / Attempt / Queue relation            | Idempotency relevance                         | Status                          |
+| Representative source                                                | Role                          | Job / Attempt / Queue relation            | Idempotency relevance                         | 状態                            |
 | -------------------------------------------------------------------- | ----------------------------- | ----------------------------------------- | --------------------------------------------- | ------------------------------- |
 | [M12 AnalysisJob Lifecycle](./12-analysis-job-lifecycle.md)          | canonical lifecycle教材       | JobとRetry/Reanalysisを定義               | terminal/state overwrite防止の前提            | Approved learning contract      |
 | [AnalysisJob State Machine](../../api/analysis-job-state-machine.md) | lifecycle/event設計           | attempt/sequence、stale eventの概念       | duplicate same-state no-op、old event reject  | Target design;後続PD-04差分あり |
@@ -300,31 +309,31 @@ Screenshot、HTML、extraction、analysis outputはRetryで複数生成され得
 
 ### A. Knowledge check
 
-1. Panoptes AnalysisをHTTP requestから分離する理由を2つ挙げよ。
-2. AsyncとParallelの違いを説明せよ。
+1. Panoptes AnalysisをHTTP requestから分離する理由を2つ挙げてください。
+2. AsyncとParallelの違いを説明してください。
 3. Queue acknowledgementとlease/visibilityは何を守るか。
 
 ### B. Classification
 
-次を`Business identity`、`Delivery`、`Technical execution`、`Recovery`、`Operations signal`、`Canonical outcome`へ分類せよ。
+次を`Business identity`、`Delivery`、`Technical execution`、`Recovery`、`Operations signal`、`Canonical outcome`へ分類してください。
 
 `AnalysisJob` / `Queue Message` / `Attempt` / `Retry` / `Reanalysis` / `DLQ` / `heartbeat` / `completed`
 
 ### C. Duplicate delivery
 
-同じJob XがWorker A/Bへ届いた。Snapshot、Usage、artifact、status transitionについて守るべき条件を説明せよ。
+同じJob XがWorker A/Bへ届いた。Snapshot、Usage、artifact、status transitionについて守るべき条件を説明してください。
 
 ### D. Retryability
 
-`network timeout` / `invalid URL` / `429` / `authorization denied` / `browser crash` / `malformed persisted payload`をRetry候補か分類し、理由を述べよ。
+`network timeout` / `invalid URL` / `429` / `authorization denied` / `browser crash` / `malformed persisted payload`をRetry候補か分類し、理由を述べてください。
 
 ### E. Timeout and cancellation
 
-HTTP timeout、Worker step timeout、whole Job timeoutを区別せよ。またCancel requestからWorker停止、canonical outcome確定までowner順に並べよ。
+HTTP timeout、Worker step timeout、whole Job timeoutを区別してください。またCancel requestからWorker停止、canonical outcome確定までowner順に並べよ。
 
 ### F. Violation detection
 
-各設計の問題を説明せよ。
+各設計の問題を説明してください。
 
 1. Queue messageをcanonical Jobとして扱う。
 2. RetryのたびにUsageを加算する。
@@ -335,7 +344,7 @@ HTTP timeout、Worker step timeout、whole Job timeoutを区別せよ。またCa
 
 ### G. Architecture explanation
 
-「なぜat-least-once delivery環境ではidempotencyが重要なのか」を、Job/Message/Attemptを使って説明せよ。
+「なぜat-least-once delivery環境ではidempotencyが重要なのか」を、Job/Message/Attemptを使って説明してください。
 
 ## 19. Answers and explanation guide
 
@@ -356,7 +365,7 @@ HTTP timeout、Worker step timeout、whole Job timeoutを区別せよ。またCa
 
 ### C. Duplicate delivery
 
-RailsはJob/attempt/sequence/current stateを検証し、accepted Snapshot/current pointer、Usage、terminal transitionを一度だけcommitする。artifactはattempt/versionへ関連付け、両方生成されてもcanonical selectionを一意にする。古い/重複resultはignoreまたはauditする。
+RailsはJob/attempt/sequence/current stateを検証し、accepted Snapshot/current pointer、Usage、terminal transitionを一度だけcommitします。artifactはattempt/versionへ関連付け、両方生成されてもcanonical selectionを一意にします。古い/重複resultはignoreまたはauditします。
 
 ### D. Retryability
 
@@ -366,7 +375,7 @@ RailsはJob/attempt/sequence/current stateを検証し、accepted Snapshot/curre
 
 ### E. Timeout and cancellation
 
-HTTP timeoutはrequest wait、step timeoutはtechnical subtask、whole Job timeoutはbusiness deadline評価対象である。Cancellationは`User -> Rails auth/authorization + decision -> Worker observes/checkpoints -> safe stop/fact report -> Rails canonical cancelled outcome`の順で考える。
+HTTP timeoutはrequest wait、step timeoutはtechnical subtask、whole Job timeoutはbusiness deadline評価対象です。Cancellationは`User -> Rails auth/authorization + decision -> Worker observes/checkpoints -> safe stop/fact report -> Rails canonical cancelled outcome`の順で考えます。
 
 ### F. Violation detection
 
@@ -379,7 +388,7 @@ HTTP timeoutはrequest wait、step timeoutはtechnical subtask、whole Job timeo
 
 ### G. Architecture explanation
 
-at-least-once deliveryではack lossやlease expiryにより同じJobのmessageが複数回届き、複数Attemptが動き得る。したがって「実行が1回」と仮定せず、Rails/PostgreSQL側でidentity、state、attempt/sequence、transactionを検証し、Snapshot、Usage、status等のcanonical business effectを一度に保護する必要がある。
+at-least-once deliveryではack lossやlease expiryにより同じJobのmessageが複数回届き、複数Attemptが動き得る。したがって「実行が1回」と仮定せず、Rails/PostgreSQL側でidentity、state、attempt/sequence、transactionを検証し、Snapshot、Usage、status等のcanonical business effectを一度に保護する必要があります。
 
 ## 20. Completion criteria
 
@@ -396,10 +405,10 @@ at-least-once deliveryではack lossやlease expiryにより同じJobのmessage�
 |   9 | Rails/Queue/Worker mapping + two diagrams included | `PASS` |
 |  10 | Exercises + answers included                       | `PASS` |
 
-M13 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Production Queue/Worker、retry、DLQ、heartbeat、cancellation/idempotency実装の完成判定ではない。
+M13 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Production Queue/Worker、retry、DLQ、heartbeat、cancellation/idempotency実装の完成判定ではありません。
 
 ## 21. M14 handoff
 
 Recommended next phase: `TB-15 — Module 14: Python Worker / Chromium / Collection`。
 
-M14ではWorker process、Chromium lifecycle、crawl/capture/collection、artifact production、resource/time limits、safe execution boundaryを扱う。Queue製品選定、Production実装、artifact/lineageの未決定事項は、そのModuleでも確認済みcontractを超えて確定しない。
+M14ではWorker process、Chromium lifecycle、crawl/capture/collection、artifact production、resource/time limits、safe execution boundaryを扱います。Queue製品選定、Production実装、artifact/lineageの未決定事項は、そのModuleでも確認済みcontractを超えて確定しません。

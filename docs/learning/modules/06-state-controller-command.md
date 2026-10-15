@@ -5,9 +5,9 @@ Phase: `TB-07`
 Prerequisites: `M01`, `M02`, `M03`, `M04`, `M05`  
 Primary standards: [Frontend Structure Policy](../../architecture/frontend-structure-policy.md), [Frontend Standardization Plan](../../architecture/frontend-standardization-plan.md)
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、Panoptes Frontendについて次を説明・判断できる。
+このModuleを終えた学習者は、Panoptes Frontendについて次の内容を説明し、判断できます。
 
 1. Persistent/Server/Feature/Presentation/Transient/Derived stateを区別する。
 2. Stateのcanonical ownerとFrontend holderを区別する。
@@ -16,13 +16,21 @@ Primary standards: [Frontend Structure Policy](../../architecture/frontend-struc
 5. Loading/error、technical retry、business reanalysisを混同しない。
 6. 現行実装、承認済みTarget、Deferredな分離を区別する。
 
-本Moduleは既存standardと代表実装を教材化する。Command architectureの再設計、全Feature state audit、Source変更は行わない。
+本Moduleは既存standardと代表実装を教材化します。Command architectureの再設計、全Feature state audit、Source変更は行いません。
+
+## 用語ガイド
+
+- **State（状態）:** 画面や処理が現時点でどのような状況にあるかを表す値。
+- **Controller:** Feature内のstate更新、入力処理、command呼び出し、子Component間の調整をまとめる役割。
+- **Command:** 「分析を開始する」など、状態を変える意図を明示した操作。
+- **Derived state（派生状態）:** 既存の状態から計算できる値。別の正本として重複保存しない。
+- **State owner:** その状態を最終的に確定・変更できる主体。値を表示している場所とownerは同じとは限らない。
 
 ## 2. Stateとは何か
 
-Stateは、時間やUser action、server response、environmentによって変化し、後続の表示・判断・処理に影響する値である。
+Stateは、時間、ユーザーの操作、Serverの応答、実行環境によって変わり、その後の表示・判断・処理に影響する値です。
 
-たとえば次はすべてstateだが、同じownerではない。
+たとえば次はすべてstateだが、同じownerではありません。
 
 - Databaseへ保存されたProject。
 - Railsが確定したAnalysisJob status。
@@ -33,7 +41,7 @@ Stateは、時間やUser action、server response、environmentによって変�
 - 入力途中のURL。
 - 他stateから計算した`canSubmit`。
 
-重要なのは、画面に値が表示されていることと、Frontendがその値のSource of Truthであることは別という点である。
+重要なのは、画面に値が表示されていることと、Frontendがその値のSource of Truthであることは別という点です。
 
 ```text
 Displayed by Frontend != Canonically owned by Frontend
@@ -41,7 +49,7 @@ Displayed by Frontend != Canonically owned by Frontend
 
 ### 一般的な分類
 
-| Kind               | Meaning                                              | Typical persistence                              |
+| 種類               | 意味                                                 | Typical persistence                              |
 | ------------------ | ---------------------------------------------------- | ------------------------------------------------ |
 | Persistent state   | process/reloadを越えて保持するbusiness data          | Database/backend                                 |
 | Server state       | serverから取得し、serverがauthorityを持つdata        | Backend。Frontendはcache/projectionを保持        |
@@ -50,13 +58,13 @@ Displayed by Frontend != Canonically owned by Frontend
 | Transient state    | 一時的interactionに最も近いstate                     | Local componentをdefault                         |
 | Derived state      | 他stateから再計算できる値                            | 原則として別canonical valueにしない              |
 
-Persistent stateとServer stateは重なることが多いが同義ではない。Server responseには一時的なrequest metadataも含まれうる。分類の目的は用語を増やすことではなく、誰が変更でき、どこまで信頼でき、いつ消えるかを明確にすることにある。
+永続化される状態とServerが返す状態は、重なることが多くても同じではありません。Serverの応答には、一時的なrequestのmetadataも含まれる可能性があります。この分類で、誰が変更でき、どこまで信頼でき、いつ消える値なのかを明確にします。
 
 ## 3. Panoptes State Model
 
-M04で確定したFrontend ownership modelは4層である。Derived stateはこの4層の既存値から生成されるprojectionとして扱う。
+M04で確定したFrontend ownership modelは4層です。Derived stateはこの4層の既存値から生成されるprojectionとして扱います。
 
-| State class              | Canonical owner                                          | Frontend holder / mutation path                                                                   | Examples                                                                                 |
+| 状態の分類               | Canonical owner                                          | Frontend holder / mutation path                                                                   | 例                                                                                       |
 | ------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | Canonical / Server State | Rails + persistent backend                               | Client resultをFeature/controller/storeがprojectionとして保持。MutationはCommand→Client→BFF→Rails | Project、AnalysisJob、Snapshot、Role、workflow、canonical score、Organization membership |
 | Feature State            | Feature controller/store、単一ownerならFeature component | Feature action/controllerがmutation                                                               | bootstrap、polling、request status、selected project workflow、command progress          |
@@ -65,7 +73,7 @@ M04で確定したFrontend ownership modelは4層である。Derived stateはこ
 
 ### Concrete examples
 
-| Value                           | Owner                                                      | Frontend meaning                                                         |
+| 値                              | 管理・決定の責任を持つ主体                                 | Frontendでの意味                                                         |
 | ------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------ |
 | AnalysisJobの正式status         | Rails                                                      | Store/runtime modelはresponse projectionでありauthorityではない          |
 | Snapshot metadata/content       | Rails/DB                                                   | Featureがrender用に保持し、UIへpropsで渡す                               |
@@ -78,7 +86,7 @@ M04で確定したFrontend ownership modelは4層である。Derived stateはこ
 
 ## 4. Derived State
 
-Derived stateは、既存stateから決定的に計算できる値である。
+Derived stateは、既存stateから決定的に計算できる値です。
 
 ```text
 source state -> pure calculation -> derived state
@@ -94,27 +102,27 @@ Examples:
 
 ### 保存しすぎない理由
 
-Sourceとderived valueを別々にmutationすると、同期漏れで矛盾する。
+元の値と派生値を別々に更新すると、片方の更新漏れによって矛盾が生じます。
 
 ```text
 status = "submitting"
 loading = false          # contradiction
 ```
 
-Sourceだけを更新し、derived valueを再計算すれば矛盾点を減らせる。ただし計算が高価、historical value自体にbusiness meaningがある、serverが確定値として返す場合は、単なるderived projectionではない可能性がある。
+元の値だけを更新し、派生値を再計算すれば、値の食い違いを減らせます。ただし、計算の負荷が大きい場合、過去の値自体に業務上の意味がある場合、Serverが確定値として返す場合は、単なる表示用の派生値ではない可能性があります。
 
 ### Svelte 5との関係
 
-現行Repositoryでは二つの仕組みが確認できる。
+現行Repositoryでは二つの仕組みが確認できます。
 
 - Component/runes stateの`$derived`。`PanoptesShellPage`の`reanalyzeDisabled`、`headerMeta`、Signupの`isLogin`等。
 - Svelte storeの`derived(...)`。`mainSurfaceRenderMode`、`currentRenderableSnapshot`、`whitePanelPresentation`等。
 
-どちらも「計算可能な値をもう一つのmutation authorityにしない」という原則を支える。`$derived`を使っただけで値がbusiness-safeになるわけではなく、元のcanonical meaningはRails contractに従う。
+どちらも「計算可能な値をもう一つのmutation authorityにしない」という原則を支えます。`$derived`を使っただけで値がbusiness-safeになるわけではなく、元のcanonical meaningはRails contractに従います。
 
 ## 5. State ownership rule
 
-Stateのownerは「一番近いComponent」や「最初に値を作ったfile」だけで決めない。次を順に確認する。
+Stateのownerは「一番近いComponent」や「最初に値を作ったfile」だけで決めません。次を順に確認します。
 
 1. **誰が変更理由を知っているか。** User interactionか、request lifecycleか、business transitionか。
 2. **誰がlifecycleを所有するか。** mount/destroy、polling、abort、navigationを誰が管理するか。
@@ -125,11 +133,11 @@ Stateのownerは「一番近いComponent」や「最初に値を作ったfile」
 
 ### Lift only when needed
 
-Modal openやinput draftはlocalをdefaultにする。複数childから同じstateを参照・更新し、Feature lifecycleと結び付く場合だけownerへliftする。Storeは共有手段であり、ownerを決める根拠ではない。
+Modalの開閉や入力途中の値は、原則として使う場所の近くで管理します。複数の子Componentが同じ状態を参照・更新し、Featureの一連の処理とも結び付く場合だけ、管理を上位へ引き上げます。Storeは共有の手段であり、管理責任を決める根拠ではありません。
 
 ## 6. Controller contract
 
-Panoptes FrontendのControllerは、Feature lifecycleとbehaviorをcoordinationするownerである。Rails/MVCのBackend Controllerとは別物である。
+Panoptes FrontendのControllerは、Featureの開始から終了までの流れと、その間の動作を調整する役割です。Rails/MVCのBackend Controllerとは異なります。
 
 ### Controller owns
 
@@ -151,25 +159,25 @@ Panoptes FrontendのControllerは、Feature lifecycleとbehaviorをcoordination�
 
 ### Repository shape
 
-Controllerは巨大classである必要はない。現行`createPanoptesShellController`はclosureとdependency injectionで構成され、`mount`、`start`、`retryBootstrap`、`createProject`、`retryAnalysis`等を返す。Adapterがactions/stores/client boundaryをdependencyとして注入するため、core lifecycleはraw UI/HTTPから分離されている。
+Controllerを巨大なclassにする必要はありません。現行`createPanoptesShellController`は、関数の外側の値を保持するclosureと、必要な処理を外から渡す依存性注入で構成されています。`mount`、`start`、`retryBootstrap`、`createProject`、`retryAnalysis`などを返します。AdapterがAction、Store、Clientとの接点を渡すため、Controllerの中心となる処理はUIやHTTPの詳細から分離されています。
 
-Signupでは`createSignUpController`がform state、validation、submit/resend、navigation、cleanupをcoordinationする。実装形態は異なっても、Feature lifecycle ownerという役割は共通する。
+Signupでは`createSignUpController`がform state、validation、submit/resend、navigation、cleanupをcoordinationします。実装形態は異なっても、Feature lifecycle ownerという役割は共通します。
 
 ## 7. Store, Controller, and View Model
 
-| Concept               | Primary question                       | Owns                                            | Does not automatically own                 |
+| 概念                  | Primary question                       | 担当すること                                    | Does not automatically own                 |
 | --------------------- | -------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
 | Store                 | 何をreactively保持するか               | state container、subscription                   | lifecycle、use-case、business rule         |
 | Controller            | いつ何を実行し、どうcoordinationするか | lifecycle、behavior、commands、state transition | persistence truth、visual styling          |
 | View Model / Selector | UIへ何をどの形で見せるか               | pure mapping、derived presentation              | side effect、transport、canonical mutation |
 
-`analysisRuntimeStore`はruntime valuesを保持するが、自分でpolling開始条件やretry behaviorを決めない。`PanoptesShellController`とactions/polling controllerがbehaviorをcoordinationする。`presentation.ts`のselectorsはstoresからrender modeやlabelをderiveするが、serverをmutationしない。
+`analysisRuntimeStore`はruntime valuesを保持するが、自分でpolling開始条件やretry behaviorを決めません。`PanoptesShellController`とactions/polling controllerがbehaviorをcoordinationします。`presentation.ts`のselectorsはstoresからrender modeやlabelをderiveするが、serverをmutationしません。
 
-Storeだけではuse-case orchestrationにならない。逆に、単一Feature component内で十分なstateを、標準化のためだけにglobal storeへ移す必要もない。
+Storeだけではuse-case orchestrationになりません。逆に、単一Feature component内で十分なstateを、標準化のためだけにglobal storeへ移す必要もありません。
 
 ## 8. Command contract
 
-CommandはUser/Feature intentをtyped business operationとして表現するFrontend boundaryである。
+CommandはUser/Feature intentをtyped business operationとして表現するFrontend boundaryです。
 
 ```text
 Command = what operation the Feature wants
@@ -195,9 +203,9 @@ Rails   = whether/how the business transition is accepted
 
 ### CURRENT implementation terminology
 
-現行Panoptes runtimeでは、`src/lib/panoptes/actions/analysis.ts`等のAction functionsがCommand相当のoperation intent、store updates、polling coordinationを同じmoduleで担う箇所がある。たとえば`createAndStartAnalysis`、`confirmInference`、`reanalyzeCurrentProject`が実在する。
+現行Panoptes runtimeでは、`src/lib/panoptes/actions/analysis.ts`等のAction functionsがCommand相当のoperation intent、store updates、polling coordinationを同じmoduleで担う箇所があります。たとえば`createAndStartAnalysis`、`confirmInference`、`reanalyzeCurrentProject`が実在します。
 
-これはCURRENTの実装形態であり、「全Featureが独立`commands/`とpure command contractへ移行済み」という意味ではない。教材では次のように読む。
+これはCURRENTの実装形態であり、「全Featureが独立`commands/`とpure command contractへ移行済み」という意味ではありません。教材では次のように読みます。
 
 - Function名とinput/outputからoperation intentを追う。
 - Client callからtransport boundaryを分けて読む。
@@ -206,7 +214,7 @@ Rails   = whether/how the business transition is accepted
 
 ## 9. Command vs API Client
 
-ClientはHTTP transport contractを所有する。
+ClientはHTTP transport contractを所有します。
 
 | Command / Action                                   | Client                                              |
 | -------------------------------------------------- | --------------------------------------------------- |
@@ -215,7 +223,7 @@ ClientはHTTP transport contractを所有する。
 | safe errorをFeature lifecycleへ返す                | raw transport/provider errorをsafe errorへmapping   |
 | operationの成功後に次のFeature actionへ接続        | UIやFeature stateを知らない                         |
 
-現行`canonical-bff-client.ts`はsame-origin base `/api/panoptes/v1`、typed response assertion、timeout/AbortSignal、safe error boundaryを持つ。Command/Actionは「分析開始」「推論確定」等を表し、ClientのURLやHTTP detailsをUIへ漏らさない。
+現行`canonical-bff-client.ts`はsame-origin base `/api/panoptes/v1`、typed response assertion、timeout/AbortSignal、safe error boundaryを持ちます。Command/Actionは「分析開始」「推論確定」等を表し、ClientのURLやHTTP detailsをUIへ漏らしません。
 
 ## 10. UI → Controller → Command flow
 
@@ -248,11 +256,11 @@ Rails response
 5. `reanalyzeCurrentProject` ActionがClientを呼び、responseをstoresへ反映し、pollingを同期する。
 6. Selectors/view modelが更新stateをUI propsへ写像する。
 
-UIが直接Command/fetch/store mutationを行うと、operation lifecycle、error/retry、authorization context、state mutation authorityがpresentationへ分散する。Callbackは単なるevent forwardingではなく、intentを正しいownerへ戻すboundaryである。
+UIが直接Command/fetch/store mutationを行うと、operation lifecycle、error/retry、authorization context、state mutation authorityがpresentationへ分散します。Callbackは単なるevent forwardingではなく、intentを正しいownerへ戻すboundaryです。
 
 ## 11. Server canonical boundary
 
-Frontend Controller/Command/StoreはBusiness Source of Truthではない。
+Frontend Controller/Command/StoreはBusiness Source of Truthではありません。
 
 ### Frontend may
 
@@ -271,24 +279,24 @@ Frontend Controller/Command/StoreはBusiness Source of Truthではない。
 - Official score/formula/workflow。
 - Persistent transaction outcome。
 
-たとえばFrontendで`plan === 'premium'`ならAnalysis可能と確定してはいけない。UIを無効化するpresentation hintは使えても、Railsが同じoperationを再検証し、canonical outcomeを返す必要がある。
+たとえばFrontendで`plan === 'premium'`ならAnalysis可能と確定してはいけません。UIを無効化するpresentation hintは使えても、Railsが同じoperationを再検証し、canonical outcomeを返す必要があります。
 
-Organization boundaryも同じである。Frontendが選択したIDはintent/inputであり、membership authorityではない。現行`loadOrganizationBoundary`はClient resultを検証するが、最終authorization truthはRailsにある。
+Organizationの境界も同様です。Frontendで選択したIDは要求する対象を示す入力であり、所属を証明するものではありません。現行`loadOrganizationBoundary`はClientの結果を検証しますが、最終的な認可の判断はRailsにあります。
 
 ## 12. Loading, error, partial, and retry
 
 ### Technical request stateとBusiness lifecycleを分ける
 
-| Kind               | Examples                                                                                   | Owner / meaning                                    |
+| 種類               | 例                                                                                         | Owner / meaning                                    |
 | ------------------ | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
 | Request state      | `idle`, `loading/submitting`, `success`, `failed`                                          | Feature Controller/Actionの一回のrequest lifecycle |
 | Polling state      | `polling`, `backoff`, `stopped`                                                            | Frontend technical execution                       |
 | Business lifecycle | `queued`, `running`, `awaiting_confirmation`, `completed`, `partially_completed`, `failed` | Railsが確定するAnalysisJob state                   |
 | UI representation  | spinner、warning、failed panel、partial notice                                             | UI Regulationに従うpresentation                    |
 
-`loading`は「request中」を表すが、「AnalysisJobがbusiness上running」とは限らない。HTTP requestが完了してJobがqueuedになれば、request loadingは終了してもbusiness processingは継続する。
+`loading`はrequestの処理中を表しますが、AnalysisJobが業務上のrunning状態にあるとは限りません。HTTP requestが完了してJobがqueuedになった場合、requestのloadingは終わっても分析処理は続きます。
 
-`partial`や`limited`はgeneric technical failureに潰さない。`partially_completed`は利用可能な結果と不足を持つProduct outcomeであり、単なるfetch failureとは異なる。
+`partial`や`limited`はgeneric technical failureに潰しません。`partially_completed`は利用可能な結果と不足を持つProduct outcomeであり、単なるfetch failureとは異なります。
 
 ### Retryの種類
 
@@ -302,11 +310,11 @@ business reanalysis   = 新しいAnalysis operation/Jobを開始する
 - `retryBootstrap`は失敗したFeature bootstrapの再実行。
 - `reanalyzeCurrentProject`は既存Snapshotを保持しつつ新しい分析を開始するbusiness operation。
 
-したがって`retry != new business operation`。現行Controller method名`retryAnalysis`はUI intentを受けるが、current projectがある場合はbusiness reanalysisへ接続するため、実際のsemanticsを追って読む必要がある。Queue retry、idempotency、AnalysisJob retry policyの詳細は後続Moduleへ送る。
+したがって`retry != new business operation`。現行Controller method名`retryAnalysis`はUI intentを受けるが、current projectがある場合はbusiness reanalysisへ接続するため、実際のsemanticsを追って読む必要があります。Queue retry、idempotency、AnalysisJob retry policyの詳細は後続Moduleへ送ります。
 
 ## 13. CURRENT / TARGET / DEFERRED
 
-| Status     | Meaning in this Module                                                                       |
+| 状態       | Meaning in this Module                                                                       |
 | ---------- | -------------------------------------------------------------------------------------------- |
 | `CURRENT`  | Repositoryで実装を確認できるstate/store/controller/action/client/callback flow               |
 | `TARGET`   | Structure Policyで承認済みのownershipとdependency direction                                  |
@@ -334,13 +342,13 @@ business reanalysis   = 新しいAnalysis operation/Jobを開始する
 - Rails/Queue/Workerの後続business implementation。
 - 全state ownership auditとruntime browser verification。
 
-「標準として決まっている」と「全Featureへ実装済み」は同義ではない。
+「標準として決まっている」と「全Featureへ実装済み」は同義ではありません。
 
 ## 14. Representative repository mapping
 
-以下は限定確認した11例であり、Repo-wide state/controller auditではない。
+以下は限定確認した11例であり、Repo-wide state/controller auditではありません。
 
-| Source                                                                    | State owner                                                 | Controller responsibility                                          | Command/operation responsibility                                        | Canonical source                                 | Status                                                    |
+| Source                                                                    | 状態の管理元                                                | Controllerの責務                                                   | Command・操作の責務                                                     | 正本                                             | 状態                                                      |
 | ------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
 | `ComponentsBase/Panoptes/PanoptesShellPage.svelte`                        | Feature-level local + subscribed store projection           | Controller mount、callbacks接続、derived view data                 | Controller methodへintentを渡す                                         | Project/Job/SnapshotはRails                      | `CURRENT`, component placement migration deferred         |
 | `features/panoptes-shell/controller/panoptes-shell-controller.ts`         | bootstrap statusをclosure内保持                             | mount/destroy、abort、reconnect、bootstrap、operation coordination | injected dependenciesをintent methodへ束ねる                            | Rails resultをdependency経由で受ける             | `CURRENT = TARGET responsibility`                         |
@@ -361,7 +369,7 @@ business reanalysis   = 新しいAnalysis operation/Jobを開始する
 2. **Use-case lifecycle/coordinationか？**  
    → Feature Controller。例: bootstrap、polling sync、cleanup。
 3. **User intentを表すtyped operationか？**  
-   → Command。現行ではAction functionが相当する場合がある。
+   → Command。現行ではAction functionが相当する場合があります。
 4. **HTTP method/path/timeout/response validationか？**  
    → Client。
 5. **複数consumerが購読するreactive Feature valueか？**  
@@ -369,19 +377,19 @@ business reanalysis   = 新しいAnalysis operation/Jobを開始する
 6. **表示・local interactionだけか？**  
    → UI/Composite state。
 7. **既存stateから再計算できるか？**  
-   → Derived state/view model。別canonical mutationを作らない。
+   → Derived state/view model。別canonical mutationを作りません。
 
-複数に見える場合は、side effect、lifecycle、canonical mutationを所有する責務を先に分離し、presentationをprops/callback側へ残す。
+複数に見える場合は、side effect、lifecycle、canonical mutationを所有する責務を先に分離し、presentationをprops/callback側へ残します。
 
 ## 16. Common misunderstandings
 
 ### 「Store = Controller」
 
-Storeはcontainer、Controllerはbehavior/lifecycle。Storeがあるだけではpollingやcleanupは定義されない。
+Storeはcontainer、Controllerはbehavior/lifecycle。Storeがあるだけではpollingやcleanupは定義されません。
 
 ### 「Frontend Controller = Backend Controller」
 
-Frontend ControllerはUI Feature lifecycle owner。Rails Controller/API layerとはprocess、authority、responsibilityが異なる。
+Frontend ControllerはUI Feature lifecycle owner。Rails Controller/API layerとはprocess、authority、responsibilityが異なります。
 
 ### 「Command = API Client」
 
@@ -389,7 +397,7 @@ Commandは「何をするか」、Clientは「どうtransportするか」。同�
 
 ### 「UI event handler = Command」
 
-`onclick={() => onRetry()}`はintent emission。Canonical operationをcoordinationするCommandではない。
+`onclick={() => onRetry()}`はintent emission。Canonical operationをcoordinationするCommandではありません。
 
 ### 「Frontend state = canonical business state」
 
@@ -397,26 +405,26 @@ StoreはRails responseのprojection/cache。Reload、別client、authorization�
 
 ### 「Derived stateは全部保存する」
 
-Sourceとの二重mutationが矛盾を生む。計算可能ならderiveする。
+Sourceとの二重mutationが矛盾を生みます。計算可能ならderiveします。
 
 ### 「loading = business lifecycle」
 
-Request loadingとAnalysisJob runningは別。HTTP完了後もasync Jobは継続しうる。
+Request loadingとAnalysisJob runningは別。HTTP完了後もasync Jobは継続する可能性があります。
 
 ### 「Featureがbusiness ruleを決める」
 
-FeatureはRails resultをorchestrateする。Eligibility、authorization、official transitionはRails。
+FeatureはRails resultをorchestrateします。Eligibility、authorization、official transitionはRails。
 
 ### 「API responseをUIが直接解釈すればよい」
 
-Client assertion、adapter、Feature mappingを経てdisplay-safe contractへする。UIがraw provider statusやerrorからcanonical outcomeを作らない。
+Client assertion、adapter、Feature mappingを経てdisplay-safe contractへします。UIがraw provider statusやerrorからcanonical outcomeを作りません。
 
 ## 17. Practice
 
 ### 17.1 Knowledge Check
 
 1. Server stateをFrontend Storeが保持しても、StoreがSource of Truthにならない理由は何か。
-2. Feature stateとPresentation stateの違いを例で説明せよ。
+2. Feature stateとPresentation stateの違いを例で説明してください。
 3. ControllerとStoreはどう違うか。
 4. CommandとClientはどう違うか。
 5. Derived stateを別々にmutationする危険は何か。
@@ -426,7 +434,7 @@ Client assertion、adapter、Feature mappingを経てdisplay-safe contractへす
 
 ### 17.2 Ownership Exercise
 
-次を最も適切なownerへ分類する。
+次を最も適切なownerへ分類します。
 
 1. Organization membershipのactive判定。
 2. AnalysisJobの`partially_completed` status。
@@ -441,7 +449,7 @@ Client assertion、adapter、Feature mappingを経てdisplay-safe contractへす
 
 ### 17.3 Flow Trace
 
-次を、Failure UIの「再試行」clickから更新画面表示までの順に並べる。
+次を、Failure UIの「再試行」clickから更新画面表示までの順に並べてください。
 
 - Client/BFF request。
 - UI callback。
@@ -481,11 +489,11 @@ let status = $state<'idle' | 'submitting'>('idle');
 // 両方を別々のhandlerで更新する
 ```
 
-各例の越境、正しいowner、修正方向を答える。
+各例の越境、正しいowner、修正方向を答えてください。
 
 ### 17.5 Design Exercise — Start Analysis
 
-「UserがAnalysisを開始する」機能を次へ分ける。
+「UserがAnalysisを開始する」機能を次へ分けます。
 
 - UI。
 - Feature Controller。
@@ -495,7 +503,7 @@ let status = $state<'idle' | 'submitting'>('idle');
 - Feature State / Store。
 - Derived View Model。
 
-Organization scope、loading/error、idempotency intent、response表示も含める。
+Organization scope、loading/error、idempotency intent、response表示も含めます。
 
 ## 18. Answers / Explanation Guide
 
@@ -536,7 +544,7 @@ UI callback
   -> UI props/render
 ```
 
-Errorの場合もClient safe error→Action/Controller error state→UI representationというowner chainを維持する。
+Errorの場合もClient safe error→Action/Controller error state→UI representationというowner chainを維持します。
 
 ### 18.4 Violation回答
 
@@ -575,7 +583,7 @@ UI
   renders props and emits retry/cancel/confirm intent
 ```
 
-Frontend URL format validationやduplicate click抑止は可能だが、Analysis eligibilityやJob transitionはRailsが確定する。Technical request failureとbusiness rejectionは別error contractとして表示する。
+Frontend URL format validationやduplicate click抑止は可能だが、Analysis eligibilityやJob transitionはRailsが確定します。Technical request failureとbusiness rejectionは別error contractとして表示します。
 
 ## 19. Completion Criteria
 
@@ -595,11 +603,11 @@ Frontend URL format validationやduplicate click抑止は可能だが、Analysis
 M06 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M07`
 
-このstatusは教材artifactの完成を示す。Learner assessment合格、全FeatureへのController/Command適用、Backend business implementation、Source migration完了を意味しない。
+このstatusは教材artifactの完成を示します。Learner assessment合格、全FeatureへのController/Command適用、Backend business implementation、Source migration完了を意味しません。
 
 ## 20. Handoff to M07
 
-次は`M07 — BFF`。M06のCommand/Client boundaryを前提に、SvelteKit BFFがsession/cookie、Organization boundary、Rails proxy、安全なresponse/error shapingをどう担当し、なぜbusiness Source of Truthにならないかを学ぶ。
+次は`M07 — BFF`。M06のCommand/Client boundaryを前提に、SvelteKit BFFがsession/cookie、Organization boundary、Rails proxy、安全なresponse/error shapingをどう担当し、なぜbusiness Source of Truthにならないかを学びます。
 
 ## References
 

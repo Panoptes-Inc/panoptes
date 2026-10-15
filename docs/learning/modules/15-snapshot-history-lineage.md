@@ -5,9 +5,9 @@ Phase: `TB-16`
 Difficulty: `ADVANCED`  
 Prerequisites: `M01`–`M14`
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. Snapshotを特定時点のimmutable historical product recordとして説明する。
 2. `latest`、`current`、`strategy source`、`historical Snapshot`を別のpointer/意味として扱う。
@@ -19,9 +19,17 @@ Prerequisites: `M01`–`M14`
 8. PD-01のdeep-link/current resolutionとauthorization境界を説明する。
 9. CURRENT frontend/mock、承認済みcontract、未実装persistenceを混同しない。
 
+## 用語ガイド
+
+- **Snapshot:** ある時点で確定した分析結果を、後から書き換えない記録として保存したもの。
+- **Immutable（不変）:** 作成後の内容を上書きせず、変更が必要なら新しい記録として残す性質。
+- **Lineage（系譜）:** SnapshotがどのJob、Evidence、Formula Versionなどから作られたかを追跡できる関係。
+- **Current:** Productが現在採用している対象。単に作成日時が最も新しい`latest`と同じとは限らない。
+- **Strategy Source:** Strategy生成が正式に参照する、承認済みの分析source。
+
 ## 2. History fundamentals
 
-Current Stateは現在の操作・参照対象であり、Historical Stateは過去時点の固定記録である。
+Current Stateは現在の操作・参照対象であり、Historical Stateは過去時点の固定記録です。
 
 current recordだけを上書きし続けると、次が失われる。
 
@@ -31,11 +39,11 @@ current recordだけを上書きし続けると、次が失われる。
 - Evidence、formula、modelが変わった場合の再現性
 - Userが参照・共有したresourceの安定性
 
-Historyは単なるbackupではない。Productが過去の判断根拠を説明するためのdomain resourceである。
+Historyは、Productが過去の判断根拠を説明するための業務上のresourceです。単に復旧用のbackupを保存することとは目的が異なります。
 
 ## 3. Snapshot fundamentals
 
-Panoptes Snapshotは、あるvalidated Analysis Resultを特定時点で固定したimmutable historical product recordである。
+PanoptesのSnapshotは、検証済みの分析結果を特定の時点で固定し、作成後の内容を書き換えないProductの履歴記録です。
 
 ```text
 Snapshot != Screenshot
@@ -44,7 +52,7 @@ Snapshot != Screenshot
 - Screenshot: 特定viewport・render stateのvisual Evidence Artifact
 - Snapshot: Product-level result/historyと、その意味・lineageを固定するresource
 
-1 Snapshotは多数のHTML、DOM、Screenshot、Observation、derived Resultへのlineageを持ち得る。Artifact Store上のobject identityとSnapshot identityは別である。
+1 Snapshotは多数のHTML、DOM、Screenshot、Observation、derived Resultへのlineageを持ち得る。Artifact Store上のobject identityとSnapshot identityは別です。
 
 ## 4. Current, latest, strategy source, and historical
 
@@ -54,14 +62,14 @@ Canonical invariant:
 latest != current != strategy source != historical Snapshot
 ```
 
-| Concept             | Meaning                                              | Mutability / authority                |
+| 概念                | 意味                                                 | Mutability / authority                |
 | ------------------- | ---------------------------------------------------- | ------------------------------------- |
 | Latest              | 時間的に最も新しく生成・受付されたresource           | chronological fact。採用を意味しない  |
 | Current             | Productが現在採用・表示するserver-authorized pointer | mutable relationship。Rails authority |
 | Strategy Source     | Formal Strategy generationが参照する承認済みsource   | eligibility/promotion policyに従う    |
 | Historical Snapshot | 過去時点のimmutable product record                   | contentをsilent overwriteしない       |
 
-これらが同じSnapshotを指す場合はあるが、それはidentityが同じなのではなく、別の意味を持つpointerが偶然同じtargetを参照している状態である。
+これらが同じSnapshotを指す場合もあります。ただし、同じ概念という意味ではなく、それぞれ異なる意味を持つ参照先が、たまたま同じSnapshotになっている状態です。
 
 ### Why latest is not automatically current
 
@@ -75,11 +83,11 @@ strategy source = A
 historical = A and B
 ```
 
-Bがpartial、未承認、incompatible、またはStrategy非eligibleなら、新しいだけでcurrentへ昇格させるとstable Product stateを壊す。Currentはchronological queryではなくserver-authorized canonical pointerである。
+BがPartial、未承認、互換性なし、またはStrategyに利用できない状態なら、新しいという理由だけでcurrentへ採用すると、安定したProductの状態が壊れます。Currentは単なる時系列の検索結果ではなく、Serverが認可して正式に採用した参照先です。
 
 ## 5. Snapshot immutability
 
-Snapshot作成後、そのgeneration-time content/semanticsをsilent overwriteしない。変更が必要なら原則として次を作る。
+Snapshot作成後、そのgeneration-time content/semanticsをsilent overwriteしません。変更が必要なら原則として次を作ります。
 
 ```text
 new AnalysisJob -> new Evidence/Result -> eligible new Snapshot -> explicit pointer update
@@ -93,13 +101,13 @@ Immutabilityが必要な理由:
 - trust: bookmark/shareしたresourceの意味を変えない
 - lineage: ResultとEvidence chainを後から書き換えない
 
-Immutabilityは「関連するすべてが永遠に変更不能」という意味ではない。Current pointer、Strategy selection、task execution state等のmutable relationship/resourceはあり得る。しかし、それらをSnapshot payload内で更新するか分離するかは明示的contractが必要である。
+不変性は、関連するすべての情報を永久に変更できないという意味ではありません。Currentの参照先、Strategyの選択、taskの実行状態など、変更可能な関係やresourceはあり得ます。ただし、それらをSnapshotのpayload内で更新するのか、別に管理するのかは、明示的な契約が必要です。
 
-CURRENT mock/domainはSnapshot aggregate内の`strategyPlans.isSelected`や`phaseTasks`を更新する。これはbrowser-local mock/presentation behaviorであり、承認済みProduction immutable Snapshot persistenceの証拠ではない。Target contractとの整合方法は未実装・DEFERREDであり、本Moduleでschemaを再設計しない。
+CURRENT mock/domainはSnapshot aggregate内の`strategyPlans.isSelected`や`phaseTasks`を更新します。これはbrowser-local mock/presentation behaviorであり、承認済みProduction immutable Snapshot persistenceの証拠ではありません。Target contractとの整合方法は未実装・DEFERREDであり、本Moduleでschemaを再設計しません。
 
 ## 6. Result, Artifact, and Snapshot
 
-| Concept     | Definition                                         | Example                                           | Canonical decision                                   |
+| 概念        | 定義                                               | 例                                                | 正式な判断                                           |
 | ----------- | -------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------- |
 | Evidence    | 外部対象から観測した原本fact                       | HTML、rendered DOM、Screenshot                    | Worker captures; Rails validates references          |
 | Artifact    | 保存可能なtechnical output                         | HTML object、Screenshot object、extracted JSON    | Store persists; not Product history by itself        |
@@ -107,7 +115,7 @@ CURRENT mock/domainはSnapshot aggregate内の`strategyPlans.isSelected`や`phas
 | Result      | AnalysisJobから得たvalidated Product output        | analysis sections、scores、limitations            | Rails validates usability                            |
 | Snapshot    | eligible Resultを固定したhistorical Product record | committed analysis snapshot                       | Rails creates/commits                                |
 
-`artifact exists != Result valid != Snapshot eligible`である。すべてのResultが自動的にSnapshotになるわけではなく、Snapshot eligibilityはJob outcomeとPD-04 policyに従う。
+`artifact exists != Result valid != Snapshot eligible`です。すべてのResultが自動的にSnapshotになるわけではなく、Snapshot eligibilityはJob outcomeとPD-04 policyに従います。
 
 ## 7. Evidence-to-Snapshot lineage
 
@@ -128,7 +136,7 @@ flowchart LR
     V -. lineage .-> X
 ```
 
-Lineageは「このoutputが、どのinput、processing、versionから作られたか」を追跡するrelationである。
+Lineageは「このoutputが、どのinput、processing、versionから作られたか」を追跡するrelationです。
 
 最低限の概念:
 
@@ -143,7 +151,7 @@ Lineageは「このoutputが、どのinput、processing、versionから作られ
 - Snapshot
 - SnapshotからStrategy Source等へのexplicit relationship
 
-Exact DB schemaやID formatは未決定である。存在しないfieldをCURRENT contractとして扱わない。
+Exact DB schemaやID formatは未決定です。存在しないfieldをCURRENT contractとして扱いません。
 
 ## 8. Why lineage matters
 
@@ -159,11 +167,11 @@ Scoreが去年70、今年60になったとしても、Web品質が10低下した
 - model/promptが変わった
 - missing/partial handlingが変わった
 
-Lineageがあれば、input変化とcalculation変化を分離してdebug、audit、historical interpretation、comparison可否判定を行える。Lineageがなければ数字は同じscaleでもsemanticに比較不能かもしれない。
+Lineageがあれば、入力の変化と計算方法の変化を分けて、原因調査、監査、過去結果の解釈、比較可否の判断を進められます。Lineageがなければ、同じscaleの数値でも、意味が異なって比較できないかもしれません。
 
 ## 9. Versioning and historical interpretation
 
-Panoptesで承認・検討済みのversion/provenance対象には次がある。
+Panoptesで承認・検討済みのversion/provenance対象には次があります。
 
 - Axis Contract Version
 - Analysis Pipeline Version
@@ -172,11 +180,11 @@ Panoptesで承認・検討済みのversion/provenance対象には次がある。
 - collection/extraction/tool version候補
 - model/prompt/classifier version（該当Observationでconditional）
 
-CURRENT Snapshot frontend typeは`versionLabel`を持つが、これは上記すべてを一意解決するcanonical lineage implementationではない。OpenAPI draftはinteger `version`とgeneric `payload`を持つが、Production persistence/API完成を意味しない。
+CURRENT Snapshot frontend typeは`versionLabel`を持つが、これは上記すべてを一意解決するcanonical lineage implementationではありません。OpenAPI draftはinteger `version`とgeneric `payload`を持つが、Production persistence/API完成を意味しません。
 
 ### Generation-time semantics
 
-Formula v1で作ったSnapshotを、Formula v2導入後にsilent再計算・再解釈しない。
+Formula v1で作ったSnapshotを、Formula v2導入後にsilent再計算・再解釈しません。
 
 安全な選択肢:
 
@@ -185,11 +193,11 @@ Formula v1で作ったSnapshotを、Formula v2導入後にsilent再計算・再�
 - explicit reanalysisでnew Job/new Snapshotを生成
 - unsupported historical stateとして明示
 
-Old Snapshotへcurrent labels/formulaを無条件適用すると、当時存在しなかった意味を過去recordへ注入することになる。
+Old Snapshotへcurrent labels/formulaを無条件適用すると、当時存在しなかった意味を過去recordへ注入することになります。
 
 ## 10. Reanalysis and Evidence reuse
 
-Reanalysisはold Snapshotの更新ではない。
+Reanalysisはold Snapshotの更新ではありません。
 
 ```text
 Old Snapshot remains immutable
@@ -200,7 +208,7 @@ Old Snapshot remains immutable
 -> explicit current/source decision
 ```
 
-PD-04はnew identities + immutable lineage、recollection default、versioned Explicit Reuse Profile、silent reuse禁止を承認している。
+PD-04はnew identities + immutable lineage、recollection default、versioned Explicit Reuse Profile、silent reuse禁止を承認しています。
 
 Evidence reuseを明示する必要がある理由:
 
@@ -209,13 +217,13 @@ Evidence reuseを明示する必要がある理由:
 - collection/pipeline versionが変わっているかもしれない
 - Partial/coverage conditionを引き継ぐ必要がある
 
-Exact Reuse Profile schemaやpolicy条件はDEFERREDである。
+Exact Reuse Profile schemaやpolicy条件はDEFERREDです。
 
 ## 11. Snapshot eligibility and Partial Snapshot
 
 PD-04 baseline:
 
-| AnalysisJob terminal outcome | Snapshot eligibility     | Meaning                                        |
+| AnalysisJob terminal outcome | Snapshot eligibility     | 意味                                           |
 | ---------------------------- | ------------------------ | ---------------------------------------------- |
 | `completed`                  | `CAN_CREATE`             | validation後のFull Snapshot候補                |
 | `partially_completed`        | `CONDITIONAL`            | limitations付きS-B Limited Snapshot            |
@@ -223,13 +231,13 @@ PD-04 baseline:
 | `cancelled`                  | `CANNOT_CREATE` baseline | terminal reasonをpartialへsilent rewriteしない |
 | `timed_out`                  | `CANNOT_CREATE` baseline | intermediate artifactとFormal Snapshotを分離   |
 
-Limited Snapshotには少なくともlimitations、incomplete processing、partial provenanceが必要で、Full Snapshotと同じ意味で扱わない。
+Limited Snapshotには少なくともlimitations、incomplete processing、partial provenanceが必要で、Full Snapshotと同じ意味で扱いません。
 
-Observation `PARTIAL`、Axis/Score partial、Job `partially_completed`、Limited Snapshotは別conceptである。一つを他へ自動変換しない。
+Observation `PARTIAL`、Axis/Score partial、Job `partially_completed`、Limited Snapshotは別conceptです。一つを他へ自動変換しません。
 
 ## 12. Strategy Source boundary
 
-Strategy SourceはFormal Strategy generationが参照するProduct sourceである。
+Strategy SourceはFormal Strategy generationが参照するProduct sourceです。
 
 ```text
 Strategy Source != latest Snapshot
@@ -242,7 +250,7 @@ PD-04 v1:
 - Partial Result/Limited Snapshot: `EVIDENCE_ONLY`
 - PartialはFormal Strategy Sourceへauto/manual promotionしない
 
-将来のcontrolled exceptionが示唆されても、v1でmanual promotion ruleを新設してはならない。Current表示とStrategy入力は別decisionである。
+将来のcontrolled exceptionが示唆されても、v1でmanual promotion ruleを新設してはなりません。Current表示とStrategy入力は別decisionです。
 
 ## 13. Current/latest/source pointer model
 
@@ -261,11 +269,11 @@ flowchart TD
     style SB stroke-dasharray: 5 5
 ```
 
-この例ではBがAより新しいためlatestだが、Limitedでauto-promotion不可なのでcurrent/Strategy SourceはAを維持できる。Cはさらに新しいJobでもcommitted Snapshotがないため、Snapshot latestとは別である。
+この例ではBがAより新しいためlatestだが、Limitedでauto-promotion不可なのでcurrent/Strategy SourceはAを維持できます。Cはさらに新しいJobでもcommitted Snapshotがないため、Snapshot latestとは別です。
 
 ## 14. Deep-link and historical access
 
-PD-01BはModel C — Hybrid Current Pointer + Explicit Historical Resourceを承認している。
+PD-01BはModel C — Hybrid Current Pointer + Explicit Historical Resourceを承認しています。
 
 - identity-less `/app/analysis`: active Organizationのserver-authorized currentを解決
 - currentがなければAnalysis Entry / empty state
@@ -274,13 +282,13 @@ PD-01BはModel C — Hybrid Current Pointer + Explicit Historical Resourceを承
 - URL resource ID: selectorでありauthorization proofではない
 - Rails: Organization/resource ownershipを毎回認可
 
-Missing/forbidden/unavailable/unsupported historical resourceをcurrent、latest、別Organizationへsilent fallbackしない。意図が変わるためである。Failureを区別して明示する。
+指定された履歴resourceが見つからない、権限がない、利用不能、または未対応の場合、通知せずcurrent、latest、別Organizationのresourceへ切り替えません。参照する意図が変わるため、失敗の種類を区別して明示します。
 
-CURRENT routesはexplicit Snapshot selection/state restorationを実装していない。承認済みLogical ContractとProduction implementationを混同しない。
+CURRENT routesはexplicit Snapshot selection/state restorationを実装していません。承認済みLogical ContractとProduction implementationを混同しません。
 
 ## 15. Historical compatibility and comparison
 
-Snapshot比較では値の型や表示scaleが同じだけでなく、semantic contractが比較可能か確認する。
+Snapshot比較では値の型や表示scaleが同じだけでなく、semantic contractが比較可能か確認します。
 
 確認対象候補:
 
@@ -291,37 +299,37 @@ Snapshot比較では値の型や表示scaleが同じだけでなく、semantic c
 - Missing/Partial treatment
 - model/prompt/classifier version
 
-Compatibilityが不明またはhigh riskなら、simple numeric deltaだけを表示しない。view-only、version indication、comparison unavailable等のexplicit stateが必要になり得る。Exact comparison algorithmは本Moduleで決めない。
+Compatibilityが不明またはhigh riskなら、simple numeric deltaだけを表示しません。view-only、version indication、comparison unavailable等のexplicit stateが必要になり得ます。Exact comparison algorithmは本Moduleで決めません。
 
 ## 16. Audit vs Lineage
 
-| Concept | Question               | Example                                                         |
+| 概念    | 確認する問い           | 例                                                              |
 | ------- | ---------------------- | --------------------------------------------------------------- |
 | Audit   | 誰が、いつ、何をしたか | User AがT時点でreanalysisを要求した                             |
 | Lineage | 何から何が作られたか   | Snapshot SはResult R、Job J、Evidence E、Formula v1から作られた |
 
-Audit recordだけではoutput derivationを再現できず、lineageだけではactor/action authorizationを説明できない。両者は関連しても代替ではない。
+Auditの記録だけでは、結果がどの入力・計算から導かれたかを再現できません。一方、Lineageだけでは、誰のどの操作が認可されたかを説明できません。両者は関連しますが、互いを代替するものではありません。
 
 ## 17. Retention and deletion
 
-Snapshot、Evidence、Artifactの保持期間、legal hold、User deletion、storage tier、cascade behaviorは未決定である。
+Snapshot、Evidence、Artifactの保持期間、legal hold、User deletion、storage tier、cascade behaviorは未決定です。
 
-Immutabilityは「永久保存」を意味しない。Retention/deletion policyによりresource自体が削除される可能性はあるが、silent mutationやunrelated currentへのfallbackとは別問題である。本Moduleでは保持期間や削除規則を新設しない。
+Immutabilityは「永久保存」を意味しません。Retention/deletion policyによりresource自体が削除される可能性はあるが、silent mutationやunrelated currentへのfallbackとは別問題です。本Moduleでは保持期間や削除規則を新設しません。
 
 ## 18. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope                                                                                                                                                                                                                                                                                |
+| 分類           | Confirmed scope                                                                                                                                                                                                                                                                                |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | CURRENT        | Frontend typeに`analysisSnapshotId`、`versionLabel`、aggregate payloadがあり、Projectに`currentSnapshotId`、storeに`currentSnapshot`/`lastStableSnapshot`がある。selectorはactive reanalysis中にlast stable Snapshotを保持する。mockはcompleted時にSnapshotを生成しcurrent pointerを更新する。 |
 | CURRENT caveat | explicit historical route/restorationは未実装。mock/domainはSnapshot aggregate内のstrategy selection/taskを更新するため、Production immutability実装の証拠ではない。Frontend payloadにfull Evidence/Artifact/formula/model lineageはない。                                                     |
 | TARGET         | Rails/PostgreSQLがimmutable committed Snapshot、current pointer、authorization、lineage、Strategy Source eligibilityをcanonicalに保持する。PD-01 Model CとPD-04 Limited Snapshot/Evidence-only/new lineageを適用する。                                                                         |
 | DEFERRED       | Rails schema/persistence、exact Result ID、explicit Snapshot URL/API、history UI、artifact linkage、full lineage graph、compatibility resolution、Strategy Source persistence、retention/deletion、reuse profile、migration from mutable mock aggregate。                                      |
 
-Approved Product DecisionはProduction persistence完成を意味しない。
+Approved Product DecisionはProduction persistence完成を意味しません。
 
 ## 19. Representative repository mapping
 
-| Representative source                                                          | Role                            | Current/history meaning                          | Lineage role                            | Status                                                                  |
+| Representative source                                                          | Role                            | Current/history meaning                          | Lineage role                            | 状態                                                                    |
 | ------------------------------------------------------------------------------ | ------------------------------- | ------------------------------------------------ | --------------------------------------- | ----------------------------------------------------------------------- |
 | [Product Decision Register](../../product/product-decision-register.md) PD-01B | deep-link/current contract      | Model C、explicit historical、no silent fallback | Job/Snapshot identity semantics         | Approved; implementation deferred                                       |
 | [Product Decision Register](../../product/product-decision-register.md) PD-04  | partial workflow                | Limited Snapshot、current/source separation      | new Job/new identity/reuse contract     | Approved; implementation deferred                                       |
@@ -336,7 +344,7 @@ Approved Product DecisionはProduction persistence完成を意味しない。
 | `src/lib/panoptes/api/mock/runtime-ticker.ts` / `mock-backend.ts`              | browser-local mock persistence  | completed→Snapshot/current update                | Job→mock Snapshot only                  | CURRENT mock; not canonical backend                                     |
 | `src/lib/panoptes/domain/strategy-snapshot.ts`                                 | client strategy/task projection | aggregate payloadをcopy-update                   | exposes immutability implementation gap | CURRENT presentation/mock behavior                                      |
 
-`GET .../analysis-snapshots/latest`というTarget draft endpoint名はchronological latestを表し得るが、PD-01/PD-04のserver-authorized currentやStrategy Sourceと同義ではない。後続contract実装時に意味を明示する必要がある。
+`GET .../analysis-snapshots/latest`というTarget draft endpoint名はchronological latestを表し得るが、PD-01/PD-04のserver-authorized currentやStrategy Sourceと同義ではありません。後続contract実装時に意味を明示する必要があります。
 
 ## 20. Common misunderstandings
 
@@ -372,25 +380,25 @@ Approved Product DecisionはProduction persistence完成を意味しない。
 
 ### A. Knowledge check
 
-1. SnapshotとScreenshotの違いを説明せよ。
-2. Current pointerがchronological latestでない理由を説明せよ。
-3. Immutabilityと永久保存が同義でない理由を説明せよ。
+1. SnapshotとScreenshotの違いを説明してください。
+2. Current pointerがchronological latestでない理由を説明してください。
+3. Immutabilityと永久保存が同義でない理由を説明してください。
 
 ### B. Classification
 
-`Screenshot` / `HTML` / `Analysis Result` / `Historical Snapshot` / `Current pointer` / `Strategy Source` / `Audit record` / `Lineage edge`を分類せよ。
+`Screenshot` / `HTML` / `Analysis Result` / `Historical Snapshot` / `Current pointer` / `Strategy Source` / `Audit record` / `Lineage edge`を分類してください。
 
 ### C. Pointer exercise
 
-Snapshot Aはcompleted/fullでcurrent/Strategy Source。後からSnapshot Bがpartially_completed/Limitedで作成された。さらにJob CがrunningでSnapshot未生成である。Snapshot chronological latest、Job latest、current、Strategy Source、historical collectionを答えよ。
+Snapshot Aはcompleted/fullでcurrent/Strategy Source。後からSnapshot Bがpartially_completed/Limitedで作成された。さらにJob CがrunningでSnapshot未生成です。Snapshot chronological latest、Job latest、current、Strategy Source、historical collectionを答えてください。
 
 ### D. Eligibility exercise
 
-`completed`、`partially_completed`、`failed`、`cancelled`、`timed_out`ごとのSnapshot eligibilityとStrategy Source eligibilityを説明せよ。
+`completed`、`partially_completed`、`failed`、`cancelled`、`timed_out`ごとのSnapshot eligibilityとStrategy Source eligibilityを説明してください。
 
 ### E. Lineage trace
 
-Snapshotのscoreが変化した原因を調べる際、Snapshotからどのresource/versionへ遡るべきか順序を示せ。
+Snapshotのscoreが変化した原因を調べる際、Snapshotからどのresource/versionへ遡るべきか順序を示してください。
 
 ### F. Historical compatibility
 
@@ -407,7 +415,7 @@ Formula v1 SnapshotをFormula v2 UIで表示・比較する場合、何を確認
 
 ### H. Architecture explanation
 
-「なぜPanoptesではSnapshotをimmutableにするのか」を、audit、reproducibility、comparison、lineage、User trustを使って説明せよ。
+「なぜPanoptesではSnapshotをimmutableにするのか」を、audit、reproducibility、comparison、lineage、User trustを使って説明してください。
 
 ## 23. Answers and explanation guide
 
@@ -434,7 +442,7 @@ Formula v1 SnapshotをFormula v2 UIで表示・比較する場合、何を確認
 - Strategy Source: A
 - Historical collection: AとB
 
-BはLimitedでv1 auto-promotion不可、CはまだSnapshotを持たない。
+BはLimitedでv1 auto-promotion不可、CはまだSnapshotを持ちません。
 
 ### D. Eligibility exercise
 
@@ -444,11 +452,11 @@ BはLimitedでv1 auto-promotion不可、CはまだSnapshotを持たない。
 
 ### E. Lineage trace
 
-`Snapshot -> validated Result -> AnalysisJob/attempt -> Observation -> Evidence/Artifact -> source/capture context`へ遡り、並行してFormula/Profile、Axis Contract、Pipeline、Observation Schema、model/prompt等のgeneration-time versionを確認する。
+`Snapshot -> validated Result -> AnalysisJob/attempt -> Observation -> Evidence/Artifact -> source/capture context`へ遡り、並行してFormula/Profile、Axis Contract、Pipeline、Observation Schema、model/prompt等のgeneration-time versionを確認します。
 
 ### F. Historical compatibility
 
-Formula identity/profile、Axis/Observation schema、coverage、Missing/Partial、model/prompt等を確認する。互換性不明ならsimple deltaやsilent v2 recalculationを避け、version indication、view-only、comparison unavailable、explicit reanalysisを選ぶ。
+Formula identity/profile、Axis/Observation schema、coverage、Missing/Partial、model/prompt等を確認します。互換性不明ならsimple deltaやsilent v2 recalculationを避け、version indication、view-only、comparison unavailable、explicit reanalysisを選びます。
 
 ### G. Violation detection
 
@@ -456,7 +464,7 @@ Formula identity/profile、Axis/Observation schema、coverage、Missing/Partial�
 
 ### H. Architecture explanation
 
-Snapshotをimmutableにすると、当時のProduct Resultと意味を固定でき、誰が見たrecordかをauditし、同じEvidence/version chainを追跡し、compatibleなhistoryだけを比較できる。bookmark/shareの意味も変わらず、new analysisはnew Snapshotとして差分を残せるためUser trustを守れる。
+Snapshotをimmutableにすると、当時のProduct Resultと意味を固定でき、誰が見たrecordかをauditし、同じEvidence/version chainを追跡し、compatibleなhistoryだけを比較できます。bookmark/shareの意味も変わらず、new analysisはnew Snapshotとして差分を残せるためUser trustを守れる。
 
 ## 24. Completion criteria
 
@@ -473,10 +481,10 @@ Snapshotをimmutableにすると、当時のProduct Resultと意味を固定で�
 |   9 | Repository mapping + two diagrams included     | `PASS` |
 |  10 | Exercises + answers included                   | `PASS` |
 
-M15 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Production Snapshot persistence、history UI、lineage graph、compatibility engine、retention policyの完成判定ではない。
+M15 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Production Snapshot persistence、history UI、lineage graph、compatibility engine、retention policyの完成判定ではありません。
 
 ## 25. M16 handoff
 
 Recommended next phase: `TB-17 — Module 16: Common 6 Axis`。
 
-M16では6つのCanonical Axisについてidentity、label、definition、order、Axis Contract Versionを学ぶ。Snapshotのgeneration-time axis/version lineageを前提にするが、FormulaやMissing/Partial policyを再設計しない。
+M16では6つのCanonical Axisについてidentity、label、definition、order、Axis Contract Versionを学びます。Snapshotのgeneration-time axis/version lineageを前提にするが、FormulaやMissing/Partial policyを再設計しません。

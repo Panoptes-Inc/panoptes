@@ -5,9 +5,9 @@ Phase: `TB-25`
 Difficulty: `INTERMEDIATE`  
 Prerequisites: `M01`–`M23`（direct curriculum dependencies: `M03`, `M04`, `M06`–`M18`, `M22`, `M23`）
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. Testingを「期待するContractやBehaviorが壊れていないことを再現可能に検証する仕組み」として説明する。
 2. Unit、Integration、Contract、Component、E2E、Static Checkを、速さではなく守る対象と境界で選ぶ。
@@ -18,18 +18,26 @@ Prerequisites: `M01`–`M23`（direct curriculum dependencies: `M03`, `M04`, `M0
 7. Regression、Flaky Test、Test Isolation、Mock/Stub/Fakeのtrade-offを判断する。
 8. CURRENT実装、TARGET portfolio、DEFERRED verificationを混同しない。
 
-本教材はTesting/CI/CDの学習資料である。Test追加、workflow変更、Dependency追加、Build/Test/Quality/Security scan、Deploymentは行わない。
+本教材はTesting/CI/CDの学習資料です。Test追加、workflow変更、Dependency追加、Build/Test/Quality/Security scan、Deploymentは行いません。
+
+## 用語ガイド
+
+- **Invariant（不変条件）:** 処理経路や入力が変わっても、常に守らなければならない規則。
+- **Contract Test:** System間のrequest/responseやschemaが、共有した契約どおりか確認するTest。
+- **Regression（回帰不具合）:** 変更によって、以前動いていた機能や契約が壊れること。
+- **CI（Continuous Integration）:** 変更を統合するたび、自動でlint、type check、test、buildなどを確認する仕組み。
+- **CD（Continuous Delivery / Deployment）:** 検証済みの変更を、配布または本番反映できる状態へ進める仕組み。
 
 ## 2. Testing fundamentals
 
-Testingは、期待するContract、Behavior、Invariantを入力と観測可能な結果へ落とし、変更後も同じ期待を満たすか再現可能に確認する仕組みである。
+Testingは、期待する契約・動作・不変条件を、具体的な入力と観測できる結果で表し、変更後もその期待を満たすか、繰り返し確認できる仕組みです。
 
 ```text
 Test PASS != Bugが存在しない証明
 Test PASS  = 記述された条件と観測範囲では期待を満たしたというEvidence
 ```
 
-Testの価値は件数ではなく、次の問いへ答えられるかで決まる。
+Testの価値は件数ではなく、次の問いへ答えられるかで決まります。
 
 - 何を守るか。
 - どのLayerがそのContractを所有するか。
@@ -39,7 +47,7 @@ Testの価値は件数ではなく、次の問いへ答えられるかで決ま�
 
 ## 3. What tests protect
 
-| Protected concern | Panoptes example                    | Primary test candidate           |
+| Protected concern | Panoptesでの例                      | Primary test candidate           |
 | ----------------- | ----------------------------------- | -------------------------------- |
 | Behavior          | Button callback、polling停止        | Unit / Component                 |
 | Business rule     | 許可されたJob transition            | Rails Unit / Integration         |
@@ -51,11 +59,11 @@ Testの価値は件数ではなく、次の問いへ答えられるかで決ま�
 | Idempotency       | duplicate requestで副作用1回        | Integration                      |
 | Regression        | 過去Bugの再発防止                   | EscapeしたLayerに最も近いTest    |
 
-一つのTestが全Concernを守る必要はない。むしろ「何を守るTestか」を狭く説明できる方がfailureを診断しやすい。
+一つのTestですべての問題を検出する必要はありません。「何を守るTestか」を絞って説明できる方が、失敗した原因を特定しやすくなります。
 
 ## 4. Test portfolio, not a single pyramid
 
-Test Pyramidは、一般に速く局所的なTestを広い土台にし、接続範囲が広く高価なTestを絞る考え方である。しかし実際には、Panoptesのriskに合わせたTest Portfolioとして扱う。
+Test Pyramidは、一般に速く局所的なTestを広い土台にし、接続範囲が広く高価なTestを絞る考え方です。しかし実際には、Panoptesのriskに合わせたTest Portfolioとして扱います。
 
 ```mermaid
 flowchart TB
@@ -80,7 +88,7 @@ Static、Unit、Integration、Contract、Component、E2E、Security-oriented che
 
 ## 5. Unit Test
 
-Unit Testは小さいlogicを外部依存からできるだけ切り離して検証する。
+Unit Testは小さいlogicを外部依存からできるだけ切り離して検証します。
 
 Panoptes候補:
 
@@ -90,11 +98,11 @@ Panoptes候補:
 - Formula helper（exact formulaが承認・実装された後）
 - safe redirect、error mapping、polling decision
 
-速く、failure原因を限定しやすい。一方、DB constraint、HTTP serialization、routing、real adapter接続は保証しない。
+速く、failure原因を限定しやすい。一方、DB constraint、HTTP serialization、routing、real adapter接続は保証しません。
 
 ## 6. Integration Test
 
-Integration Testは複数の実装単位またはLayerの接続を検証する。
+Integration Testは複数の実装単位またはLayerの接続を検証します。
 
 - Rails Model + PostgreSQL constraint/transaction
 - Controller + Authentication/Authorization + Service
@@ -106,9 +114,9 @@ Integration Testは複数の実装単位またはLayerの接続を検証する�
 
 ## 7. Contract Test
 
-Contract TestはLayer間Interfaceの双方が同じ約束を理解しているかを検証する。
+Contract Testは、Layer間の接点で、提供側と利用側が同じ約束に従っているかを検証します。
 
-Panoptesでは特に次が重要になる。
+Panoptesでは特に次が重要になります。
 
 - OpenAPI endpoint / method / request / response / status / operationId
 - SvelteKit BFF ↔ Rails
@@ -117,11 +125,11 @@ Panoptesでは特に次が重要になる。
 - Snapshot projection / historical resource
 - Frontend API type / canonical adapter
 
-OpenAPI fileがparse可能でも、Rails routeとFrontend adapterが一致するとは限らない。Schema validation、implementation route、consumer expectationを段階的に結ぶ必要がある。
+OpenAPI fileがparse可能でも、Rails routeとFrontend adapterが一致するとは限りません。Schema validation、implementation route、consumer expectationを段階的に結ぶ必要があります。
 
 ## 8. Component / UI Test
 
-Component Testはrender、props、presentation state、callback、local interactionを検証する。Feature command/APIをComponentへ持ち込むのではなく、M04のBoundaryに従ってcallback contractをTestする。
+Component Testでは、描画、props、表示用の状態、callback、局所的な操作を検証します。TestのためにFeatureのcommandやAPIをComponentへ持ち込まず、M04の責務境界に従ってcallbackの契約を確認します。
 
 重要なUI state:
 
@@ -133,13 +141,13 @@ Component Testはrender、props、presentation state、callback、local interact
 - Unsupported Historical
 - Disabled / Unavailable
 
-`Partial`をgeneric Emptyに潰さない、`Forbidden`をFailedに見せない、`Valid Zero`をMissingに変換しない、といったM18/M22の意味境界を守る。
+`Partial`をgeneric Emptyに潰さない、`Forbidden`をFailedに見せない、`Valid Zero`をMissingに変換しない、といったM18/M22の意味境界を守ります。
 
-Automated accessibility checkはaccessible name、label、role、ARIA misuseの一部を検出できる。しかしKeyboard操作、screen reader理解、focus order、contrast/visual contextの実測を完了させるものではない。
+Accessibilityの自動検査は、accessible name、label、role、ARIAの誤用の一部を検出できます。ただし、keyboardでの操作、Screen readerでの理解、focusの順序、contrastや視覚的な文脈を、実際に確かめる作業まで完了するものではありません。
 
 ## 9. End-to-End Test
 
-E2EはUser perspectiveで複数Layerを通るFlowを検証する。
+E2EはUser perspectiveで複数Layerを通るFlowを検証します。
 
 価値が高い候補:
 
@@ -149,11 +157,11 @@ E2EはUser perspectiveで複数Layerを通るFlowを検証する。
 - Authorization denialを含むcritical route
 - Historical Snapshot表示
 
-E2Eは実環境に近い一方、遅く、failure原因が広く、setupも高価である。Pure formula計算をE2Eだけで守らず、最小のUnit/Contractとcritical journeyのE2Eを組み合わせる。
+E2Eは実環境に近い一方、遅く、failure原因が広く、setupも高価です。Pure formula計算をE2Eだけで守らず、最小のUnit/Contractとcritical journeyのE2Eを組み合わせる。
 
 ## 10. Static, build, type, and lint checks
 
-| Check                 | Detects                                              | Does not prove                        |
+| 検査                  | 検出できること                                       | 証明しないこと                        |
 | --------------------- | ---------------------------------------------------- | ------------------------------------- |
 | Type / Svelte check   | shape mismatch、nullable misuse、template/type error | Runtime business correctness          |
 | Lint                  | suspicious pattern、code/policy consistency          | Behavior correctness                  |
@@ -163,11 +171,11 @@ E2Eは実環境に近い一方、遅く、failure原因が広く、setupも高�
 | Secret boundary check | 定義されたclient exposure pattern                    | 全Secret漏洩が不存在                  |
 | Static security scan  | 既知pattern / rule match                             | Security completion                   |
 
-`Build PASS`、`Type PASS`、`Lint PASS`は有用なEvidenceだが、相互の代替ではない。
+`Build PASS`、`Type PASS`、`Lint PASS`は有用なEvidenceだが、相互の代替ではありません。
 
 ## 11. Database and business invariant tests
 
-DB Testはconstraint、relation、transaction、uniqueness、persistenceを守る。UI TestでDB invariantを代替しない。
+DB Testはconstraint、relation、transaction、uniqueness、persistenceを守ります。UI TestでDB invariantを代替しません。
 
 例:
 
@@ -192,7 +200,7 @@ Tenant isolationはHappy Pathだけでは守れない。最低限のtest design 
 6. Foreign Resource ID
 7. Selected Organizationとresource ownerの不一致
 
-Browserのhidden buttonやBFFだけの拒否は補助controlであり、Railsのresource-derived authorizationをTestする。Cross-tenant IDは404等のsafe responseで存在を漏らさないcontractも対象となる。
+Browserのhidden buttonやBFFだけの拒否は補助controlであり、Railsのresource-derived authorizationをTestします。Cross-tenant IDは404等のsafe responseで存在を漏らさないcontractも対象となります。
 
 ## 13. AnalysisJob and async tests
 
@@ -207,9 +215,9 @@ M12/M13から次をTestへ落とす。
 - stale responseの無視
 - progress pollingの停止条件
 
-Retry Testは「再試行されるか」を守る。Idempotency Testは「同一Request/Messageが複数回処理されても、Snapshot、Usage、Billing、mutation等の副作用が重複しないか」を守る。両者は同じではない。
+Retry Testは「再試行されるか」を守ります。Idempotency Testは「同一Request/Messageが複数回処理されても、Snapshot、Usage、Billing、mutation等の副作用が重複しないか」を守ります。両者は同じではありません。
 
-Async Testでarbitrary sleepや無限waitに依存するとFlakyになりやすい。Clock、event、polling boundaryを制御し、明示的timeoutとeventual assertionを使う設計が望ましい。
+非同期のTestで、根拠のない固定時間の待機や無限waitへ依存すると、結果が不安定になりやすくなります。時刻、event、pollingの境界を制御し、timeoutを明示して、期待する状態になるまで上限付きで確認する設計が望まれます。
 
 ## 14. Worker tests
 
@@ -222,9 +230,9 @@ Worker候補:
 - pipeline stage combination
 - output envelope / provenance
 
-外部Websiteは変更・停止・rate limit・地域差を持つ。Production external siteへ常時依存するTestを基本suiteの中心にせず、captured fixture、local fake server、narrow integration、別枠canary等に責務を分ける。
+外部Websiteは変更・停止・rate limit・地域差を持ちます。Production external siteへ常時依存するTestを基本suiteの中心にせず、captured fixture、local fake server、narrow integration、別枠canary等に責務を分けます。
 
-M14のWorkerは多くがTARGETである。runtime未実装部分は「既存Testがある」と書かず、Target Test Designとして扱う。
+M14のWorkerは多くがTARGETです。runtime未実装部分は「既存Testがある」と書かず、Target Test Designとして扱います。
 
 ## 15. Formula, completeness, and eligibility tests
 
@@ -238,7 +246,7 @@ M17/M18の重要case:
 - no silent zero fill
 - no silent current-version fallback
 
-Exact Formula parameterやthresholdが未決定なら、数値expectedを発明しない。承認済みContractのstate separation、version preservation、failure behaviorを先にTest Designへする。
+Exact Formula parameterやthresholdが未決定なら、数値expectedを発明しません。承認済みContractのstate separation、version preservation、failure behaviorを先にTest Designへします。
 
 ## 16. Snapshot / History / Lineage tests
 
@@ -251,11 +259,11 @@ Snapshotで守るもの:
 - unsupported historical state
 - current stateへのsilent fallback禁止
 
-単に画面がrenderできるTestでは、historical truthが現在値にすり替わっていないことを保証できない。
+単に画面がrenderできるTestでは、historical truthが現在値にすり替わっていないことを保証できません。
 
 ## 17. Regression workflow
 
-Regression Testは一度修正したBugや重要Behaviorの再発を検出する。
+Regression Testは一度修正したBugや重要Behaviorの再発を検出します。
 
 ```text
 Bug reproduction
@@ -265,13 +273,13 @@ Bug reproduction
   -> CI gate
 ```
 
-先に再現できれば、修正が本当に対象Bugへ効いたかを確認できる。Test配置は「Bugが見えた場所」だけでなく「どのContractが欠けたか」で決める。
+先に再現できれば、修正が本当に対象Bugへ効いたかを確認できます。Test配置は「Bugが見えた場所」だけでなく「どのContractが欠けたか」で決めます。
 
 ## 18. Test data and isolation
 
-Test dataはdeterministic、minimal、representativeにする。Production Dataへ依存せず、Tenant testではOrganization A/BとMembershipを明示的に分ける。
+Test dataはdeterministic、minimal、representativeにします。Production Dataへ依存せず、Tenant testではOrganization A/BとMembershipを明示的に分けます。
 
-各Testは可能な限り、次へ依存しない。
+各Testは可能な限り、次へ依存しません。
 
 - 他Testの実行順
 - 共有DB/global state
@@ -280,7 +288,7 @@ Test dataはdeterministic、minimal、representativeにする。Production Data�
 - uncontrolled network
 - 前回runのartifact
 
-Isolationは現実をすべてMockする意味ではない。重要Integrationはreal boundaryで検証し、Test間の副作用を分離する。
+Testを分離するとは、すべてをMockへ置き換えることではありません。重要な接続は実物を使って検証しながら、あるTestの変更が別のTestへ影響しないようにします。
 
 ## 19. Mock, Stub, Fake, and over-mocking
 
@@ -290,13 +298,13 @@ Isolationは現実をすべてMockする意味ではない。重要Integration�
 | Stub   | controlled responseを返す                   |
 | Fake   | 簡略化したworking implementation            |
 
-Libraryごとの用語差はあるためRepositoryのAPIを優先する。Mockを増やすほど品質が高くなるわけではない。すべての境界をMockすると、Productionでは成立しないInterface同士がTest内だけで一致し得る。
+Libraryごとの用語差はあるためRepositoryのAPIを優先します。Mockを増やすほど品質が高くなるわけではありません。すべての境界をMockすると、Productionでは成立しないInterface同士がTest内だけで一致する可能性があります。
 
-原則は、外部・非決定的境界をcontrolled doubleへ置き換え、重要な内部integrationとshared contractは別Testで実物接続することである。
+原則は、外部・非決定的境界をcontrolled doubleへ置き換え、重要な内部integrationとshared contractは別Testで実物接続することです。
 
 ## 20. Flaky tests
 
-Flaky Testは同じCode/期待でもPass/Failが不安定なTestである。
+Flaky Testは同じCode/期待でもPass/Failが不安定なTestです。
 
 原因候補:
 
@@ -308,18 +316,18 @@ Flaky Testは同じCode/期待でもPass/Failが不安定なTestである。
 - browser animation/layout
 - resource shortage
 
-Retryで緑にするだけでは根因を直さず、real regressionも隠す。再現条件を集め、ownerを持たせ、isolate/fixする。必要なquarantineは一時的・追跡可能にする。
+Retryで緑にするだけでは根因を直さず、real regressionも隠す。再現条件を集め、ownerを持たせ、isolate/fixします。必要なquarantineは一時的・追跡可能にします。
 
 ## 21. CI fundamentals
 
-Continuous Integrationは、変更を頻繁に統合し、変更ごとにautomated check/testを実行してintegration riskを早く検出する仕組みである。
+Continuous Integrationは、変更を頻繁に統合し、変更ごとにautomated check/testを実行してintegration riskを早く検出する仕組みです。
 
 ```text
 CI != Deploy
 CI PASS != Production readiness
 ```
 
-CURRENTのFrontend GitHub ActionsはPR、main push、manual dispatchでNode品質checksを実行する。Rails workflowはPR/main pushでPostgreSQL serviceとRails test/lint/security checksを実行する。これは確認済みpipelineの説明であり、branch protectionやrequired check設定そのものの確認ではない。
+CURRENTのFrontend GitHub ActionsはPR、main push、manual dispatchでNode品質checksを実行します。Rails workflowはPR/main pushでPostgreSQL serviceとRails test/lint/security checksを実行します。これは確認済みpipelineの説明であり、branch protectionやrequired check設定そのものの確認ではありません。
 
 ## 22. CI pipeline and fast feedback
 
@@ -337,9 +345,9 @@ flowchart LR
     J --> K[Post-deploy verification / observability]
 ```
 
-速いCheckを先に置けばFail Fastになる。一般候補はlint/type → unit → integration/contract → build/E2Eだが、exact順序はcost、parallelism、riskと現行workflowに従う。
+速いCheckを先に置けばFail Fastになります。一般候補はlint/type → unit → integration/contract → build/E2Eだが、exact順序はcost、parallelism、riskと現行workflowに従います。
 
-Required Gateはmerge/deploy前に必須とするcheckである。Formal gate setやbranch protectionは運用決定が必要であり、本教材から新設しない。
+Required Gateはmerge/deploy前に必須とするcheckです。Formal gate setやbranch protectionは運用決定が必要であり、本教材から新設しません。
 
 ### CURRENT observation
 
@@ -347,11 +355,11 @@ Required Gateはmerge/deploy前に必須とするcheckである。Formal gate se
 - `.github/workflows/quality.yml`は個別commandを実行し、限定確認時点では`check:frontend-inventory`を含まない。Local `quality`とCI workflowは同一commandではない。
 - `.github/workflows/rails-quality.yml`はRails test、RuboCop、Brakeman、bundler-auditを実行する。
 
-差異は「直ちに不正」と断定せず、意図したGate setかをM25以降の実装・運用判断で確認する。
+差異は「直ちに不正」と断定せず、意図したGate setかをM25以降の実装・運用判断で確認します。
 
 ## 23. CD, Deploy, and Release
 
-Continuous Deliveryは、validated artifactをいつでもEnvironmentへ届けられる状態に保ち、Production反映にhuman approvalを残し得る。Continuous Deploymentは、合格変更を自動でProductionまで反映する方式である。
+Continuous Deliveryは、validated artifactをいつでもEnvironmentへ届けられる状態に保ち、Production反映にhuman approvalを残する可能性があります。Continuous Deploymentは、合格変更を自動でProductionまで反映する方式です。
 
 ```text
 CI          = integrate and verify
@@ -360,11 +368,11 @@ Deployment  = Environmentへ配置
 Release     = Userへ機能を有効化
 ```
 
-Feature FlagはDeployとReleaseを分離できる一般概念だが、Panoptesでの採用を本教材では決定しない。
+Feature FlagはDeployとReleaseを分離できる一般概念だが、Panoptesでの採用を本教材では決定しません。
 
 ## 24. Deployment gate, environment, and rollback
 
-Environmentは概念上local、development、staging、production等に分かれる。環境差を小さくしつつ、Secret、Data、permissionは分離する。
+Environmentは概念上local、development、staging、production等に分かれる。環境差を小さくしつつ、Secret、Data、permissionは分離します。
 
 Deployment Gate候補:
 
@@ -375,9 +383,9 @@ Deployment Gate候補:
 - smoke/health check
 - observability/rollback readiness
 
-DB changeでは`expand → migrate/backfill → contract`のcompatibilityを考える。Destructive migrationはcode rollbackだけで元に戻らない場合があるため、rollback planはapplicationとdataの両方を扱う。
+DB changeでは`expand → migrate/backfill → contract`のcompatibilityを考えます。Destructive migrationはcode rollbackだけで元に戻らない場合があるため、rollback planはapplicationとdataの両方を扱います。
 
-Panoptesの正式CD platform、environment topology、approval、rollback方式は確認範囲で確定していないためTARGET/DEFERREDとして扱う。
+Panoptesの正式CD platform、environment topology、approval、rollback方式は確認範囲で確定していないためTARGET/DEFERREDとして扱います。
 
 ## 25. Security in CI
 
@@ -390,34 +398,34 @@ M23と接続するCandidate:
 - protected environment secret
 - artifact/dependency provenance
 
-CURRENT Rails CIにはBrakemanとbundler-auditがあり、Frontend qualityにはclient secret boundary scriptがある。これらのPASSはSecurity完了、penetration test、runtime isolation、Zero vulnerabilityを意味しない。
+CURRENT Rails CIにはBrakemanとbundler-auditがあり、Frontend qualityにはclient secret boundary scriptがあります。これらのPASSはSecurity完了、penetration test、runtime isolation、Zero vulnerabilityを意味しません。
 
-CI Secretはlogへ出さず、最小permission、environment separation、短命credential/approved secret mechanismを検討する。Exact platform solutionはInfrastructure Moduleへhandoffする。
+CI Secretはlogへ出さず、最小permission、environment separation、短命credential/approved secret mechanismを検討します。Exact platform solutionはInfrastructure Moduleへhandoffします。
 
 ## 26. Coverage and what not to test
 
-Coverageは「実行されたCode」のMetricであり、assertionの質、missing requirement、Production interactionを直接示さない。
+Coverageは、Test中に実行されたコードの範囲を表す指標です。検証内容の質、抜けている要件、本番での連携動作を直接示すものではありません。
 
 ```text
 100% coverage != Bugなし
 low-value assertion x many != protected contract
 ```
 
-Exact coverage targetは新規決定しない。Riskの高いBusiness/Authorization/Contract/Invariantを優先する。
+Exact coverage targetは新規決定しません。Riskの高いBusiness/Authorization/Contract/Invariantを優先します。
 
-Private implementation detailだけを固定するTestはrefactor耐性が低い。可能ならBehavior、Contract、Invariantを検証し、内部構造の変更を不要に阻害しない。
+Private implementation detailだけを固定するTestはrefactor耐性が低い。可能ならBehavior、Contract、Invariantを検証し、内部構造の変更を不要に阻害しません。
 
 ## 27. Testing by layer
 
-| Layer                | Owns tests for                                                  | Must not claim               |
-| -------------------- | --------------------------------------------------------------- | ---------------------------- |
-| Frontend UI          | render、props、callback、UI state、a11yの自動検出可能部分       | Rails business authorization |
-| Feature / Controller | state transition request、mapping、command coordination         | DB durability                |
-| SvelteKit BFF        | session/context、proxy、status/error、timeout                   | Canonical business decision  |
-| Rails                | business rule、authorization、transaction、canonical transition | Browser visual behavior      |
-| PostgreSQL           | constraint、relation、uniqueness、atomic persistence            | User journey                 |
-| Worker               | technical collection/parser/artifact/failure behavior           | Product business truth       |
-| Cross-layer          | OpenAPI/queue/result contract、critical E2E                     | 全caseのexhaustive proof     |
+| 層（Layer）          | 検証する対象                                                    | 証明済みと主張してはいけないこと |
+| -------------------- | --------------------------------------------------------------- | -------------------------------- |
+| Frontend UI          | render、props、callback、UI state、a11yの自動検出可能部分       | Rails business authorization     |
+| Feature / Controller | state transition request、mapping、command coordination         | DB durability                    |
+| SvelteKit BFF        | session/context、proxy、status/error、timeout                   | Canonical business decision      |
+| Rails                | business rule、authorization、transaction、canonical transition | Browser visual behavior          |
+| PostgreSQL           | constraint、relation、uniqueness、atomic persistence            | User journey                     |
+| Worker               | technical collection/parser/artifact/failure behavior           | Product business truth           |
+| Cross-layer          | OpenAPI/queue/result contract、critical E2E                     | 全caseのexhaustive proof         |
 
 ## 28. Change-to-test matrix
 
@@ -437,7 +445,7 @@ Private implementation detailだけを固定するTestはrefactor耐性が低い
 
 ## 29. Worked example: cross-tenant Snapshot deep-link
 
-Bug: Organization AのUserが、URLへOrganization BのSnapshot IDを入れると閲覧できる。
+Bug: Organization AのUserが、URLへOrganization BのSnapshot IDを入れると閲覧できます。
 
 1. Missing controlを特定する。Browser/BFFがIDを隠すことではなく、RailsがSnapshotからowning Organizationを導出してMembership/Roleを検証すべきである。
 2. Rails authorization integration testを追加する設計にする。A member + B Snapshotでsafe deny、B memberでallow、foreign IDの存在を漏らさないresponseを確認する。
@@ -459,7 +467,7 @@ Bug: Organization AのUserが、URLへOrganization BのSnapshot IDを入れる�
 - GitHub ActionsのFrontend/Rails quality workflows
 - Rails CIのRuboCop、Brakeman、bundler-audit
 
-これらは2026-10-07の限定的な代表ファイル確認であり、Test全件監査や実行結果ではない。Historical quality baselineを現在のPASS件数・状態として扱わない。
+これらは2026-10-07の限定的な代表ファイル確認であり、Test全件監査や実行結果ではありません。Historical quality baselineを現在のPASS件数・状態として扱いません。
 
 ### TARGET
 
@@ -499,7 +507,7 @@ Bug: Organization AのUserが、URLへOrganization BのSnapshot IDを入れる�
 | `rails/test/integration/api_v1_boundary_test.rb`    | Rails Integration          | auth、Membership/Role、Organization isolation      | `CURRENT`      |
 | `rails/test/integration/openapi_contract_test.rb`   | Contract                   | implemented Rails readsとOpenAPI route             | `CURRENT`      |
 
-補助確認として、`rails/test/models/identity_boundary_test.rb`はSupabase subject identityとrole/status invariantを、`rails/test/services/auth/supabase_jwt_verifier_test.rb`はJWT/JWKS failure behaviorを守る。
+補助確認として、`rails/test/models/identity_boundary_test.rb`はSupabase subject identityとrole/status invariantを、`rails/test/services/auth/supabase_jwt_verifier_test.rb`はJWT/JWKS failure behaviorを守ります。
 
 ## 32. Common misunderstandings
 
@@ -534,13 +542,13 @@ Bug: Organization AのUserが、URLへOrganization BのSnapshot IDを入れる�
 
 ### A. Knowledge Check
 
-1. Test PASSが「Bugなし」を意味しない理由を述べよ。
-2. Build、Type、Lintがそれぞれ守る範囲を述べよ。
-3. CIとCD、DeployとReleaseを区別せよ。
+1. Test PASSが「Bugなし」を意味しない理由を述べてください。
+2. Build、Type、Lintがそれぞれ守る範囲を述べてください。
+3. CIとCD、DeployとReleaseを区別してください。
 
 ### B. Test Type Classification
 
-次をUnit、Integration、Contract、Component、E2E、Staticへ分類せよ。
+次をUnit、Integration、Contract、Component、E2E、Staticへ分類してください。
 
 1. `partially_completed`をterminalとして扱うpure mapper。
 2. Rails transactionとPostgreSQL uniqueness。
@@ -561,23 +569,23 @@ Bug: Organization AのUserが、URLへOrganization BのSnapshot IDを入れる�
 
 ### D. Authorization Test
 
-Organization A/B、owner/viewer/guest/non-member、A/BそれぞれのSnapshotを使い、allow/deny tableを作れ。Foreign resource IDで存在を漏らさない期待も含めよ。
+Organization A/B、owner/viewer/guest/non-member、A/BそれぞれのSnapshotを使い、allow/deny tableを作ってください。Foreign resource IDで存在を漏らさない期待も含めよ。
 
 ### E. Async Test
 
-同じQueue messageが2回deliveryされ、1回目はResult保存後にack前failureした。RetryとIdempotencyのassertionを分けて設計せよ。
+同じQueue messageが2回deliveryされ、1回目はResult保存後にack前failureした。RetryとIdempotencyのassertionを分けて設計してください。
 
 ### F. Formula Test
 
-Missing、N/A、Unknown、Partial、Valid Zeroが混在するinputについて、state separation、eligibility、version preservationをTestせよ。未決定のexact thresholdは発明しないこと。
+Missing、N/A、Unknown、Partial、Valid Zeroが混在するinputについて、state separation、eligibility、version preservationをTestしてください。未決定のexact thresholdは発明しないこと。
 
 ### G. CI Exercise
 
-Checkout、install、static、unit、integration/contract、build、gate、artifact/deliveryをfail-fastの観点で並べ、並列化可能箇所を説明せよ。
+Checkout、install、static、unit、integration/contract、build、gate、artifact/deliveryをfail-fastの観点で並べ、並列化可能箇所を説明してください。
 
 ### H. Flaky Test Exercise
 
-次を原因categoryと対策へ分類せよ。
+次を原因categoryと対策へ分類してください。
 
 - 固定2秒sleep後にpolling結果をassert
 - Production Websiteのtextを期待
@@ -598,17 +606,17 @@ Checkout、install、static、unit、integration/contract、build、gate、artif
 
 ### J. Architecture Explanation
 
-「なぜPanoptesではTestをLayerごとに分け、Contract TestとE2Eも併用するのか」を、owner、failure localization、integration drift、critical journeyの観点から説明せよ。
+「なぜPanoptesではTestをLayerごとに分け、Contract TestとE2Eも併用するのか」を、owner、failure localization、integration drift、critical journeyの観点から説明してください。
 
 ## 35. Answers / explanation guide
 
 ### A. Knowledge Check
 
-Testは記述されたinput/expectationと観測範囲だけを確認する。未記述case、環境差、誤ったexpectationは残り得る。Buildはbundle生成、Typeはshape/nullability、Lintはstatic ruleを主に守り、Business behaviorを直接証明しない。CIは統合時の自動検証、CDはvalidated changeのdelivery、Deployは配置、ReleaseはUserへの有効化である。
+Testは記述されたinput/expectationと観測範囲だけを確認します。未記述case、環境差、誤ったexpectationは残り得る。Buildはbundle生成、Typeはshape/nullability、Lintはstatic ruleを主に守り、Business behaviorを直接証明しません。CIは統合時の自動検証、CDはvalidated changeのdelivery、Deployは配置、ReleaseはUserへの有効化です。
 
 ### B. Test Type Classification
 
-1 Unit、2 Integration、3 Contract、4 Component、5 E2E、6 Static。実Repositoryでは一つのfile名よりも実際の依存範囲で分類する。
+1 Unit、2 Integration、3 Contract、4 Component、5 E2E、6 Static。実Repositoryでは一つのfile名よりも実際の依存範囲で分類します。
 
 ### C. Change-to-Test Exercise
 
@@ -620,31 +628,31 @@ Testは記述されたinput/expectationと観測範囲だけを確認する。�
 
 ### D. Authorization Test
 
-Resource owner Organizationを起点に、active permitted roleのみallowする。Guest/non-member/wrong Organization/suspendedをdenyし、foreign IDはsafe not-found等のapproved responseとする。Browser-selected orgだけで判断しない。
+Resource owner Organizationを起点に、active permitted roleのみallowします。Guest/non-member/wrong Organization/suspendedをdenyし、foreign IDはsafe not-found等のapproved responseとします。Browser-selected orgだけで判断しません。
 
 ### E. Async Test
 
-Retry assertionはfailure後にmessageが再処理されること。Idempotency assertionは同じidempotency identityでResult/Snapshot/Usage等が1件だけで、terminal transitionも重複しないこと。Delivery回数とBusiness side effect数を別々に観測する。
+Retry assertionはfailure後にmessageが再処理されること。Idempotency assertionは同じidempotency identityでResult/Snapshot/Usage等が1件だけで、terminal transitionも重複しないこと。Delivery回数とBusiness side effect数を別々に観測します。
 
 ### F. Formula Test
 
-各stateをzeroへ変換せず保持し、approved required-set/eligibility contractだけをassertする。formula/profile/axis/order versionをResult/Snapshotへ保存し、未決定thresholdのexpected numberは置かない。
+各stateをzeroへ変換せず保持し、approved required-set/eligibility contractだけをassertします。formula/profile/axis/order versionをResult/Snapshotへ保存し、未決定thresholdのexpected numberは置きません。
 
 ### G. CI Exercise
 
-基本順はCheckout → deterministic install → fast static → unit → integration/contract → build/smoke → gate → artifact/delivery。独立するlint/type/unitやFrontend/Rails jobはresourceとdependencyを考慮して並列化できる。Fail Fastと診断性を優先する。
+基本順はCheckout → deterministic install → fast static → unit → integration/contract → build/smoke → gate → artifact/delivery。独立するlint/type/unitやFrontend/Rails jobはresourceとdependencyを考慮して並列化できます。Fail Fastと診断性を優先します。
 
 ### H. Flaky Test Exercise
 
-順にtiming、external network/content、shared state/order、uncontrolled clock、browser timingである。Eventual assertion/clock control、fixture/fake server、per-test data cleanup、fixed clock、animation/control ready conditionへ置き換える。
+順にtiming、external network/content、shared state/order、uncontrolled clock、browser timingです。Eventual assertion/clock control、fixture/fake server、per-test data cleanup、fixed clock、animation/control ready conditionへ置き換える。
 
 ### I. Violation Detection
 
-順にwrong layer/slow diagnosis、insufficient gate、negative authorization gap、external nondeterminism、masked failure、metric gaming、secret leakage、producer/consumer driftである。
+順にwrong layer/slow diagnosis、insufficient gate、negative authorization gap、external nondeterminism、masked failure、metric gaming、secret leakage、producer/consumer driftです。
 
 ### J. Architecture Explanation
 
-各Layerは異なるContractとfailure modeを持つため、ownerに近いTestほど速く正確に原因を特定できる。一方、単体のPASSだけではserializationやroute等の境界driftを捕まえられないためContract Testを置く。さらにcritical user journeyが実際につながることを限定的E2Eで確認する。複数Layerのportfolioにより、速度、診断性、現実性を両立する。
+各Layerは異なるContractとfailure modeを持つため、ownerに近いTestほど速く正確に原因を特定できます。一方、単体のPASSだけではserializationやroute等の境界driftを捕まえられないためContract Testを置きます。さらにcritical user journeyが実際につながることを限定的E2Eで確認します。複数Layerのportfolioにより、速度、診断性、現実性を両立します。
 
 ## 36. Completion criteria
 
@@ -661,13 +669,13 @@ Retry assertionはfailure後にmessageが再処理されること。Idempotency 
 |   9 | Repository mapping + diagrams included          | `PASS` |
 |  10 | Exercises + answers included                    | `PASS` |
 
-M24 authoring result: `10 / 10 PASS`。教材完成はTest実行、CI/CD運用、Production readiness、Deployment automationの完成を意味しない。
+M24 authoring result: `10 / 10 PASS`。教材完成はTest実行、CI/CD運用、Production readiness、Deployment automationの完成を意味しません。
 
 ## 37. M25 handoff
 
 Recommended next phase: `TB-26 — Module 25: Logging / Monitoring / Audit`。
 
-M25ではstructured logging、correlation、metrics、tracing、alert、incident investigation、Business/Security Audit、Lineageとの違いを扱う。Monitoring implementationやProduction tool導入は教材作成と分離する。
+M25ではstructured logging、correlation、metrics、tracing、alert、incident investigation、Business/Security Audit、Lineageとの違いを扱います。Monitoring implementationやProduction tool導入は教材作成と分離します。
 
 ## References
 

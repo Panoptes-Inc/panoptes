@@ -5,9 +5,9 @@ Phase: `TB-29`
 Difficulty: `ADVANCED`  
 Prerequisites: `M01`–`M27`（direct curriculum dependencies: `M01`, `M06`–`M18`, `M24`–`M27`）
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. PerformanceとScalabilityを区別する。
 2. Latency、Throughput、Concurrency、Saturation、Backlogを正しく使い分ける。
@@ -19,11 +19,20 @@ Prerequisites: `M01`–`M27`（direct curriculum dependencies: `M01`, `M06`–`M
 8. Capacity、Headroom、Reliability、Security、Correctness、Costのtrade-offを評価する。
 9. CURRENT設定、TARGET instrumentation、DEFERRED tuningを混同しない。
 
-本教材はDocumentation-onlyである。Performance tuning、Cache/Index/Query/Concurrency/Autoscaling変更、Load/Benchmark/Traffic simulation、Infrastructure/Source変更、build/test/qualityは行わない。
+本教材はDocumentation-onlyです。Performance tuning、Cache/Index/Query/Concurrency/Autoscaling変更、Load/Benchmark/Traffic simulation、Infrastructure/Source変更、build/test/qualityは行いません。
+
+## 用語ガイド
+
+- **Performance（性能）:** 現在の条件で、処理がどれだけ速く・安定して完了するか。
+- **Scalability（拡張性）:** 利用量が増えたとき、resourceや構成を増減して処理能力を維持・拡張できる性質。
+- **Latency（待ち時間）:** 一つのrequestやJobが開始してから結果を返すまでの時間。
+- **Throughput（処理量）:** 単位時間あたりに処理できるrequestやJobの数。
+- **Concurrency（同時実行数）:** 同じ時間帯に進行している処理の数。
+- **Saturation（飽和）:** CPU、connection、Worker slotなどが限界に近づき、待ちや失敗が増える状態。
 
 ## 2. Performance fundamentals
 
-Performanceは、Systemが要求された処理をどれだけ速く、効率的に完了できるかである。Response timeだけでなく、resource usage、responsiveness、completion time、処理量も含む。
+Performanceは、Systemが要求された処理をどれだけ速く、効率よく完了できるかを表します。Response時間に加え、resource使用量、操作への応答性、処理完了までの時間、処理量も含みます。
 
 ```text
 Fast once != Efficient
@@ -31,11 +40,11 @@ Low average != Good tail latency
 Performance != Scalability
 ```
 
-Panoptesでは短いAPI responseと長いAnalysis completionを同じLatencyとして扱わない。
+Panoptesでは短いAPI responseと長いAnalysis completionを同じLatencyとして扱いません。
 
 ## 3. Scalability fundamentals
 
-Scalabilityは、loadが増えたときにacceptable performanceを維持できる能力である。
+Scalabilityは、loadが増えたときにacceptable performanceを維持できる能力です。
 
 - 1 Userでは高速、1000 concurrent usersで急激に遅い: baseline performanceは良くてもscalabilityに問題がある。
 - 1 Analysisが常に遅い: scaleよりsingle-operation bottleneck/algorithm/dependencyを疑う。
@@ -43,7 +52,7 @@ Scalabilityは、loadが増えたときにacceptable performanceを維持でき�
 
 ## 4. Core performance terms
 
-| Concept     | Meaning                          | Panoptes example                          |
+| 概念        | 意味                             | Panoptesでの例                            |
 | ----------- | -------------------------------- | ----------------------------------------- |
 | Latency     | 一つのoperation完了時間          | API response、Job completion、LLM call    |
 | Throughput  | 一定時間内の処理量               | requests/sec、jobs/hour、pages/min        |
@@ -52,7 +61,7 @@ Scalabilityは、loadが増えたときにacceptable performanceを維持でき�
 | Backlog     | 到着済みだが未処理の仕事         | queue depth/oldest message age            |
 | Bottleneck  | 全体性能を最も制限する箇所       | DB、Chromium、LLM、Storage等              |
 
-Concurrencyを増やすとThroughputが増える場合があるが、Saturation後はLatencyが急増し、Throughputが頭打ちまたは悪化する。
+同時実行数を増やすと処理量が増える場合があります。ただし、resourceが飽和した後は待ち時間が急増し、処理量が頭打ちになったり、かえって減ったりします。
 
 ## 5. Percentiles and tail latency
 
@@ -62,7 +71,7 @@ Averageだけでは少数の非常に遅いrequestを隠す。
 - p95: 遅い側5%境界
 - p99: tail behavior
 
-Average 200msでもp99が数秒なら重要User flowに影響し得る。正式SLO/percentile targetは決めない。測定window、sample count、operation typeを揃えて比較する。
+Average 200msでもp99が数秒なら重要User flowに影響する可能性があります。正式SLO/percentile targetは決めません。測定window、sample count、operation typeを揃えて比較します。
 
 ## 6. Measure before optimize
 
@@ -81,7 +90,7 @@ flowchart LR
     R --> M
 ```
 
-順序はMeasure → Bottleneck → Hypothesis → Change → Measure againである。「遅そうだからcache」「CPUが高いからinstance追加」のようなpremature optimizationを避ける。
+「測定→処理を制限している箇所の特定→仮説→変更→再測定」の順で進めます。「遅そうだからCacheを入れる」「CPUが高いからinstanceを増やす」といった、原因を確かめる前の最適化は避けます。
 
 ## 7. End-to-end performance flow
 
@@ -101,7 +110,7 @@ flowchart LR
     S[Saturation] -.resource-specific.-> W
 ```
 
-End-to-end completionは各区間のLatencyとwaiting timeの合計に依存する。APIが速くてもQueueで長く待てばUserは遅いと感じる。
+処理全体の完了時間は、各区間の実行時間と待ち時間に依存します。APIの応答が速くてもQueueで長く待つなら、ユーザーは分析の完了が遅いと感じます。
 
 ## 8. Little's Law intuition
 
@@ -111,7 +120,7 @@ End-to-end completionは各区間のLatencyとwaiting timeの合計に依存す�
 Concurrency ≈ Throughput × Time in system
 ```
 
-例えばJob到着率が同じでもdurationが伸びればactive Job数が増える。これは厳密なCapacity計算を置き換えず、Latency・Throughput・Concurrencyの関連を理解する補助である。
+例えばJob到着率が同じでもdurationが伸びればactive Job数が増えます。これは厳密なCapacity計算を置き換えず、Latency・Throughput・Concurrencyの関連を理解する補助です。
 
 ## 9. Frontend performance
 
@@ -126,24 +135,24 @@ Candidate concerns:
 - duplicate request/polling
 - route transition
 
-Code splitting、lazy loading、virtualization、memoizationは候補であり、測定せず導入しない。Heavy UI libraryを見つけてもbundle contributionとactual route usageを確認する。
+Code splitting、lazy loading、virtualization、memoizationは候補であり、測定せず導入しません。Heavy UI libraryを見つけてもbundle contributionとactual route usageを確認します。
 
 ## 10. Perceived performance
 
-Actual durationが同じでもloading feedback、skeleton、progressive rendering、deferred detailでUser perceptionは変わる。ただし:
+Actual durationが同じでもloading feedback、skeleton、progressive rendering、deferred detailでUser perceptionは変わります。ただし:
 
 - Optimistic UIでCanonical Business successを偽装しない。
 - Fake progressをJob stateとして扱わない。
 - Loading stateをaccessibilityと一致させる。
 - Partial/Limitedをcompleted表示へ潰さない。
 
-Perceived performanceはTruth/State Contractを守る範囲で改善する。
+Perceived performanceはTruth/State Contractを守る範囲で改善します。
 
 ## 11. Polling performance boundary
 
-CURRENT Frontend polling controllerは、一度に一つのin-flight requestだけを許し、offline時は再scheduleし、default request timeoutを30秒にする。Runtime mappingは通常2.5秒、confirmation待ち6秒のpolling intervalを持ち、terminal stateで停止する。
+現行Frontendのpolling controllerは、処理中のrequestを一度に一つへ制限し、offline時は次回の取得を再scheduleします。既定のrequest timeoutは30秒です。Runtimeの対応付けでは、通常は2.5秒、確認待ちは6秒の間隔で状態を取得し、終端状態になると停止します。
 
-これはcurrent configuration evidenceであり、Production trafficに最適な値という実測結論ではない。
+これはcurrent configuration evidenceであり、Production trafficに最適な値という実測結論ではありません。
 
 Polling loadは概念上:
 
@@ -151,7 +160,7 @@ Polling loadは概念上:
 active polling clients / interval
 ```
 
-に比例する。同時Jobが増えればBFF/Rails/DBへのread trafficも増える。Adaptive interval、server push等は候補だが採用を決めない。
+に比例します。同時Jobが増えればBFF/Rails/DBへのread trafficも増える。Adaptive interval、server push等は候補だが採用を決めません。
 
 ## 12. API / BFF performance
 
@@ -163,15 +172,15 @@ BFFのLatency component:
 - upstream wait
 - response parse/serialization
 
-CURRENT Canonical BFF clientはdefault 15秒timeoutを持ち、BFF→Rails clientはenvironment timeoutを100ms〜30秒に制限する。Timeoutはresource占有とfalse failureのtrade-offで、値だけ見て良否を断定しない。
+CURRENT Canonical BFF clientはdefault 15秒timeoutを持ち、BFF→Rails clientはenvironment timeoutを100ms〜30秒に制限します。Timeoutはresource占有とfalse failureのtrade-offで、値だけ見て良否を断定しません。
 
-BFFに重いFormula、collection、Business computationを置くとrequest runtimeを長くし、Web scalingとWorker workloadをcoupleする。BFFはtransport/session/orchestration境界を維持する。
+BFFに重いFormula、collection、Business computationを置くとrequest runtimeを長くし、Web scalingとWorker workloadをcoupleします。BFFはtransport/session/orchestration境界を維持します。
 
 ## 13. Rails performance
 
 Rails request latencyにはAuthentication、Authorization、DB query、Business service、transaction、serializationが含まれる。
 
-Representative Organization indexはactive membershipをOrganizationとjoinし、active scopeをmergeし、Organizationをincludeしてname順に並べる。`includes`はN+1抑制の意図を持ち得るが、実行計画・row数・index・実測なしに「最適」と断定しない。
+Representative Organization indexはactive membershipをOrganizationとjoinし、active scopeをmergeし、Organizationをincludeしてname順に並べてください。`includes`はN+1抑制の意図を持ち得るが、実行計画・row数・index・実測なしに「最適」と断定しません。
 
 Candidate issues:
 
@@ -195,7 +204,7 @@ PostgreSQLの観測Candidate:
 - storage/cache hit where available
 - data growth/skew
 
-Query shapeでは必要以上のrows、columns、joinsを取得せず、pagination/filtering/projectionを使う。ただしpagination contractはAPI semanticsと一致させる。
+Query shapeでは必要以上のrows、columns、joinsを取得せず、pagination/filtering/projectionを使います。ただしpagination contractはAPI semanticsと一致させる。
 
 ## 15. Index and query trade-offs
 
@@ -206,11 +215,11 @@ Slow query -> measure plan/selectivity/workload -> choose change
 Slow query != add every possible index
 ```
 
-N+1はparent records取得後に各recordごとに追加queryするpatternである。Eager loadingやquery redesignは候補だが、Repo-wide tuningやgem導入はしない。
+N+1はparent records取得後に各recordごとに追加queryするpatternです。Eager loadingやquery redesignは候補だが、Repo-wide tuningやgem導入はしません。
 
 ## 16. Connection pool and Web scaling
 
-CURRENT Rails DB configは`RAILS_MAX_THREADS`由来のconnection上限を持ち、Pumaも同environmentからthread数を読む。Puma config自体が、thread増加はThroughputを高め得る一方Latencyを悪化させ、resource poolをthread数以上にする必要を説明している。
+CURRENT Rails DB configは`RAILS_MAX_THREADS`由来のconnection上限を持ち、Pumaも同environmentからthread数を読みます。Puma config自体が、thread増加はThroughputを高め得る一方Latencyを悪化させ、resource poolをthread数以上にする必要を説明しています。
 
 概念上:
 
@@ -218,13 +227,13 @@ CURRENT Rails DB configは`RAILS_MAX_THREADS`由来のconnection上限を持ち�
 Web processes × threads/pool <= usable DB connection capacity
 ```
 
-Web replicaだけ増やすとDB connection saturationを悪化させ得る。Exact worker/thread/pool値はLoad/DB capacityなしに決めない。
+Web replicaだけ増やすとDB connection saturationを悪化させ得る。Exact worker/thread/pool値はLoad/DB capacityなしに決めません。
 
 ## 17. Transaction duration
 
-長いtransactionはlock、contention、connection occupationを増やす。External Web/LLM/Provider callを長時間DB transaction内で待つと、dependency latencyがDB capacityを消費し得る。
+長いtransactionはlock、contention、connection occupationを増やす。External Web/LLM/Provider callを長時間DB transaction内で待つと、dependency latencyがDB capacityを消費する可能性があります。
 
-Canonical state changeのatomicityを守りつつ、external workとtransaction boundaryを分離する。Exact implementationはBusiness/Idempotency Contractを優先する。
+Canonical state changeのatomicityを守りつつ、external workとtransaction boundaryを分離します。Exact implementationはBusiness/Idempotency Contractを優先します。
 
 ## 18. Queue performance
 
@@ -238,11 +247,11 @@ Queueで見るsignal:
 - processing duration
 - redelivery/retry/DLQ
 
-Queue depth増加だけで障害と断定しない。Traffic burstなら一時増加し、consumer capacity不足ならoldest ageも継続悪化する。Producer rate、consumer rate、Job duration、retryと組み合わせる。
+Queue depth増加だけで障害と断定しません。Traffic burstなら一時増加し、consumer capacity不足ならoldest ageも継続悪化します。Producer rate、consumer rate、Job duration、retryと組み合わせる。
 
 ## 19. Worker throughput
 
-Worker Throughputは次に依存する。
+Worker Throughputは次に依存します。
 
 - pages/competitors per Job
 - HTTP fetch vs Chromium path
@@ -253,7 +262,7 @@ Worker Throughputは次に依存する。
 - artifact upload
 - retry/failure rate
 
-Web request Throughputと同じscale signalではない。Queue ageが増えてもRails instance追加が解決しない場合がある。
+Web request Throughputと同じscale signalではありません。Queue ageが増えてもRails instance追加が解決しない場合があります。
 
 ## 20. Chromium cost and performance
 
@@ -267,7 +276,7 @@ Browser/context reuseはstartup costを減らし得るが:
 - cleanup complexity
 - determinism
 
-とのtrade-offがある。正式採用しない。
+とのtrade-offがあります。正式採用しません。
 
 ## 21. Worker concurrency and external pressure
 
@@ -278,19 +287,19 @@ More workers != infinite throughput
 CPU 100% != always wrong, but sustained saturation + latency/queue impact requires diagnosis
 ```
 
-Worker slots、per-host concurrency、External rate、DB connectionsを一緒に考える。Noisy neighbor対策としてtenant quota/fair scheduling/concurrency isolationは候補だが、exact policyは決めない。
+Worker slots、per-host concurrency、External rate、DB connectionsを一緒に考えます。Noisy neighbor対策としてtenant quota/fair scheduling/concurrency isolationは候補だが、exact policyは決めません。
 
 ## 22. LLM and Formula performance
 
-LLM callはLatency、token volume、concurrency、rate limit、retryがPerformance/Costへ影響する。Model quality、speed、priceにはtrade-offがあるが、exact modelを選定しない。
+LLM callはLatency、token volume、concurrency、rate limit、retryがPerformance/Costへ影響します。Model quality、speed、priceにはtrade-offがあるが、exact modelを選定しません。
 
-FormulaはChromium/LLMより軽い可能性があっても、Competitor×Submetric×History、versioned recalculation等で量が増え得る。実測せず「絶対に問題ない」と断定しない。Correctnessとversion preservationを速度のために崩さない。
+FormulaはChromium/LLMより軽い可能性があっても、Competitor×Submetric×History、versioned recalculation等で量が増え得る。実測せず「絶対に問題ない」と断定しません。Correctnessとversion preservationを速度のために崩さない。
 
 ## 23. Artifact/storage performance
 
-HTML/Screenshot等ではobject size/count、upload/download latency、metadata query、region/networkが影響する。
+HTML/Screenshot等ではobject size/count、upload/download latency、metadata query、region/networkが影響します。
 
-UI requestで巨大Artifactを毎回同期取得しない方向を評価し、summary/thumbnail/metadataを分離できる。ただしArtifact access、Lineage、historical identity、Authorizationを維持する。
+UI requestで巨大Artifactを毎回同期取得しない方向を評価し、summary/thumbnail/metadataを分離できます。ただしArtifact access、Lineage、historical identity、Authorizationを維持します。
 
 Storage optimizationでcurrent/historical resourceを取り違えない。
 
@@ -322,13 +331,13 @@ Panoptes固有のrisk:
 - Tenant responseのcross-Organization sharing
 - Entitlement/Role変更後のstale access
 
-Immutable Snapshotはcacheしやすいが、Current resourceはfreshness strategyが異なる。Cache keyにresource identity、version、Organization/access contextが必要になる場合がある。
+内容が変わらないSnapshotはCacheしやすい一方、Current resourceは最新状態への追従方法を別に考える必要があります。Cache keyには、resourceの識別子、version、Organizationやaccess権限の文脈が必要になる場合があります。
 
-多数requestが同時missしoriginへ集中するCache Stampedeも考える。Exact locking/cache architectureは決めない。
+多数requestが同時missしoriginへ集中するCache Stampedeも考えます。Exact locking/cache architectureは決めません。
 
 ## 26. Backpressure and admission control
 
-ProducerがConsumer capacityを超えるとQueue backlog/ageが増える。BackpressureはSystemへ入れる仕事量をdownstream capacityに合わせる考え方である。
+仕事を登録する速さが処理能力を超えると、Queueの未処理件数と待ち時間が増えます。Backpressureは、後続の処理能力に合わせて、Systemへ受け入れる仕事量を調整する考え方です。
 
 Admission candidate:
 
@@ -338,11 +347,11 @@ Admission candidate:
 - temporary reject/defer
 - bounded queue
 
-Commercial Quota、Security Rate Limit、Infrastructure Capacity Limitは目的が違う。表示上まとめても内部contractを分ける。
+Commercial Quota、Security Rate Limit、Infrastructure Capacity Limitは目的が違う。表示上まとめても内部contractを分けます。
 
 ## 27. Retry amplification and timeout
 
-Failure時に各Layerが独立retryすると、負荷の高いdependencyへさらにtrafficを送りRetry Stormを起こし得る。
+失敗時に各Layerが独立してRetryすると、既に負荷の高い接続先へrequestが集中し、再試行がさらに負荷を増やすRetry Stormが起きるおそれがあります。
 
 - retryable errorだけを対象にする
 - max attempts/budget
@@ -351,9 +360,9 @@ Failure時に各Layerが独立retryすると、負荷の高いdependencyへさ�
 - circuit/open behavior candidate
 - deadline propagation
 
-Exact値/algorithmは決めない。
+Exact値/algorithmは決めません。
 
-Timeoutが長すぎるとresourceを占有し、短すぎると正常処理をfail扱いにする。Client/BFF/Rails/Worker/Job/External dependencyでscopeが違う。Nested timeoutは上位deadlineとの整合が必要である。
+Timeoutが長すぎるとresourceを占有し、短すぎると正常処理をfail扱いにします。Client/BFF/Rails/Worker/Job/External dependencyでscopeが違う。Nested timeoutは上位deadlineとの整合が必要です。
 
 ## 28. Async, batching, and parallelism
 
@@ -361,9 +370,9 @@ Timeoutが長すぎるとresourceを占有し、短すぎると正常処理をfa
 Async != Parallel
 ```
 
-Asyncは待ち時間中に他処理へ進める構造、Parallelは同時実行である。Parallelismを増やすとrate limit、resource contention、ordering/idempotency問題が生じる。
+Asyncは待ち時間中に他処理へ進める構造、Parallelは同時実行です。Parallelismを増やすとrate limit、resource contention、ordering/idempotency問題が生じます。
 
-Batchingはoverheadを減らせる一方、single-item latency、memory、failure isolation、retry granularityを悪化させ得る。必要なmeasurementなしに採用しない。
+Batchingはoverheadを減らせる一方、single-item latency、memory、failure isolation、retry granularityを悪化させ得る。必要なmeasurementなしに採用しません。
 
 ## 29. Capacity planning
 
@@ -380,13 +389,13 @@ Capacity input candidate:
 - LLM token/request/rate limit
 - retry/partial rate
 
-Low/Base/High scenarioが承認されていれば`Scenario → Estimated Load → Required Capacity → Cost`へ接続する。数値がなければ新規値を作らない。
+Low/Base/High scenarioが承認されていれば`Scenario → Estimated Load → Required Capacity → Cost`へ接続します。数値がなければ新規値を作りません。
 
 ## 30. Headroom and hotspots
 
-平均Loadぴったりのcapacityではspike、retry、deploy/maintenance、failureに弱い。Headroomを持つがexact percentageは決めない。
+平均Loadぴったりのcapacityではspike、retry、deploy/maintenance、failureに弱い。Headroomを持つがexact percentageは決めません。
 
-Averageのほかskew/hotspotを見る。
+Averageのほかskew/hotspotを見ます。
 
 - 特定Organization/Project
 - 大規模site/competitor set
@@ -394,7 +403,7 @@ Averageのほかskew/hotspotを見る。
 - time-of-day campaign burst
 - shared DB/partition/resource
 
-Multi-tenant noisy neighborが他Tenantへ影響する場合、fair scheduling、quota、concurrency isolationを検討する。
+Multi-tenant noisy neighborが他Tenantへ影響する場合、fair scheduling、quota、concurrency isolationを検討します。
 
 ## 31. Cost-performance boundary
 
@@ -407,7 +416,7 @@ Performance改善にはCostが伴う。
 - more telemetry retention
 - redundancy/headroom
 
-最速が最適とは限らない。Optimizationは同じresourceで効率を上げ、Scalingはcapacityを増やす。
+最速が最適とは限りません。Optimizationは同じresourceで効率を上げ、Scalingはcapacityを増やす。
 
 ```text
 Slow SQL fix -> Optimization
@@ -415,7 +424,7 @@ DB instance increase -> Scaling
 Queue admission limit -> Load control
 ```
 
-1 AnalysisあたりTechnical CostはUnit Economicsに重要だが、M27どおり`Technical Cost != Customer Usage != Charge`である。
+1 AnalysisあたりTechnical CostはUnit Economicsに重要だが、M27どおり`Technical Cost != Customer Usage != Charge`です。
 
 ## 32. Performance, correctness, and security
 
@@ -429,13 +438,13 @@ Queue admission limit -> Load control
 - Missing/Partial distinction
 - Secret/private artifact boundary
 
-Public CDN、shared cache、batch、parallel、reuseはSecurity/Tenant isolationへ影響する。`Fast != Correct != Safe`であり、Correctness/Security constraintを先に守る。
+Public CDN、shared cache、batch、parallel、reuseはSecurity/Tenant isolationへ影響します。`Fast != Correct != Safe`であり、Correctness/Security constraintを先に守る。
 
 ## 33. Observability connection
 
-M25のsignalでPerformance hypothesisを検証する。
+M25のsignalでPerformance hypothesisを検証します。
 
-| Layer            | Representative metrics                                    |
+| 層（Layer）      | 代表的な指標                                              |
 | ---------------- | --------------------------------------------------------- |
 | Frontend         | initial load、route/render duration、bundle/resource size |
 | BFF/API          | request latency/status/timeout、upstream duration         |
@@ -446,18 +455,18 @@ M25のsignalでPerformance hypothesisを検証する。
 | External Web/LLM | latency、failure/rate limit、usage                        |
 | Artifact         | size/count、upload/download duration/failure              |
 
-Instrumentationがない箇所を推測だけで最適化しない。Correlation ID/Job ID/Attempt IDでend-to-end timingを結ぶ。
+Instrumentationがない箇所を推測だけで最適化しません。Correlation ID/Job ID/Attempt IDでend-to-end timingを結ぶ。
 
 ## 34. Performance testing
 
-M24と接続する。
+M24と接続します。
 
 - Benchmark: 特定処理/implementationを比較。
 - Load Test: Expected load付近でbehaviorを確認。
 - Stress Test: Capacity limit/degradationを探る。
 - Soak Test: 長時間のleak/resource degradationを見る。
 
-Testはrepresentative workload、warm/cold state、data volume、concurrency、dependency behaviorを明記する。一回のlocal benchmarkをProduction capacityの根拠にしない。本Moduleでは実行しない。
+Testはrepresentative workload、warm/cold state、data volume、concurrency、dependency behaviorを明記します。一回のlocal benchmarkをProduction capacityの根拠にしません。本Moduleでは実行しません。
 
 ## 35. Worked example: Analysis completion slows down
 
@@ -480,7 +489,7 @@ Reasoning:
 6. Hypothesisを作り、Worker optimization、Chromium path削減、safe concurrency/capacityのどれかを小さく検証する。
 7. Completion latency、throughput、failure、cost、correctnessを再測定する。
 
-SignalsはBottleneck候補を支持するが、この例だけで原因を確定しない。
+SignalsはBottleneck候補を支持するが、この例だけで原因を確定しません。
 
 ## 36. CURRENT / TARGET / DEFERRED
 
@@ -497,7 +506,7 @@ SignalsはBottleneck候補を支持するが、この例だけで原因を確定
 - mock Analysis runtime/timing（Production benchmarkではない）
 - M25/M26で定義したobservability/infrastructure target
 
-これらはSource/config evidenceであり、Latency、Throughput、Capacity、SLOの実測結果ではない。限定確認ではProduction APM、load-test result、cache architecture、autoscaling、Worker runtime metricsを確認していない。
+これらはSource/config evidenceであり、Latency、Throughput、Capacity、SLOの実測結果ではありません。限定確認ではProduction APM、load-test result、cache architecture、autoscaling、Worker runtime metricsを確認していません。
 
 ### TARGET
 
@@ -578,13 +587,13 @@ SignalsはBottleneck候補を支持するが、この例だけで原因を確定
 
 ### A. Knowledge Check
 
-1. PerformanceとScalabilityの違いを説明せよ。
-2. Averageとp95/p99の違いを説明せよ。
-3. Optimization、Scaling、Backpressureを区別せよ。
+1. PerformanceとScalabilityの違いを説明してください。
+2. Averageとp95/p99の違いを説明してください。
+3. Optimization、Scaling、Backpressureを区別してください。
 
 ### B. Metric Classification
 
-次をLatency、Throughput、Concurrency、Saturation、Backlogへ分類せよ。
+次をLatency、Throughput、Concurrency、Saturation、Backlogへ分類してください。
 
 1. Analysis 1件のcompletion time
 2. 1時間のcompleted Jobs
@@ -594,7 +603,7 @@ SignalsはBottleneck候補を支持するが、この例だけで原因を確定
 
 ### C. Bottleneck Exercise
 
-API正常、DB正常、Queue age増加、Worker CPU高、Chromium duration増加というsignalから、候補・追加measurement・避けるべき早計な結論を示せ。
+API正常、DB正常、Queue age増加、Worker CPU高、Chromium duration増加というsignalから、候補・追加measurement・避けるべき早計な結論を示してください。
 
 ### D. Web vs Worker Scaling
 
@@ -602,23 +611,23 @@ API request traffic増加とAnalysis backlog増加について、BFF/Rails/DB/Wo
 
 ### E. Database Exercise
 
-Slow query、connection saturation、lock contention、N+1を、確認すべきmetric/planとcandidate actionへ分類せよ。実測なしにIndexを提案しないこと。
+Slow query、connection saturation、lock contention、N+1を、確認すべきmetric/planとcandidate actionへ分類してください。実測なしにIndexを提案しないこと。
 
 ### F. Cache Exercise
 
-Immutable historical Snapshot、current Project summary、Organization-scoped response、Formula-versioned projection、Authorization decisionについて、cache suitabilityとkey/invalidation riskを説明せよ。
+Immutable historical Snapshot、current Project summary、Organization-scoped response、Formula-versioned projection、Authorization decisionについて、cache suitabilityとkey/invalidation riskを説明してください。
 
 ### G. Retry Exercise
 
-External LLM timeout時にClient、BFF、Rails、Workerが各3回retryする設計のamplification riskを説明し、retry owner/budget/idempotency/deadlineの考え方を示せ。
+External LLM timeout時にClient、BFF、Rails、Workerが各3回retryする設計のamplification riskを説明し、retry owner/budget/idempotency/deadlineの考え方を示してください。
 
 ### H. Capacity Exercise
 
-Low/Base/High scenarioの入力として必要なcustomer数、arrival peak、pages/job、duration、resource、Artifact、LLM、retryを列挙せよ。数値は発明しない。
+Low/Base/High scenarioの入力として必要なcustomer数、arrival peak、pages/job、duration、resource、Artifact、LLM、retryを列挙してください。数値は発明しません。
 
 ### I. Cost Exercise
 
-Worker数を増やす案について、completion latency、Throughput、DB/External pressure、failure rate、Technical Cost/Analysisを比較せよ。Customer Chargeと混同しない。
+Worker数を増やす案について、completion latency、Throughput、DB/External pressure、failure rate、Technical Cost/Analysisを比較してください。Customer Chargeと混同しません。
 
 ### J. Violation Detection
 
@@ -634,13 +643,13 @@ Worker数を増やす案について、completion latency、Throughput、DB/Exte
 
 ### K. Architecture Explanation
 
-「なぜPanoptesではPerformance問題を測定してから、Optimization、Scaling、Backpressureを分けて判断するのか」を、cross-layer bottleneck、correctness、capacity、costの観点から説明せよ。
+「なぜPanoptesではPerformance問題を測定してから、Optimization、Scaling、Backpressureを分けて判断するのか」を、cross-layer bottleneck、correctness、capacity、costの観点から説明してください。
 
 ## 41. Answers / explanation guide
 
 ### A. Knowledge Check
 
-Performanceは現在の処理速度/効率、Scalabilityはload増加時にacceptable performanceを維持する能力である。Averageはtailを隠すためp95/p99も見る。Optimizationは効率改善、Scalingはresource capacity追加、Backpressureは安全な流入量制御である。
+Performanceは現在の処理速度/効率、Scalabilityはload増加時にacceptable performanceを維持する能力です。Averageはtailを隠すためp95/p99も見ます。Optimizationは効率改善、Scalingはresource capacity追加、Backpressureは安全な流入量制御です。
 
 ### B. Metric Classification
 
@@ -648,39 +657,39 @@ Performanceは現在の処理速度/効率、Scalabilityはload増加時にaccep
 
 ### C. Bottleneck Exercise
 
-Worker/Chromium側がBottleneck候補。Job/Attemptごとのstage duration、browser count/memory/crash/retry、page complexityを追加測定する。Rails増設や原因断定をsignalなしに行わない。
+Worker/Chromium側がBottleneck候補。Job/Attemptごとのstage duration、browser count/memory/crash/retry、page complexityを追加測定します。Rails増設や原因断定をsignalなしに行いません。
 
 ### D. Web vs Worker Scaling
 
-API trafficではBFF/Rails latency/CPUとDB query/connectionを確認する。Analysis backlogではarrival/completion rate、queue age、Worker stage/resource/external dependencyを確認する。異なるloadを同じautoscaling signalにしない。
+API trafficではBFF/Rails latency/CPUとDB query/connectionを確認します。Analysis backlogではarrival/completion rate、queue age、Worker stage/resource/external dependencyを確認します。異なるloadを同じautoscaling signalにしません。
 
 ### E. Database Exercise
 
-Slow queryはexecution plan/rows/index、connection saturationはpool/process/thread/wait、lockはtransaction duration/blocker、N+1はquery count/association accessを見る。Actionはevidenceに応じquery shape/eager load/index/pool/transaction/scaleから選ぶ。
+Slow queryはexecution plan/rows/index、connection saturationはpool/process/thread/wait、lockはtransaction duration/blocker、N+1はquery count/association accessを見ます。Actionはevidenceに応じquery shape/eager load/index/pool/transaction/scaleから選びます。
 
 ### F. Cache Exercise
 
-Immutable Snapshotとversion-keyed projectionは比較的適する。Current summaryはfreshness/invalidation、Organization responseはtenant/auth key、Authorization decisionはrevocation/staleness riskが高い。CacheはSource of Truthにならない。
+Immutable Snapshotとversion-keyed projectionは比較的適します。Current summaryはfreshness/invalidation、Organization responseはtenant/auth key、Authorization decisionはrevocation/staleness riskが高い。CacheはSource of Truthになりません。
 
 ### G. Retry Exercise
 
-各Layer3回なら一つの失敗が最大多数のdependency callへ増幅し得る。Retry ownerとbudgetを限定し、deadline/backoff/jitter、retryable category、Idempotencyを統一する。
+各Layer3回なら一つの失敗が最大多数のdependency callへ増幅する可能性があります。Retry ownerとbudgetを限定し、deadline/backoff/jitter、retryable category、Idempotencyを統一します。
 
 ### H. Capacity Exercise
 
-Customer/Analysis arrival、peak/skew、competitor/pages、stage p50/p95、CPU/memory/concurrency、DB/Queue、Artifact size/retention、LLM token/rate、retry/partialを入力にする。既存evidenceのない値はUnknownとして残す。
+Customer/Analysis arrival、peak/skew、competitor/pages、stage p50/p95、CPU/memory/concurrency、DB/Queue、Artifact size/retention、LLM token/rate、retry/partialを入力にします。既存evidenceのない値はUnknownとして残します。
 
 ### I. Cost Exercise
 
-Worker追加でQueue wait/Throughputは改善し得るが、DB/Storage/External rate、failure、Costが悪化し得る。completion and cost per Analysisを再測定し、Technical CostとCommercial Chargeを分ける。
+Worker追加でQueue wait/Throughputは改善し得るが、DB/Storage/External rate、failure、Costが悪化する可能性があります。completion and cost per Analysisを再測定し、Technical CostとCommercial Chargeを分けます。
 
 ### J. Violation Detection
 
-順にworkload overuse、truth violation、historical corruption、wrong-layer scaling、retry storm、DB saturation、wrong bottleneck、unrepresentative evidence、Cost/reliability imbalanceである。
+順にworkload overuse、truth violation、historical corruption、wrong-layer scaling、retry storm、DB saturation、wrong bottleneck、unrepresentative evidence、Cost/reliability imbalanceです。
 
 ### K. Architecture Explanation
 
-PanoptesのLatencyはClient、BFF、Rails、DB、Queue、Worker、Chromium、External service、Storageを跨ぐ。測定で制限区間を特定しなければ、別LayerをscaleしてCost/pressureだけ増やし得る。WasteならOptimization、capacity shortageならScaling、unsafe intakeならBackpressureを選び、Correctness/Security/Costを含め再検証する。
+PanoptesのLatencyはClient、BFF、Rails、DB、Queue、Worker、Chromium、External service、Storageを跨ぐ。測定で制限区間を特定しなければ、別LayerをscaleしてCost/pressureだけ増やする可能性があります。WasteならOptimization、capacity shortageならScaling、unsafe intakeならBackpressureを選び、Correctness/Security/Costを含め再検証します。
 
 ## 42. Completion criteria
 
@@ -697,13 +706,13 @@ PanoptesのLatencyはClient、BFF、Rails、DB、Queue、Worker、Chromium、Ext
 |   9 | Repository mapping + diagrams included                 | `PASS` |
 |  10 | Exercises + answers included                           | `PASS` |
 
-M28 authoring result: `10 / 10 PASS`。教材完成はPerformance実測、SLO/Capacity確定、Production optimization、Load/Benchmark、Autoscaling readinessの完了を意味しない。
+M28 authoring result: `10 / 10 PASS`。教材完成はPerformance実測、SLO/Capacity確定、Production optimization、Load/Benchmark、Autoscaling readinessの完了を意味しません。
 
 ## 43. Final Bootcamp closure handoff
 
 Recommended next phase: `TB-30 — Panoptes Technical Bootcamp Parent Closure Review`。
 
-Closure ReviewではM01〜M28のartifact/status/dependency/completion、Deferred implementation、Current/Target distinction、Bootcamp completion criteriaを確認する。新規教材、Source変更、Production readiness認定は行わない。
+Closure ReviewではM01〜M28のartifact/status/dependency/completion、Deferred implementation、Current/Target distinction、Bootcamp completion criteriaを確認します。新規教材、Source変更、Production readiness認定は行いません。
 
 ## References
 

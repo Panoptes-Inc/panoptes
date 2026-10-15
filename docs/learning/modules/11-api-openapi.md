@@ -5,9 +5,9 @@ Phase: `TB-12`
 Difficulty: `INTERMEDIATE`  
 Prerequisites: `M01`–`M10`
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. APIをURLではなくsystem間contractとして説明する。
 2. HTTP method、request、response、status、headerの意味を読む。
@@ -17,11 +17,19 @@ Prerequisites: `M01`–`M10`
 6. versioningとbackward compatibilityのriskを判断する。
 7. CURRENT implementationとdraft TARGET contractを混同しない。
 
+## 用語ガイド
+
+- **API:** System同士がrequestとresponseを交換するための接点。
+- **Contract（契約）:** endpoint、入力、出力、status code、error形式について、呼び出す側と提供側が共有する約束。
+- **OpenAPI:** HTTP APIのcontractを機械可読な形式で記述する仕様。
+- **Idempotency（冪等性）:** 同じ操作が再送されても、二重登録などの不要な副作用を増やさない性質。
+- **Schema:** requestやresponseが持つfield、型、必須条件を表した構造定義。
+
 ## 2. API fundamentals
 
-APIはsystem間の明示的なcontractである。
+APIは、System間で入力・出力・error・操作の意味を共有する、明示的な契約です。
 
-| Term     | Meaning                                        |
+| Term     | 意味                                           |
 | -------- | ---------------------------------------------- |
 | Client   | APIを呼び出すconsumer                          |
 | Server   | requestを受けcontractに従ってresponseを返す側  |
@@ -33,7 +41,7 @@ APIはsystem間の明示的なcontractである。
 | Body     | structured payload。PanoptesではJSONが基本     |
 | Header   | media type、credential、request ID等のmetadata |
 
-同じURLでもGETとPOSTは別operationになり得る。Body shape、required field、error、authorization、semantic meaningまで含めてcontractである。
+同じURLでも、GETとPOSTは別の操作になり得ます。契約には、bodyの構造、必須field、error、認可、操作が持つ意味まで含まれます。
 
 ## 3. HTTP fundamentals
 
@@ -45,7 +53,7 @@ APIはsystem間の明示的なcontractである。
 | PATCH  | resourceの一部を変更                     | No   | operation次第 | draft Roadmap task更新               |
 | DELETE | resourceを削除                           | No   | Yes by intent | CURRENT/draftに代表operationなし     |
 
-Safeは「server stateを変更する目的ではない」、Idempotentは「同じrequestを複数回行っても意図した最終効果が同じ」という概念である。POSTもIdempotency-Keyやbusiness identityにより安全なreplay contractを設計できるため、`POST = 必ず非Idempotent`ではない。
+Safeは「Serverの状態を変更することを目的としない」、Idempotentは「同じrequestを繰り返しても、意図した最終的な効果が同じ」という性質です。POSTでも、Idempotency-Keyや業務上の識別子を使って安全な再送の契約を設計できるため、`POST = 必ず非Idempotent`ではありません。
 
 ## 4. Panoptes API position
 
@@ -58,7 +66,7 @@ Frontend Feature / Controller
   -> Business rule / PostgreSQL
 ```
 
-APIはTransport ContractでありBusiness Ruleそのものではない。
+APIはTransport ContractでありBusiness Ruleそのものではありません。
 
 - Command: User/use-case intentを表す。
 - Client: endpoint selection、serialization、timeout、parsingを扱う。
@@ -69,7 +77,7 @@ APIはTransport ContractでありBusiness Ruleそのものではない。
 
 ## 5. Endpoint and operation design
 
-Endpointはresourceまたはbusiness operationへの入口である。
+Endpointはresourceまたはbusiness operationへの入口です。
 
 ### Resource-oriented
 
@@ -78,7 +86,7 @@ GET /organizations/{organization_id}
 GET /organizations/{organization_id}/projects
 ```
 
-Resource/read modelを取得する。
+Resource/read modelを取得します。
 
 ### Operation-oriented
 
@@ -87,15 +95,15 @@ POST /organizations/{organization_id}/analysis-jobs/{analysis_job_id}/cancel
 POST /organizations/{organization_id}/analysis-jobs/{analysis_job_id}/inference-confirmation
 ```
 
-単純CRUDでは表しにくいbusiness intentを明示する。REST純粋主義より、authorization、idempotency、state transition、errorが明確であることを優先する。
+単純CRUDでは表しにくいbusiness intentを明示します。REST純粋主義より、authorization、idempotency、state transition、errorが明確であることを優先します。
 
-CURRENT Rails routesは`health`、`me`、Organizations list/detail、current Membershipの5 GETだけ。Project、AnalysisJob、Snapshot、Strategy/Roadmapのpathはdraft TARGETであり、production実装済みではない。
+現行Railsのrouteは、`health`、`me`、Organization一覧・詳細、現在のMembershipを取得する5つのGETだけです。Project、AnalysisJob、Snapshot、Strategy/Roadmapのpathは目標仕様のdraftであり、本番用に実装済みではありません。
 
 ## 6. Request contract
 
-Request contractは入力場所と意味を分ける。
+Request contractは入力場所と意味を分けます。
 
-| Input           | Example                               | Meaning                                   |
+| 入力            | 例                                    | 意味                                      |
 | --------------- | ------------------------------------- | ----------------------------------------- |
 | Path parameter  | `organization_id`                     | resource hierarchy/canonical scope        |
 | Query parameter | `page[cursor]`, `page[limit]`         | draft collection navigation               |
@@ -103,7 +111,7 @@ Request contractは入力場所と意味を分ける。
 | Body            | Project name、target URL              | mutation payload                          |
 | Session context | Supabase server session               | BFF credential source。body fieldではない |
 
-各fieldにはrequired/optional、type、allowed value、nullable、semantic meaningが必要である。`organization_id`がUUID stringであるだけでは、actorがそのOrganizationへアクセス可能とは限らない。
+各fieldにはrequired/optional、type、allowed value、nullable、semantic meaningが必要です。`organization_id`がUUID stringであるだけでは、actorがそのOrganizationへアクセス可能とは限りません。
 
 Panoptes draft convention:
 
@@ -128,7 +136,7 @@ CURRENT Rails success envelope:
 }
 ```
 
-Collectionではdraft上`meta.page`へcursor等を追加する。ClientはHTTP成功だけでなく、`data` envelopeとresource shapeを検証する。
+Collectionではdraft上`meta.page`へcursor等を追加します。ClientはHTTP成功だけでなく、`data` envelopeとresource shapeを検証します。
 
 Rails internal modelをそのまま返さない理由:
 
@@ -144,7 +152,7 @@ Database schema != API schema != Frontend view model
 
 ## 8. Status code contract
 
-|      Status | Concept                                 | Panoptes usage                                      |
+|        状態 | 概念                                    | Panoptes usage                                      |
 | ----------: | --------------------------------------- | --------------------------------------------------- |
 |         200 | read/update成功、replay成功             | CURRENT GET、Target update                          |
 |         201 | 同期的resource作成                      | future candidate                                    |
@@ -160,7 +168,7 @@ Database schema != API schema != Frontend view model
 |         500 | internal failure                        | CURRENT safe Rails handler                          |
 | 502/503/504 | upstream/service/timeout category       | 503はCURRENT BFF upstream error。詳細はcontract依存 |
 
-`202`はjob完了を意味しない。`200`でもpayload内に独自failure flagを埋めて全errorを成功扱いにしてはいけない。HTTP statusとmachine-readable error codeを両方使う。
+`202`はjob完了を意味しません。`200`でもpayload内に独自failure flagを埋めて全errorを成功扱いにしてはいけません。HTTP statusとmachine-readable error codeを両方使います。
 
 ## 9. Error contract
 
@@ -187,15 +195,15 @@ CURRENT Rails/OpenAPI shape:
 - `retryable`: automatic/manual retry判断のhint。business ruleを置き換えない。
 - `meta`: tracing用request/correlation ID。
 
-Business errorとtechnical errorを分ける。Permission不足、invalid transition、validation failureはbusiness/application error。DB/queue/upstream unavailableやunhandled exceptionはtechnical errorである。
+Business errorとtechnical errorを分けます。Permission不足、invalid transition、validation failureはbusiness/application error。DB/queue/upstream unavailableやunhandled exceptionはtechnical errorです。
 
 ### Confirmed documentation drift
 
-`panoptes-api-v1.md`のError JSON例は`request_id`を`error`内へ置くが、CURRENT Rails `ApplicationController`とOpenAPI `ErrorEnvelope`は`meta.request_id`を使う。現時点で三者が完全同期しているとは表現できない。本教材はCURRENT implementation/OpenAPI shapeを例示し、prose documentの同期を後続contract maintenanceへhandoffする。
+`panoptes-api-v1.md`のError JSON例は`request_id`を`error`内へ置くが、CURRENT Rails `ApplicationController`とOpenAPI `ErrorEnvelope`は`meta.request_id`を使います。現時点で三者が完全同期しているとは表現できません。本教材はCURRENT implementation/OpenAPI shapeを例示し、prose documentの同期を後続contract maintenanceへhandoffします。
 
 ## 10. Validation layers
 
-| Layer                     | Owns                                           | Must not be mistaken for      |
+| 層（Layer）               | 担当すること                                   | 混同してはいけないもの        |
 | ------------------------- | ---------------------------------------------- | ----------------------------- |
 | Frontend                  | UX feedback、input assistance                  | canonical business validation |
 | Client                    | response envelope/resource assertion           | server authority              |
@@ -204,13 +212,13 @@ Business errorとtechnical errorを分ける。Permission不足、invalid transi
 | Rails                     | business/application validation、authorization | mere transport parsing        |
 | PostgreSQL                | integrity constraints                          | application authorization     |
 
-OpenAPIにrequired fieldがあることと、現在のplan/resource stateでoperation可能であることは別である。
+OpenAPIにrequired fieldがあることと、現在のplan/resource stateでoperation可能であることは別です。
 
 ## 11. Authentication and authorization in API
 
-OpenAPI rootはBearer securityを宣言し、`/health`だけ`security: []`で上書きする。しかしsecurity schemaは「credentialの型と必要性」をdocumentするだけで、Rails authorization implementationではない。
+OpenAPI rootはBearer securityを宣言し、`/health`だけ`security: []`で上書きします。しかしsecurity schemaは「credentialの型と必要性」をdocumentするだけで、Rails authorization implementationではありません。
 
-Railsはrequestごとに次を確認する。
+Railsはrequestごとに次を確認します。
 
 - JWT signature/issuer/audience/expiration。
 - Panoptes User status。
@@ -219,11 +227,11 @@ Railsはrequestごとに次を確認する。
 - Role/action permission。
 - Resource state。
 
-CURRENT Rails `/api/v1/health`はauthentication before_actionをskipする。一方、CURRENT Browser-facing BFF `/api/panoptes/v1/*`のroute policyとproxy helperはhealthを含めauthenticationを要求する。この差はRails internal/public contractとBrowser-facing surfaceが1:1でない具体例である。
+CURRENT Rails `/api/v1/health`はauthentication before_actionをskipします。一方、CURRENT Browser-facing BFF `/api/panoptes/v1/*`のroute policyとproxy helperはhealthを含めauthenticationを要求します。この差はRails internal/public contractとBrowser-facing surfaceが1:1でない具体例です。
 
 ## 12. Client / Command / BFF / Rails contract
 
-| Layer                | Owns                                                                          | Does not own                      |
+| 層（Layer）          | 担当すること                                                                  | 担当しないこと                    |
 | -------------------- | ----------------------------------------------------------------------------- | --------------------------------- |
 | Command/query intent | use-case input/output、User intent                                            | HTTP/session/raw response         |
 | Frontend Client      | BFF path/method、serialization、timeout/abort、response assertion             | canonical rule/session truth      |
@@ -231,15 +239,15 @@ CURRENT Rails `/api/v1/health`はauthentication before_actionをskipする。一
 | Rails API            | business resource/operation contract、status/error response                   | Browser-local presentation        |
 | OpenAPI              | machine-readable wire contract                                                | runtime implementation itself     |
 
-BFFとRailsが1:1 proxyになる場合もあるが、常に同じではない。BFFはFrontend向けにcamelCase view modelへmappingしたり、複数readをcompositionしたりできる。ただし403を200へ変更する、PartialをCompletedへ意味変更する等のbusiness reinterpretationはしない。
+BFFとRailsが1:1 proxyになる場合もあるが、常に同じではありません。BFFはFrontend向けにcamelCase view modelへmappingしたり、複数readをcompositionしたりできます。ただし403を200へ変更する、PartialをCompletedへ意味変更する等のbusiness reinterpretationはしません。
 
-CURRENT `canonical-bff-client.ts`はsame-origin BFFだけを呼び、timeout/abort/network errorを`PanoptesApiError`へ変換し、success `data` envelopeとOrganization/User/Membership shapeをruntime assertする。
+CURRENT `canonical-bff-client.ts`はsame-origin BFFだけを呼び、timeout/abort/network errorを`PanoptesApiError`へ変換し、success `data` envelopeとOrganization/User/Membership shapeをruntime assertします。
 
 ## 13. OpenAPI fundamentals
 
-OpenAPIはHTTP API contractをmachine-readableに記述する仕様である。
+OpenAPIはHTTP API contractをmachine-readableに記述する仕様です。
 
-| Element                        | Meaning                             |
+| 要素                           | 意味                                |
 | ------------------------------ | ----------------------------------- |
 | `paths`                        | endpoint paths                      |
 | operation (`get`, `post`等)    | methodごとのcontract                |
@@ -250,7 +258,7 @@ OpenAPIはHTTP API contractをmachine-readableに記述する仕様である。
 | `security` / `securitySchemes` | credential requirement              |
 | `operationId`                  | operationのstable unique identifier |
 
-Panoptes fileはOpenAPI `3.1.0`、API version `1.0.0-draft`。placeholder server URLを持つためdeployment hostの証拠にはならない。
+Panoptes fileはOpenAPI `3.1.0`、API version `1.0.0-draft`。placeholder server URLを持つためdeployment hostの証拠にはなりません。
 
 ## 14. CURRENT Panoptes OpenAPI profile
 
@@ -269,11 +277,11 @@ Panoptes fileはOpenAPI `3.1.0`、API version `1.0.0-draft`。placeholder server
 OpenAPI draft definition != Production implementation complete
 ```
 
-CURRENT Rails routesは5 GETのみで、OpenAPI 18 operationsのうちProject/AnalysisJob/Snapshot/Strategy等はTarget contractである。OpenAPIはwire contractの正本候補/設計正本だが、statusが`draft`であり、request spec・BFF implementation・production verificationが未完了である。
+CURRENT Rails routesは5 GETのみで、OpenAPI 18 operationsのうちProject/AnalysisJob/Snapshot/Strategy等はTarget contractです。OpenAPIはwire contractの正本候補/設計正本だが、statusが`draft`であり、request spec・BFF implementation・production verificationが未完了です。
 
 ## 15. operationId
 
-`operationId`は各operationを一意に識別するstable nameである。
+`operationId`は、各API操作を一意に識別する、安定した名前です。
 
 用途:
 
@@ -282,7 +290,7 @@ CURRENT Rails routesは5 GETのみで、OpenAPI 18 operationsのうちProject/An
 - test/trace mapping。
 - rename/breaking-change review。
 
-重複するとgeneratorがmethodを上書き・renameしたり、operation参照が曖昧になる。Panoptes draftでは現在18/18 uniqueだが、これはendpoint実装やsemantic correctnessまで証明しない。
+重複するとgeneratorがmethodを上書き・renameしたり、operation参照が曖昧になります。Panoptes draftでは現在18/18 uniqueだが、これはendpoint実装やsemantic correctnessまで証明しません。
 
 代表例:
 
@@ -294,7 +302,7 @@ CURRENT Rails routesは5 GETのみで、OpenAPI 18 operationsのうちProject/An
 
 ## 16. Schema contract
 
-OpenAPI schemaはobject、property、required、nullable、enum、array、format、additionalProperties等でwire shapeを定義する。
+OpenAPI schemaはobject、property、required、nullable、enum、array、format、additionalProperties等でwire shapeを定義します。
 
 Panoptes例:
 
@@ -305,9 +313,9 @@ Panoptes例:
 - `AnalysisJobStatus`: state enum。
 - collection envelope: array data + metadata。
 
-Nullableとfield欠落は同じではない。Enumへの値追加もconsumerがexhaustive switchを持つ場合はbreaking riskになる。
+nullを許可することと、field自体の省略を許可することは異なります。また、利用側がenumの全値を列挙して分岐している場合は、値の追加でも互換性が壊れる可能性があります。
 
-DB schemaはstorage最適化とintegrity、API schemaはconsumer contractを表す。全DB columnを公開せず、internal storage key、prompt/provider response、secret等を除外する。
+DB schemaはstorage最適化とintegrity、API schemaはconsumer contractを表します。全DB columnを公開せず、internal storage key、prompt/provider response、secret等を除外します。
 
 ## 17. Versioning and backward compatibility
 
@@ -317,7 +325,7 @@ Panoptes boundary:
 - Rails API: `/api/v1`。
 - OpenAPI info version: `1.0.0-draft`。
 
-Path `v1`はbackward-incompatible contract changeを管理するboundary。すべてのfield追加でv2へ上げるわけではない。
+Path `v1`はbackward-incompatible contract changeを管理するboundary。すべてのfield追加でv2へ上げるわけではありません。
 
 | Change                  | Typical compatibility                           |
 | ----------------------- | ----------------------------------------------- |
@@ -329,11 +337,11 @@ Path `v1`はbackward-incompatible contract changeを管理するboundary。す�
 | semantic meaning変更    | shape不変でもbreaking                           |
 | endpoint removal        | breaking                                        |
 
-安全な方向はRails/OpenAPIでadditive deploy、BFF/UI対応、deprecation期間、最後にold field removal。Frontend/Backendが常にatomic deployされるとは仮定しない。
+安全に移行するには、まずRails/OpenAPIへ互換性を保つ追加をdeployし、次にBFF/UIを対応させます。旧fieldを非推奨とする期間を設け、最後に削除します。FrontendとBackendを常に同時deployできるとは仮定しません。
 
 ## 18. API response vs canonical business state
 
-API responseはcanonical stateの表現であり、canonical stateそのものをFrontendが所有するという意味ではない。
+API responseは、正式な状態をFrontendへ伝えるための表現です。応答を受け取ったことによって、Frontendがその状態を確定する権限を持つわけではありません。
 
 ```text
 Rails decides and persists Job transition
@@ -342,11 +350,11 @@ Rails decides and persists Job transition
   -> Frontend renders status
 ```
 
-FrontendはJob responseを見て次のcanonical transitionを勝手に確定しない。OpenAPI enumもstate machine implementationではない。
+FrontendはJob responseを見て次のcanonical transitionを勝手に確定しません。OpenAPI enumもstate machine implementationではありません。
 
 ## 19. Pagination, filtering, and sorting
 
-Draft contractはProject collectionでopaque cursor paginationを定義する。
+Draft contractはProject collectionでopaque cursor paginationを定義します。
 
 - `page[cursor]`
 - `page[limit]`
@@ -354,11 +362,11 @@ Draft contractはProject collectionでopaque cursor paginationを定義する。
 - stable order proposal: `created_at DESC, id DESC`。
 - response: `meta.page.next_cursor`, `has_more`。
 
-CURRENT Organization listはRailsでname ascendingに並べた全件readで、pagination contractは実装されていない。Filtering/sortingの一般的な追加もAPI contract変更であり、query semanticsとauthorizationを明記する。
+CURRENT Organization listはRailsでname ascendingに並べた全件readで、pagination contractは実装されていません。Filtering/sortingの一般的な追加もAPI contract変更であり、query semanticsとauthorizationを明記します。
 
 ## 20. Idempotency boundary
 
-Mutation retryでは同じintentが重複effectを起こし得る。Draftはcommand向け`Idempotency-Key`を定義する。
+Mutation retryでは同じintentが重複effectを起こする可能性があります。Draftはcommand向け`Idempotency-Key`を定義します。
 
 - format: 8–128文字、safe character set。
 - scope: Organization + actor + operation。
@@ -366,11 +374,11 @@ Mutation retryでは同じintentが重複effectを起こし得る。Draftはcomm
 - same key/different payload: 409。
 - processing中: 409または同一Job response候補。
 
-CURRENT BFF/Railsにはproduction Analysis mutation/idempotency storeがない。Queue/retry/idempotencyのexact contractはM12以降へhandoffする。
+CURRENT BFF/Railsにはproduction Analysis mutation/idempotency storeがありません。Queue/retry/idempotencyのexact contractはM12以降へhandoffします。
 
 ## 21. CURRENT / TARGET / DEFERRED
 
-| Area           | CURRENT                                          | TARGET                                       | DEFERRED                                           |
+| 領域           | CURRENT                                          | TARGET                                       | DEFERRED                                           |
 | -------------- | ------------------------------------------------ | -------------------------------------------- | -------------------------------------------------- |
 | Rails surface  | 5 GET: health/me/organizations/detail/membership | Organization-scoped business API             | Project/Job/Snapshot/Strategy/Usage implementation |
 | BFF surface    | corresponding 5 same-origin GET routes           | explicit Browser-facing business endpoints   | mutation/CSRF/body limit contracts                 |
@@ -404,13 +412,13 @@ PanoptesShell controller dependency
   -> Controller continues bootstrap or surfaces safe error
 ```
 
-このtraceはCURRENTで追跡可能。ただしFeatureはOrganization detailとMembershipを並列取得して境界を検証する。Production Analysis command endpointの実装証拠にはならない。
+このtraceはCURRENTで追跡可能。ただしFeatureはOrganization detailとMembershipを並列取得して境界を検証します。Production Analysis command endpointの実装証拠にはなりません。
 
 ## 23. Representative repository mapping
 
-以下は限定確認した12例であり、全endpoint/OpenAPI operation監査ではない。
+以下は限定確認した12例であり、全endpoint/OpenAPI operation監査ではありません。
 
-| Source                                                                  | Method/contract                     | Request                      | Response                                | Auth/owner               | Status                             |
+| Source                                                                  | method・契約                        | 要求                         | 応答                                    | 認証・管理元             | 状態                               |
 | ----------------------------------------------------------------------- | ----------------------------------- | ---------------------------- | --------------------------------------- | ------------------------ | ---------------------------------- |
 | `docs/api/openapi-draft.yaml`                                           | 18 operation machine-readable draft | parameters/body/security     | schemas/responses                       | wire contract draft      | `CURRENT document / mixed TARGET`  |
 | `docs/api/panoptes-api-v1.md`                                           | v1 prose contract                   | headers/body/conventions     | envelope/status/error                   | Rails contract design    | `DRAFT; known error-example drift` |
@@ -433,27 +441,27 @@ Method、input/output schema、status、error、auth、semanticsまでがcontrac
 
 ### 「OpenAPI = implementation」
 
-OpenAPIは記述。Route/controller/test/deployが存在しなければruntime featureではない。
+OpenAPIは記述。Route/controller/test/deployが存在しなければruntime featureではありません。
 
 ### 「OpenAPI security = Authorization実装」
 
-Security schemeはcredential requirementの宣言。Rails policy実装・DB queryを代替しない。
+Security schemeはcredential requirementの宣言。Rails policy実装・DB queryを代替しません。
 
 ### 「DB schema = API schema」
 
-Storage shapeとconsumer contractは別。internal fieldを無制限に公開しない。
+Storage shapeとconsumer contractは別。internal fieldを無制限に公開しません。
 
 ### 「BFF API = Rails API」
 
-対応することは多いが、surface、session、mapping、compositionが異なる。意味は勝手に変えない。
+対応することは多いが、surface、session、mapping、compositionが異なります。意味は勝手に変えない。
 
 ### 「HTTP 200なら常にbusiness success」
 
-Contractに従う。Errorを200へ包む設計はstatus semanticsを壊す。
+Contractに従います。Errorを200へ包む設計はstatus semanticsを壊す。
 
 ### 「Frontend validation = Business validation」
 
-FrontendはUX。Railsがcanonical validationを再実行する。
+FrontendはUX。Railsがcanonical validationを再実行します。
 
 ### 「OpenAPIにある = Production ready」
 
@@ -461,7 +469,7 @@ Panoptesの18 operationsはdraftを含み、CURRENT Railsは5 GETのみ。
 
 ### 「POSTは必ず非Idempotent」
 
-HTTP default semanticsだけでなくIdempotency-Key/business identityでreplay contractを設計できる。
+HTTP default semanticsだけでなくIdempotency-Key/business identityでreplay contractを設計できます。
 
 ## 25. Decision heuristic — これは何の責務か
 
@@ -478,7 +486,7 @@ HTTP default semanticsだけでなくIdempotency-Key/business identityでreplay 
 6. Durable state/integrityか。  
    → PostgreSQL。
 7. Machine-readable shape/documentationか。  
-   → OpenAPI。ただしruntime verificationが必要。
+   → OpenAPI。ただしruntime verificationが必要です。
 
 ## 26. Practice
 
@@ -492,7 +500,7 @@ HTTP default semanticsだけでなくIdempotency-Key/business identityでreplay 
 
 ### 26.2 Contract Reading
 
-OpenAPI `getCurrentUserOrganization`を読み、次を答える。
+OpenAPI `getCurrentUserOrganization`を読み、次を答えてください。
 
 - method
 - path
@@ -501,11 +509,11 @@ OpenAPI `getCurrentUserOrganization`を読み、次を答える。
 - error response
 - auth requirement
 
-次に`createProjectAnalysisJob`を読み、CURRENT実装かTARGET draftかを答える。
+次に`createProjectAnalysisJob`を読み、CURRENT実装かTARGET draftかを答えてください。
 
 ### 26.3 Status Exercise
 
-次のstatus conceptを選ぶ。
+次のstatus conceptを選びます。
 
 1. Tokenなし。
 2. 同じOrganizationだがrole不足。
@@ -516,7 +524,7 @@ OpenAPI `getCurrentUserOrganization`を読み、次を答える。
 
 ### 26.4 Responsibility Exercise
 
-次をCommand / Client / BFF / Rails / OpenAPIへ分類する。
+次をCommand / Client / BFF / Rails / OpenAPIへ分類します。
 
 1. Start Analysis intentを表す。
 2. AbortSignalとtimeoutを扱う。
@@ -527,7 +535,7 @@ OpenAPI `getCurrentUserOrganization`を読み、次を答える。
 
 ### 26.5 Contract Trace
 
-Organization detail readを、Feature、Client、BFF route/proxy、Rails route/controller、response、Client assertionまで順に説明せよ。
+Organization detail readを、Feature、Client、BFF route/proxy、Rails route/controller、response、Client assertionまで順に説明してください。
 
 ### 26.6 Violation Detection
 
@@ -540,7 +548,7 @@ Organization detail readを、Feature、Client、BFF route/proxy、Rails route/c
 
 ### 26.7 Design Exercise — Target Start Analysis API
 
-教材Exerciseとして次を提案せよ。正式仕様にはしない。
+教材Exerciseとして次を提案してください。正式仕様にはしません。
 
 - method/path concept
 - request fields
@@ -593,7 +601,7 @@ Organization detail readを、Feature、Client、BFF route/proxy、Rails route/c
 
 ### 27.5 Contract Trace回答
 
-Feature controllerがOrganization boundary queryを呼び、Clientがencoded IDでsame-origin BFF GETを行う。BFFがsession/active orgを確認しBearer付きでRails GETへforward。RailsがJWT、Membership/Roleを確認して`{data,meta}`を返す。BFFはstatus/bodyをpreserveし、Clientがenvelope/resource shapeをassertしてFeatureへ返す。
+Feature controllerがOrganization boundary queryを呼び、Clientがencoded IDでsame-origin BFF GETを行います。BFFがsession/active orgを確認しBearer付きでRails GETへforward。RailsがJWT、Membership/Roleを確認して`{data,meta}`を返します。BFFはstatus/bodyをpreserveし、Clientがenvelope/resource shapeをassertしてFeatureへ返します。
 
 ### 27.6 Violation回答
 
@@ -633,7 +641,7 @@ Errors:
   503 temporary backend dependency failure
 ```
 
-これは既存draftを読むExerciseであり、Production APIの実装・正式再承認ではない。Exact field、plan policy、idempotency persistence、queue/outboxはDEFERRED。
+これは既存draftを読むExerciseであり、Production APIの実装・正式再承認ではありません。Exact field、plan policy、idempotency persistence、queue/outboxはDEFERRED。
 
 ## 28. Completion Criteria
 
@@ -652,13 +660,13 @@ Errors:
 
 Authoring DoD: `10 / 10 PASS`。
 
-これは教材artifactの完成を示す。Learner assessment合格、18 operation実装完了、OpenAPI lint/breaking diff実行、Production Readinessを意味しない。
+これは教材artifactの完成を示します。Learner assessment合格、18 operation実装完了、OpenAPI lint/breaking diff実行、Production Readinessを意味しません。
 
 ## 29. Handoff to M12
 
 Recommended next phase: `TB-13 — Module 12: AnalysisJob lifecycle`。
 
-M12ではAnalysisJob state machine、terminal/non-terminal state、command/polling、failure/partial/cancel/timeoutを詳しく扱う。本ModuleではJob APIがstateのtransport表現であり、Frontend/OpenAPIがtransition authorityではないことまでを確定する。
+M12ではAnalysisJob state machine、terminal/non-terminal state、command/polling、failure/partial/cancel/timeoutを詳しく扱います。本ModuleではJob APIがstateのtransport表現であり、Frontend/OpenAPIがtransition authorityではないことまでを確定します。
 
 ## References
 

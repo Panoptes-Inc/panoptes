@@ -6,9 +6,9 @@ Difficulty: `FOUNDATION`
 Prerequisite: `M01 — Panoptes Overall Architecture`  
 Parent: [Panoptes Technical Bootcamp](../panoptes-technical-bootcamp.md)
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明できる。
+このModuleを終えた学習者は、次を説明できます。
 
 1. Svelte componentとSvelteKit application frameworkの違い。
 2. Svelte 5のprops、reactive state、derived state、effect、binding、callback、snippetの役割。
@@ -18,21 +18,31 @@ Parent: [Panoptes Technical Bootcamp](../panoptes-technical-bootcamp.md)
 6. Frontend local stateとRails canonical business stateの違い。
 7. secret、session、authorization、business ruleをclient componentへ置かない理由。
 
-Svelte/SvelteKit全機能の網羅は目的にしない。Panoptesで現在使う概念と、責務境界を読むために必要な概念へ限定する。
+Svelte/SvelteKit全機能の網羅は目的にしません。Panoptesで現在使う概念と、責務境界を読むために必要な概念へ限定します。
+
+## 用語ガイド
+
+- **Component（コンポーネント）:** 表示、入力、局所的な操作を再利用可能な単位へまとめたもの。
+- **Props:** 親Componentから子Componentへ渡す入力値。
+- **Reactive state（リアクティブな状態）:** 値の変化に応じて表示や派生値が自動的に更新される状態。
+- **Lifecycle（ライフサイクル）:** Componentやrequestが生成され、更新され、不要になるまでの流れ。
+- **SSR（Server-Side Rendering）:** Browserへ返すHTMLをServer側で生成する方式。
+
+> Panoptesでは、Svelteは主に画面の表示と局所的な操作を担当し、SvelteKitはrouting、server処理、BFFなどApplication全体の入口を担当する。
 
 ## 2. Svelteとは何か
 
-Svelteは`.svelte` componentをbrowserで動くJavaScript、DOM update、CSSへcompileするUI technologyである。Componentは主に次を組み合わせる。
+Svelteは、`.svelte` ComponentをBrowserで動くJavaScript、DOM更新処理、CSSへコンパイルするUI技術です。Componentは主に次の要素を組み合わせます。
 
 - `<script>`: props、state、derived value、event handler、lifecycle。
 - markup: HTML、child component、条件分岐、list、snippet。
 - `<style>`: component-local styling。
 
-Svelte componentはURL routing、server authentication、API contract、database transactionを自動的に提供しない。それらはSvelteKitや別backendの責務である。
+Svelte componentはURL routing、server authentication、API contract、database transactionを自動的に提供しません。それらはSvelteKitや別backendの責務です。
 
 ### 2.1 Component
 
-Componentはpropsを受け取り、stateから表示を作り、interaction intentをcallback等でownerへ返す。小ささではなく、責務と変更理由が境界になる。
+Componentはpropsを受け取り、状態から表示を作り、ユーザーの操作意図をcallbackなどで管理元へ返します。分割の境界は、コードの短さではなく、担当する役割と変更が必要になる理由で決めます。
 
 ```svelte
 <script lang="ts">
@@ -42,17 +52,17 @@ Componentはpropsを受け取り、stateから表示を作り、interaction inte
 <button onclick={onSelect}>{label}</button>
 ```
 
-この例はlabelの表示とclick通知を行うが、APIを呼ぶかどうかは決めない。
+この例はlabelの表示とclick通知を行うが、APIを呼ぶかどうかは決めません。
 
 ### 2.2 Props
 
-Svelte 5では`$props()`からparent入力を受ける。Panoptesではdata/stateをparentからchildへ渡し、UIはtyped callbackでinteraction intentを上げるのがdefaultである。
+Svelte 5では`$props()`からparent入力を受けます。Panoptesではdata/stateをparentからchildへ渡し、UIはtyped callbackでinteraction intentを上げるのがdefaultです。
 
-Propsはchildが自由に所有するstateではない。Parentから更新されうるため、必要なくlocal copyへ複製すると同期ずれを作る。
+Propsは、子Componentが自由に変更してよい状態ではありません。親から更新される可能性があるため、必要もなくlocalな状態へ複製すると、親子の値にずれが生じます。
 
 ### 2.3 Reactive state — `$state`
 
-`$state`はcomponentまたは`.svelte.ts` state owner内のreactive mutable stateを表す。
+`$state`はcomponentまたは`.svelte.ts` state owner内のreactive mutable stateを表します。
 
 Panoptesの例:
 
@@ -62,50 +72,50 @@ Panoptesの例:
 - modal visibility
 - loading presentation
 
-`$state`へProject、Job、Role等を保持しても、それはFrontend projection/cacheであり、canonical business stateへ昇格しない。
+`$state`へProject、Job、Role等を保持しても、それはFrontend projection/cacheであり、canonical business stateへ昇格しません。
 
 ### 2.4 Derived state — `$derived`
 
-`$derived`は他のreactive inputから計算できる値を表す。手動同期より、同じSourceから都度導出する。
+`$derived`は他のreactive inputから計算できる値を表します。手動同期より、同じSourceから都度導出します。
 
-`PanoptesShellPage`では、render対象Snapshot、fallback状態、header metadata、reanalyze disabled状態等をderivedとして作る。`app/+layout.svelte`ではpathnameから`isTopPage`を導出する。
+`PanoptesShellPage`では、表示するSnapshot、代替表示の状態、Headerの補足情報、再分析を無効にする状態などを派生値として計算します。`app/+layout.svelte`では、pathnameから`isTopPage`を導出します。
 
-Pure calculationは`$effect`ではなく`$derived`またはplain functionを優先する。
+値の計算だけで完結する処理には、`$effect`よりも`$derived`または通常の関数を優先します。
 
 ### 2.5 Side effect — `$effect`
 
-`$effect`はreactive dependencyの変化に応じ、browser上で外部状態やimperative処理へ作用する。DOM integration、external widget、owner controllerとの同期等に使える。
+`$effect`は、参照するリアクティブな値の変化に応じて、Browser上で外部状態を更新したり、手続き的な処理を実行したりします。DOMとの連携、外部widget、管理元のcontrollerとの同期などに使えます。
 
 Panoptesの例:
 
 - Snapshot変化時にcontrollerへ同期する。
 - Turnstileのbrowser widget lifecycleを調整する。
 
-`$effect`はSSR中に実行するdata loadや、pure derived valueの代用品ではない。Effectのcleanup、再実行、dependencyを意識する。
+`$effect`は、SSR中のdata取得や、既存の値から計算するだけの派生値の代用品ではありません。何に依存し、いつ再実行され、不要になった処理をどう解放するかを確認します。
 
 ### 2.6 Event / callback
 
-Panoptes標準はtyped callback propである。
+Panoptes標準はtyped callback propです。
 
 ```text
 data/state: Parent -> Child
 interaction intent: Child -> typed callback -> Owner
 ```
 
-`PanoptesShellMainSurface`は`onRetry`、`onConfirm`、`onSelectProject`等を受け取り、render branchに応じてchildへ渡す。UIはcontrollerやAPIを直接importせず、ownerがcommand orchestrationを行う。
+`PanoptesShellMainSurface`は`onRetry`、`onConfirm`、`onSelectProject`などを受け取り、表示の分岐に応じて子Componentへ渡します。UIはcontrollerやAPIを直接importせず、管理元がcommandの実行を調整します。
 
 ### 2.7 Conditional / list rendering
 
 - `{#if ...}{:else if ...}{/if}`: stateに応じた表示。
 - `{#each items as item (key)}`: list表示。安定したkeyを指定するとidentityを保ちやすい。
 
-条件分岐はpresentation decisionに使う。Roleやeligibility等のbusiness decisionをmarkupだけで正本化しない。
+条件分岐はpresentation decisionに使います。Roleやeligibility等のbusiness decisionをmarkupだけで正本化しません。
 
 ### 2.8 `bind:`と`$bindable`
 
-`bind:value`、`bind:checked`、`bind:this`は値やDOM referenceを接続する。Child propをparentからbind可能にする場合、Svelte 5では`$bindable`を明示する。
+`bind:value`、`bind:checked`、`bind:this`は値やDOM referenceを接続します。Child propをparentからbind可能にする場合、Svelte 5では`$bindable`を明示します。
 
-PanoptesのSignupではfield componentが`$bindable`なform valueを受け、form ownerと同期する。Bindingは便利だが、ownershipが曖昧になる場合はvalue + callbackを使う。Server stateや複数Feature間stateをtwo-way bindingで共有しない。
+PanoptesのSignupではfield componentが`$bindable`なform valueを受け、form ownerと同期します。Bindingは便利だが、ownershipが曖昧になる場合はvalue + callbackを使います。Server stateや複数Feature間stateをtwo-way bindingで共有しません。
 
 ### 2.9 Lifecycle
 
@@ -113,28 +123,28 @@ PanoptesのSignupではfield componentが`$bindable`なform valueを受け、for
 - `onDestroy`: component破棄時のcleanup。
 - `$effect`: reactive browser-side lifecycle。
 
-`PanoptesShellPage`は`onMount(controller.mount)`でcontroller lifecycleを開始し、controllerがcleanupを返せる構造を持つ。`SignUpForm`は`onDestroy(controller.destroy)`でresourceを解放する。
+`PanoptesShellPage`は`onMount(controller.mount)`でcontroller lifecycleを開始し、controllerがcleanupを返せる構造を持ちます。`SignUpForm`は`onDestroy(controller.destroy)`でresourceを解放します。
 
 ### 2.10 Snippet / children
 
-Svelte 5のsnippetは再利用可能なmarkup blockで、`{@render ...}`で描画する。
+Svelte 5のsnippetは再利用可能なmarkup blockで、`{@render ...}`で描画します。
 
 - Root/App layoutは`children` snippetを`$props()`で受け、`{@render children()}`でnested routeを描画する。
 - `PanoptesShellMainSurface`は`{#snippet snapshotSurface()}`で重複するSnapshot compositionをまとめる。
 
-旧来のslot知識だけで読まず、現Repositoryのchildren/snippet patternを優先する。
+旧来のslot知識だけで読まず、現Repositoryのchildren/snippet patternを優先します。
 
 ### 2.11 Svelte storeとの共存
 
-Svelte 5でrunesを使っても、Svelte storeは利用できる。Panoptesではlocal interactionにrunes、複数component/controllerから購読するruntime/project/session stateにstoreが残る。Component内の`$storeName`はstore valueへのauto-subscriptionであり、rune名ではない。
+Svelte 5でrunesを使っても、Svelte storeは利用できます。Panoptesではlocal interactionにrunes、複数component/controllerから購読するruntime/project/session stateにstoreが残ります。Component内の`$storeName`はstore valueへのauto-subscriptionであり、rune名ではありません。
 
-Storeを使う理由は共有lifecycleと購読であり、canonical backend stateのownershipではない。
+Storeを使うのは、複数箇所から状態を購読し、その生存期間を共有するためです。Backendの正式な状態を決定する権限がStoreへ移るわけではありません。
 
 ## 3. SvelteKitとは何か
 
-SvelteKitはSvelte componentを使い、routing、server load、request handler、form action、SSR、client navigation、build/runtime boundaryを構成するapplication frameworkである。
+SvelteKitはSvelte componentを使い、routing、server load、request handler、form action、SSR、client navigation、build/runtime boundaryを構成するapplication frameworkです。
 
-| Concern                      | Svelte                    | SvelteKit                                 |
+| 確認する観点                 | Svelte                    | SvelteKit                                 |
 | ---------------------------- | ------------------------- | ----------------------------------------- |
 | UI component                 | yes                       | Svelte componentをrouteへ配置             |
 | Reactivity                   | runes、stores             | load dataとcomponentへ接続                |
@@ -143,7 +153,7 @@ SvelteKitはSvelte componentを使い、routing、server load、request handler�
 | SSR / hydration / navigation | component単体では決めない | route単位でorchestrate                    |
 | Business backend             | no                        | PanoptesではBFFまで。Railsを代替しない    |
 
-したがって、`Svelte = Panoptes frontendのすべて`でも、`SvelteKit = Rails business backend`でもない。
+したがって、`Svelte = Panoptes frontendのすべて`でも、`SvelteKit = Rails business backend`でもありません。
 
 ## 4. SvelteKit file roles
 
@@ -158,38 +168,38 @@ SvelteKitはSvelte componentを使い、routing、server load、request handler�
 | `+server.ts`        | HTTP endpoint handler                    | Auth callback/logoutまたはsame-origin BFF/API boundary       |
 | `hooks.server.ts`   | request全体のserver hook                 | session/auth解決、route policy、server-side deny/redirect    |
 
-Panoptesの現Route treeには`+page.ts`や`+layout.ts`の代表実装はない。概念は理解するが、不要なuniversal loadを新設しない。
+Panoptesの現Route treeには`+page.ts`や`+layout.ts`の代表実装はない。概念は理解するが、不要なuniversal loadを新設しません。
 
 ### 4.1 `load`
 
-`load`はroute表示に必要なdataを準備する。
+`load`はroute表示に必要なdataを準備します。
 
 - Server loadはserverだけで実行し、cookie、private environment、server-only clientへアクセスできる。
 - Universal loadは初回SSR時にはserver、client navigation時にはbrowserでも実行されうるため、secretを置かない。
 - Layout dataはnested page/layoutへ渡る。Page componentは`data` propとして受け取る。
 
-Current root `+layout.server.ts`は`event.locals.auth`からauthenticated、email、active Organization IDを返す。
+Current root `+layout.server.ts`は`event.locals.auth`からauthenticated、email、active Organization IDを返します。
 
 ### 4.2 Form actions
 
-Form actionは`+page.server.ts`でform POSTをserver-sideに処理する仕組みである。PanoptesのOrganization selectionはdefault actionでform dataを読み、membershipを検証し、HTTP-only cookieを設定してsafe return先へredirectする。
+Form actionは`+page.server.ts`でform POSTをserver-sideに処理する仕組みです。PanoptesのOrganization selectionはdefault actionでform dataを読み、membershipを検証し、HTTP-only cookieを設定してsafe return先へredirectします。
 
-これはclient componentだけでcookie/authorizationを決めるより安全で、JavaScript enhancementの有無とserver authorityを分離できる。すべてのmutationをform actionへ統一する必要はなく、API/BFF commandとの使い分けはuse caseで決める。
+これはclient componentだけでcookie/authorizationを決めるより安全で、JavaScript enhancementの有無とserver authorityを分離できます。すべてのmutationをform actionへ統一する必要はなく、API/BFF commandとの使い分けはuse caseで決めます。
 
 ### 4.3 `error` / `redirect`
 
-Server load、action、request handlerはSvelteKitの`error`や`redirect`でHTTP outcomeを表現できる。これらはframework control flowとしてrequestを終了するため、一般例外として不用意にcatchしない。
+Server load、action、request handlerはSvelteKitの`error`や`redirect`でHTTP outcomeを表現できます。これらはframework control flowとしてrequestを終了するため、一般例外として不用意にcatchしません。
 
-Current Organization actionはmembership不一致を403、成功を303 redirectとする。Auth callback/logoutも`+server.ts`でredirectする。
+Current Organization actionはmembership不一致を403、成功を303 redirectとします。Auth callback/logoutも`+server.ts`でredirectします。
 
 ### 4.4 `+server.ts`
 
-`+server.ts`はHTTP methodごとのhandlerを公開する。Panoptesでは次の2種類がある。
+`+server.ts`はHTTP methodごとのhandlerを公開します。Panoptesでは次の2種類があります。
 
 - Auth callback/logout等のSvelteKit-owned server endpoint。
 - `/api/panoptes/v1/...`としてRailsへ接続するsame-origin BFF endpoint。
 
-`+server.ts`に置いたという理由だけでbusiness ruleのSource of Truthにはならない。
+`+server.ts`に置いたという理由だけでbusiness ruleのSource of Truthにはなりません。
 
 ## 5. Panoptes Route / Page / Layout mapping
 
@@ -201,7 +211,7 @@ Current Organization actionはmembership不一致を403、成功を303 redirect�
 | `/app`          | App Home / Analysis Entry                 | `src/routes/app/+page.svelte`          | shared `PanoptesShellEntryPage` / Feature Shell |
 | `/app/analysis` | Analysis-focused Workspace / Result Entry | `src/routes/app/analysis/+page.svelte` | same shared entry / Feature Shell               |
 
-`/app`と`/app/analysis`はProduct上のroleが異なるが、同じruntime compositionを共有する。Route fileを消して一つのURLにすることとは別問題である。
+`/app`と`/app/analysis`はProduct上のroleが異なるが、同じruntime compositionを共有します。Route fileを消して一つのURLにすることとは別問題です。
 
 ### 5.2 Route EntryとPage Entry
 
@@ -217,21 +227,21 @@ URL / SvelteKit generated types
 - **Page Entry:** route contextをFeature compositionへ接続するowner。
 - **Feature:** controller、view-model、command、feature stateを所有する。
 
-Current App routeは数行で`data.activeOrganizationId`を`PanoptesShellEntryPage`へ渡す。数行でもURL/data boundaryとして意味があり、無意味なcomponent wrapperと同一ではない。
+Current App routeは数行で`data.activeOrganizationId`を`PanoptesShellEntryPage`へ渡します。数行でもURL/data boundaryとして意味があり、無意味なcomponent wrapperと同一ではありません。
 
 ### 5.3 Root Layout
 
-Root `+layout.server.ts`がverified auth contextを配布し、root `+layout.svelte`はglobal CSS、favicon、children renderingを所有する。Header/Heroやfeature commandは所有しない。
+Root `+layout.server.ts`がverified auth contextを配布し、root `+layout.svelte`はglobal CSS、favicon、children renderingを所有します。Header/Heroやfeature commandは所有しません。
 
 ### 5.4 App Layout
 
-`app/+layout.svelte`はApp route familyで持続するHeader、shell width/spacing、`/app`だけのTop Heroを所有する。pathnameからpresentation conditionをderivedするが、Analysis commandやRails business ruleは持たない。
+`app/+layout.svelte`はApp route familyで持続するHeader、shell width/spacing、`/app`だけのTop Heroを所有します。pathnameからpresentation conditionをderivedするが、Analysis commandやRails business ruleは持ちません。
 
-Layoutの責務はpersistent structureである。名称に`Shell`が含まれていても、controllerやuse-case orchestrationを持つ`PanoptesShellPage`はFeature ownerでありFramework Layoutではない。
+Layoutの責務はpersistent structureです。名称に`Shell`が含まれていても、controllerやuse-case orchestrationを持つ`PanoptesShellPage`はFeature ownerでありFramework Layoutではありません。
 
 ### 5.5 Marketing Page
 
-Root `/` routeはauthenticated dataを`MarketingLandingPage`へ渡す。Marketing HeaderとHeroはPage-owned compositionであり、root Layoutへ重複配置しない。
+Root `/` routeはauthenticated dataを`MarketingLandingPage`へ渡します。Marketing HeaderとHeroはPage-owned compositionであり、root Layoutへ重複配置しません。
 
 ## 6. Server / Client boundary
 
@@ -247,60 +257,60 @@ Root `/` routeはauthenticated dataを`MarketingLandingPage`へ渡す。Marketin
 
 ### なぜSecretをClientへ置かないか
 
-Browser bundleとnetwork requestはUserから観測・変更できる。Public environment value以外のsecret、service credential、private Rails URLをclient codeへ含めない。
+Browserへ配信するコードやnetwork requestは、ユーザーが確認・変更できます。公開用の環境変数以外のsecret、service認証情報、非公開のRails URLをclient codeへ含めません。
 
 ### なぜBusiness AuthorizationをClientへ置かないか
 
-Buttonを隠すことはUXでありauthorizationではない。Userはrequestを直接作れるため、SvelteKit server boundaryとRailsがserver-sideで拒否できなければならない。
+Buttonを隠すのは操作画面の制御であり、認可ではありません。ユーザーはrequestを直接作れるため、SvelteKitのServer側の入口とRailsが、不正な操作をServer側で拒否できなければなりません。
 
 ### Current request guard
 
-`src/hooks.server.ts`はrequestごとにSupabase/mock auth adapterを解決し、route policyを評価してnot-found、deny、redirectをserver-sideで決める。Root server loadはその結果を`locals.auth`から読む。Client navigationでも、保護data/APIへのserver requestはこのboundaryを通るため、navigationそのものがauthorization bypassにはならない。
+`src/hooks.server.ts`はrequestごとにSupabase/mock auth adapterを解決し、route policyを評価してnot-found、deny、redirectをserver-sideで決めます。Root server loadはその結果を`locals.auth`から読みます。Client navigationでも、保護data/APIへのserver requestはこのboundaryを通るため、navigationそのものがauthorization bypassにはなりません。
 
 ## 7. Rendering model
 
 ### SSR
 
-Initial requestでserverがroute loadとSvelte componentからHTMLを生成する。初期表示、metadata、server-verified context配布に有効である。SSR中はbrowser DOM API、`window`、browser-only effectへ依存できない。
+Initial requestでserverがroute loadとSvelte componentからHTMLを生成します。初期表示、metadata、server-verified context配布に有効です。SSR中はbrowser DOM API、`window`、browser-only effectへ依存できません。
 
 ### Hydration
 
-Browserがserver-generated HTMLへSvelteのevent handlerとreactive behaviorを接続する。HTMLが表示済みでも、hydration前はclient interactionが完全に有効とは限らない。
+Browserがserver-generated HTMLへSvelteのevent handlerとreactive behaviorを接続します。HTMLが表示済みでも、hydration前はclient interactionが完全に有効とは限りません。
 
 ### Client-side navigation
 
-Hydration後、SvelteKitは該当link navigationでdocument全体のreloadを避け、必要なloadとcomponent更新を行える。Nested Layoutはroute family内で再利用されるため、persistent Header/Shellに適する。
+Hydration後、SvelteKitは該当link navigationでdocument全体のreloadを避け、必要なloadとcomponent更新を行える。Nested Layoutはroute family内で再利用されるため、persistent Header/Shellに適します。
 
 ### CSR
 
-Browserでcomponentをrender/updateする側面。Panoptesのform、tab、modal、analysis progress等はclient interactionを使うが、application全体がclient-onlyという意味ではない。
+Browserでcomponentをrender/updateする側面。Panoptesのform、tab、modal、analysis progress等はclient interactionを使うが、application全体がclient-onlyという意味ではありません。
 
-PanoptesはSSRでinitial route/auth contextを受け、hydration後にclient interactionを行い、BFF/Railsへserver authorityを委譲するhybrid構成である。Exact performance tuningやroute別prerender/CSR strategyは後続へ送る。
+PanoptesはSSRでinitial route/auth contextを受け、hydration後にclient interactionを行い、BFF/Railsへserver authorityを委譲するhybrid構成です。Exact performance tuningやroute別prerender/CSR strategyは後続へ送ります。
 
 ## 8. State / Props / Callback model
 
-| State class                     | Example                                                  | Owner                     | Source of Truth boundary                                  |
-| ------------------------------- | -------------------------------------------------------- | ------------------------- | --------------------------------------------------------- |
-| Local / presentation            | modal、tab、temporary input、password visibility         | Component / UI owner      | browser lifecycle内のみ                                   |
-| Feature state                   | controller lifecycle、view-model、analysis UI projection | Feature                   | server responseをorchestrateするがcanonical ownerではない |
-| Shared frontend state           | selected project、runtime projection、notification       | approved store/controller | 複数consumer向けcache/projection                          |
-| Server/canonical business state | Project、AnalysisJob、Snapshot、Role、workflow           | Rails + PostgreSQL        | Frontendから直接確定しない                                |
+| 状態の分類                      | 例                                                       | 管理・決定の責任を持つ主体 | 正本として扱う範囲                                        |
+| ------------------------------- | -------------------------------------------------------- | -------------------------- | --------------------------------------------------------- |
+| Local / presentation            | modal、tab、temporary input、password visibility         | Component / UI owner       | browser lifecycle内のみ                                   |
+| Feature state                   | controller lifecycle、view-model、analysis UI projection | Feature                    | server responseをorchestrateするがcanonical ownerではない |
+| Shared frontend state           | selected project、runtime projection、notification       | approved store/controller  | 複数consumer向けcache/projection                          |
+| Server/canonical business state | Project、AnalysisJob、Snapshot、Role、workflow           | Rails + PostgreSQL         | Frontendから直接確定しない                                |
 
 ### Props direction
 
-Parentはdataとcallbackをchildへ渡す。Childがpropsの意味を変更したり、Organization scopeを推測したりしない。
+Parentはdataとcallbackをchildへ渡します。Childがpropsの意味を変更したり、Organization scopeを推測したりしません。
 
 ### Callback direction
 
-Child UIは`onRetry()`、`onSelectProject(id)`等でintentを通知する。Feature ownerがvalidation、command、client invocation、state updateを調整する。
+Child UIは`onRetry()`、`onSelectProject(id)`等でintentを通知します。Feature ownerがvalidation、command、client invocation、state updateを調整します。
 
 ### Bindingの限定利用
 
-Form ownerとfield componentが一つのlocal form lifecycleを共有するときは`$bindable`を使える。API response、Role、Job status等をbindingだけで更新しない。
+Form ownerとfield componentが一つのlocal form lifecycleを共有するときは`$bindable`を使える。API response、Role、Job status等をbindingだけで更新しません。
 
 ### Frontend stateをDB代わりにしない
 
-Frontend stateはreload、複数tab、stale response、User改変の影響を受ける。Business stateのmutationはFeature command→Client→BFF→Railsを通し、Rails/DB responseをFrontend projectionへ反映する。
+Frontend stateはreload、複数tab、stale response、User改変の影響を受けます。Business stateのmutationはFeature command→Client→BFF→Railsを通し、Rails/DB responseをFrontend projectionへ反映します。
 
 ## 9. SvelteKit BFFとの関係
 
@@ -319,7 +329,7 @@ Svelte component / Feature
 | Rails URLとraw errorを隠す          | canonical Project/Job/Snapshot state                |
 | timeout/envelope/safe error shaping | persistent stateをPostgreSQLへcommit                |
 
-Current BFFにはidentity/Organizationのread endpointがある。Production Analysis business endpointは未接続である。M02では境界だけを理解し、request/error/idempotencyの詳細はM07/M08/M09へ送る。
+Current BFFにはidentity/Organizationのread endpointがあります。Production Analysis business endpointは未接続です。M02では境界だけを理解し、request/error/idempotencyの詳細はM07/M08/M09へ送ります。
 
 ## 10. Directory mapping
 
@@ -332,7 +342,7 @@ Current BFFにはidentity/Organizationのread endpointがある。Production Ana
 | `src/lib/ui/primitives`             | semantics-neutral primitive                                       | `TARGET`。現在directory未作成        |
 | `src/lib/components/ComponentsBase` | legacy migration source / current canonicalが一部残る             | `CURRENT LEGACY`。新規配置先にしない |
 
-承認済みDirectory Structureはmigration targetであり、全fileが移動済みという意味ではない。M02で移動は行わない。
+承認済みDirectory Structureはmigration targetであり、全fileが移動済みという意味ではありません。M02で移動は行いません。
 
 ## 11. Representative code mapping
 
@@ -349,58 +359,58 @@ Current BFFにはidentity/Organizationのread endpointがある。Production Ana
 | `src/lib/components/ComponentsBase/Panoptes/PanoptesShellPage.svelte`                            | Feature Orchestrator                  | `$props/$state/$derived/$effect`、controller lifecycle、callback wiring     |
 | `src/lib/features/panoptes-shell/components/PanoptesShellMainSurface.svelte` / Signup components | Presentation + local form composition | callback-only interaction、snippet、if、bindable field、accessible feedback |
 
-これらは代表例であり、全Svelte fileの適合宣言ではない。
+これらは代表例であり、全Svelte fileの適合宣言ではありません。
 
 ## 12. よくある誤解
 
 ### 「Svelteがroutingやbackendまで全部行う」
 
-Svelteはcomponent/UI technologyである。Routingとserver lifecycleはSvelteKit、canonical business backendはRailsが担当する。
+Svelteはcomponent/UI technologyです。Routingとserver lifecycleはSvelteKit、canonical business backendはRailsが担当します。
 
 ### 「SvelteKitがあるのでRailsは不要」
 
-PanoptesのSvelteKit serverはBFF。Browser transport/session boundaryであり、business ruleやcanonical stateの正本ではない。
+PanoptesのSvelteKit serverはBFF。Browser transport/session boundaryであり、business ruleやcanonical stateの正本ではありません。
 
 ### 「`+layout.svelte`へ共有したい処理を全部置く」
 
-Layoutはpersistent structural responsibilityを持つ。Feature controllerやpage固有commandを置くとroute family全体へ不要なlifecycleを広げる。
+Layoutはpersistent structural responsibilityを持ちます。Feature controllerやpage固有commandを置くとroute family全体へ不要なlifecycleを広げます。
 
 ### 「`+page.svelte`が画面なので全logicを置く」
 
-Route fileはURL/data boundary。大きなuse caseはPage Entry/Featureへ委譲し、routeをthinに保つ。
+Route fileはURL/data boundary。大きなuse caseはPage Entry/Featureへ委譲し、routeをthinに保ちます。
 
 ### 「Storeや`$state`が最新ならSource of Truth」
 
-Frontend stateはprojection。Project、Job、Snapshot、Roleのcanonical authorityはRails/DBにある。
+Frontend stateはprojection。Project、Job、Snapshot、Roleのcanonical authorityはRails/DBにあります。
 
 ### 「SSRならすべてserver-only」
 
-SSRはinitial HTML生成。Hydration後は同じcomponentがbrowserでinteractionを持つ。Server-only dataは`.server` boundaryへ隔離する。
+SSRはinitial HTML生成。Hydration後は同じcomponentがbrowserでinteractionを持ちます。Server-only dataは`.server` boundaryへ隔離します。
 
 ### 「Client-side navigationならserver guardを通らない」
 
-保護load/API requestはserver boundaryで検証される。UI表示制御だけでauthorizationを代替してはいけない。
+保護load/API requestはserver boundaryで検証される。UI表示制御だけでauthorizationを代替してはいけません。
 
 ### 「`bind:`はstate ownershipを考えなくてよい仕組み」
 
-Bindingは値の同期手段であり、ownerを消すものではない。Form-local以外はprops + typed callbackをdefaultにする。
+Bindingは値の同期手段であり、ownerを消すものではありません。Form-local以外はprops + typed callbackをdefaultにします。
 
 ## 13. Practice
 
 ### 13.1 Knowledge Check
 
-1. SvelteとSvelteKitの役割の違いを説明せよ。
+1. SvelteとSvelteKitの役割の違いを説明してください。
 2. `$state`と`$derived`をどう使い分けるか。
 3. `$effect`へserver data fetchingを置かない理由は何か。
 4. `+page.server.ts`と`+page.ts`のsecurity boundaryの違いは何か。
 5. SSRとhydrationは何が違うか。
 6. SvelteKit BFFとRailsはどちらがbusiness authorizationを所有するか。
-7. `$bindable`を使う適切な例と、不適切な例を一つずつ挙げよ。
+7. `$bindable`を使う適切な例と、不適切な例を一つずつ挙げてください。
 8. Frontend storeがcanonical stateではない理由は何か。
 
 ### 13.2 Code Reading
 
-次を`Route / Page Entry / Layout / Feature / UI / Server Boundary`から最も適切なprimary roleへ分類し、根拠を書く。
+次を`Route / Page Entry / Layout / Feature / UI / Server Boundary`から最も適切なprimary roleへ分類し、根拠を書いてください。
 
 1. `src/routes/app/analysis/+page.svelte`
 2. `src/routes/app/+layout.svelte`
@@ -413,7 +423,7 @@ Bindingは値の同期手段であり、ownerを消すものではない。Form-
 
 ### 13.3 Trace — `/app/analysis`
 
-次をinitial direct accessの順へ並べる。
+次をinitial direct accessの順へ並べてください。
 
 - A. Root `+layout.server.ts`が`locals.auth`からlayout dataを返す。
 - B. Browserがserver-generated HTMLをhydrateする。
@@ -428,7 +438,7 @@ Bindingは値の同期手段であり、ownerを消すものではない。Form-
 
 ### 13.4 Design Exercise — どこへ置くか
 
-`+page / +layout / Feature / UI / SvelteKit server / Rails`から選び、理由を書く。
+`+page / +layout / Feature / UI / SvelteKit server / Rails`から選び、理由を書いてください。
 
 1. Modalの開閉状態。
 2. App route family全体のfixed Header。
@@ -464,9 +474,9 @@ Bindingは値の同期手段であり、ownerを消すものではない。Form-
 
 ### 14.3 Trace回答
 
-基本順は`C -> A -> D/E -> B -> F -> G -> H`。DとEはSSR composition内で親Layoutがchild Pageを描画する関係であり、厳密なcomponent render schedulingを暗記する問題ではない。重要なのは、server auth/loadが先にauthorityを確立し、HTML後にhydrationし、Featureのserver data requestはBFF/Railsで再検証されることである。
+基本順は`C -> A -> D/E -> B -> F -> G -> H`。DとEはSSR composition内で親Layoutがchild Pageを描画する関係であり、厳密なcomponent render schedulingを暗記する問題ではありません。重要なのは、server auth/loadが先にauthorityを確立し、HTML後にhydrationし、Featureのserver data requestはBFF/Railsで再検証されることです。
 
-Client-side navigationでもG/Hは省略しない。Navigationの表示体験がclient-sideでも、canonical resourceへのrequestとauthorizationはserver boundaryを通す。
+Client-side navigationでもG/Hは省略しません。Navigationの表示体験がclient-sideでも、canonical resourceへのrequestとauthorizationはserver boundaryを通します。
 
 ### 14.4 Design Exercise回答例
 
@@ -496,11 +506,11 @@ Client-side navigationでもG/Hは省略しない。Navigationの表示体験が
 M02 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M03`
 
-このstatusは教材artifactの完成を示す。Learner assessment合格、全Svelte fileの標準適合、Directory migration完了を意味しない。
+このstatusは教材artifactの完成を示します。Learner assessment合格、全Svelte fileの標準適合、Directory migration完了を意味しません。
 
 ## 16. Handoff to M03
 
-次は`M03 — Component Taxonomy`。M02のSvelte componentとSvelteKit framework fileの違いを前提に、Route Entry、Page Entry、Layout/Shell、Feature、Composite、UI、Primitive、Previewをprimary responsibilityで分類する。
+次は`M03 — Component Taxonomy`。M02のSvelte componentとSvelteKit framework fileの違いを前提に、Route Entry、Page Entry、Layout/Shell、Feature、Composite、UI、Primitive、Previewをprimary responsibilityで分類します。
 
 ## References
 

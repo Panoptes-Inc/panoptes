@@ -5,9 +5,9 @@ Phase: `TB-10`
 Difficulty: `INTERMEDIATE`  
 Prerequisites: `M01`–`M08`
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を自分の言葉で説明・判断できる。
+このModuleを終えた学習者は、次を自分の言葉で説明・判断できます。
 
 1. RDBとPostgreSQLの基本要素を説明する。
 2. Decision OwnershipとDurable Data Ownershipを分けて説明する。
@@ -17,11 +17,19 @@ Prerequisites: `M01`–`M08`
 6. current、historical Snapshot、derived data、cacheを区別する。
 7. CURRENT schemaとTARGET designを混同せずに読む。
 
+## 用語ガイド
+
+- **Persistence（永続化）:** processやServerを再起動しても失われない形でdataを保存すること。
+- **Source of Truth:** ある種類の事実について、最終的に正しいと判断する情報源。何の事実の正本かを必ず区別する。
+- **Constraint（制約）:** 不正なdataをDBへ保存できないようにする規則。foreign keyやunique制約などがある。
+- **Isolation（分離）:** 同時処理やOrganization間で、本来混ざってはいけないdataや更新を分けること。
+- **Durable data（耐久性のあるdata）:** 一時的なmemoryではなく、障害や再起動後も保持されるdata。
+
 ## 2. Database / PostgreSQL fundamentals
 
-Relational Databaseは、dataをtableとして保持し、keyによってrelationを表現するdurable storageである。PostgreSQLはPanoptes Railsが利用するRDBMSであり、現在の`database.yml`は`postgresql` adapterを指定している。
+Relational Databaseは、データをtableへ保存し、keyを使ってtable間の関係を表す永続的な保存先です。PostgreSQLはPanoptes Railsが利用するRDBMSで、現在の`database.yml`では`postgresql` adapterが指定されています。
 
-| Concept     | Meaning                                   | Panoptesでの読み方                  |
+| 概念        | 意味                                      | Panoptesでの読み方                  |
 | ----------- | ----------------------------------------- | ----------------------------------- |
 | Table       | 同種recordの集合                          | `users`、`organizations`等          |
 | Row         | 1 record                                  | 1 User、1 Organization等            |
@@ -33,7 +41,7 @@ Relational Databaseは、dataをtableとして保持し、keyによってrelatio
 | Constraint  | invalid shape/relationを拒否するDB rule   | NOT NULL、UNIQUE、FK、CHECK         |
 | Transaction | 複数DB operationをatomic unitにする仕組み | Target Job/Usage/Audit作成等        |
 
-SQL全体の暗記が目的ではない。重要なのは、どのbusiness factをdurableにし、どのinvariantをDBでも守り、誰が保存判断をするかである。
+SQL全体の暗記が目的ではありません。重要なのは、どのbusiness factをdurableにし、どのinvariantをDBでも守り、誰が保存判断をするかです。
 
 ## 3. PostgreSQL role in Panoptes
 
@@ -61,31 +69,31 @@ PostgreSQLが単独では決めないもの:
 - Partial resultがProductとしてusableか
 - SnapshotをcurrentやStrategy sourceへ昇格してよいか
 
-したがって、`DB != Business Decision Owner`である。
+したがって、`DB != Business Decision Owner`です。
 
 ## 4. Source of Truth
 
-Source of Truthとは、ある種類のfactについてcanonical authorityとして参照される場所またはcontractである。ただし「正本」は1種類だけではなく、何のauthorityかを明示する必要がある。
+Source of Truthとは、ある種類の事実について、正式な判断の基準として参照する場所や契約です。何を判断するための正本かによって対象は異なるため、業務上の決定と保存されたデータなど、扱う範囲を明示する必要があります。
 
-| Kind                        | Owner                  | Meaning                                           |
-| --------------------------- | ---------------------- | ------------------------------------------------- |
-| Business decision authority | Rails                  | rule、authorization、transition、保存可否を決める |
-| Durable canonical data      | PostgreSQL             | Railsが確定したbusiness stateを永続保持する       |
-| Derived data                | calculation/read model | canonical inputから再計算・再構築できる           |
-| Cache                       | Frontend/server cache  | performanceのための一時copy。stale/missし得る     |
-| Presentation state          | Frontend               | tab、modal、入力途中等。business truthではない    |
-| Replica                     | DB/infrastructure      | canonical dataのcopy。write authorityとは限らない |
+| 種類                        | 管理・決定の責任を持つ主体 | 意味                                              |
+| --------------------------- | -------------------------- | ------------------------------------------------- |
+| Business decision authority | Rails                      | rule、authorization、transition、保存可否を決める |
+| Durable canonical data      | PostgreSQL                 | Railsが確定したbusiness stateを永続保持する       |
+| Derived data                | calculation/read model     | canonical inputから再計算・再構築できる           |
+| Cache                       | Frontend/server cache      | performanceのための一時copy。stale/missし得る     |
+| Presentation state          | Frontend                   | tab、modal、入力途中等。business truthではない    |
+| Replica                     | DB/infrastructure          | canonical dataのcopy。write authorityとは限らない |
 
-「Railsが正本」と「DBが正本」は、対象を省略すると曖昧になる。Panoptesでは次のように言い分ける。
+「Railsが正本」と「DBが正本」は、対象を省略すると曖昧になります。Panoptesでは次のように言い分けます。
 
 > Rails is the Canonical Business Decision Owner.  
 > PostgreSQL is the Persistent Canonical Data Store.
 
-Rails process memoryだけに状態を置けば再起動で失われる。一方、DBに値があるだけでは、その値へ至るdecisionが正しかったことや、閲覧actorに権限があることまでは証明できない。
+Rails processのmemoryだけで状態を保持すると、再起動時に失われます。一方、DBに値が保存されているだけでは、その値を決めた判断が正しかったことや、閲覧する実行者に権限があることまでは証明できません。
 
 ## 5. Rails vs PostgreSQL
 
-| Concern          | Rails                                   | PostgreSQL                                |
+| 確認する観点     | Rails                                   | PostgreSQL                                |
 | ---------------- | --------------------------------------- | ----------------------------------------- |
 | Business rule    | canonical owner                         | 決定結果を保持し、単純invariantを補強     |
 | Authorization    | actor・membership・operationを評価      | relation dataを保持するが許可判断はしない |
@@ -94,7 +102,7 @@ Rails process memoryだけに状態を置けば再起動で失われる。一方
 | Persistence      | 何をいつ保存するか決める                | row/index/constraintとして保持する        |
 | Query            | use caseに必要なqueryを選ぶ             | execution/index supportを提供する         |
 
-例: RailsはAnalysisJobを`completed`へ遷移できるかをevidenceとpolicyから判断する。PostgreSQLは確定した`completed`と関連lineageをtransactionで保存する。
+例: RailsはAnalysisJobを`completed`へ遷移できるかをevidenceとpolicyから判断します。PostgreSQLは確定した`completed`と関連lineageをtransactionで保存します。
 
 ## 6. Entity and relation model
 
@@ -108,7 +116,7 @@ User
   `--< SystemRole
 ```
 
-| Entity                 | Identity                                   | Relation                    | Owner / lifecycle                                                 |
+| Entity                 | 識別する対象                               | Relation                    | Owner / lifecycle                                                 |
 | ---------------------- | ------------------------------------------ | --------------------------- | ----------------------------------------------------------------- |
 | User                   | UUID、external identity=`supabase_user_id` | Membership/SystemRoleを持つ | Railsがverified Supabase subjectからmap。active/suspended/deleted |
 | Organization           | UUID、human-facing unique slug             | Membershipを持つ            | Rails business resource。active/suspended                         |
@@ -126,13 +134,13 @@ Organization
               -> Strategy Source (explicit policy relation)
 ```
 
-Project、AnalysisJob、Evidence、Result、Snapshot、Usage、Audit、Lineageのphysical table/modelはCURRENT Rails schemaに存在しない。上図は承認済みcontractを説明するlogical targetであり、実装済みschemaではない。
+Project、AnalysisJob、Evidence、Result、Snapshot、Usage、Audit、Lineageの実際のtableやmodelは、現行Railsのschemaに存在しません。上図は承認済みの契約に基づく論理上の目標構成であり、実装済みschemaではありません。
 
 ## 7. Primary key and external identity
 
-Primary keyはrowを一意に識別するrecord identityであり、business meaning全体ではない。
+Primary keyはrowを一意に識別するrecord identityであり、business meaning全体ではありません。
 
-CURRENT tableは`pgcrypto`の`gen_random_uuid()`をdefaultとするUUID primary keyを使う。Userには別にSupabaseのexternal identityである`supabase_user_id`があり、UNIQUE constraintがある。
+現行tableは、`pgcrypto`の`gen_random_uuid()`を既定値とするUUIDのprimary keyを使います。Userには、このkeyとは別に、Supabase側の識別子である`supabase_user_id`があり、重複を防ぐUNIQUE制約が設定されています。
 
 区別:
 
@@ -143,13 +151,13 @@ CURRENT tableは`pgcrypto`の`gen_random_uuid()`をdefaultとするUUID primary 
 
 ## 8. Foreign key and referential integrity
 
-Foreign keyは「参照先rowが存在する」ことを守る。CURRENTでは次を確認できる。
+Foreign keyは「参照先rowが存在する」ことを守ります。CURRENTでは次を確認できます。
 
 - `organization_memberships.user_id -> users.id`
 - `organization_memberships.organization_id -> organizations.id`
 - `system_roles.user_id -> users.id`
 
-これらは`on_delete: :cascade`を持つ。親削除時に従属rowも消えるため、将来のretention/audit requirementに同じ方針を無条件適用してはいけない。
+これらは`on_delete: :cascade`を持ちます。親削除時に従属rowも消えるため、将来のretention/audit requirementに同じ方針を無条件適用してはいけません。
 
 重要:
 
@@ -157,7 +165,7 @@ Foreign keyは「参照先rowが存在する」ことを守る。CURRENTでは�
 Referential integrity != Authorization
 ```
 
-Membership rowが存在しても、statusが`suspended`かもしれず、roleがoperationを許さないかもしれない。ProjectがOrganizationへ属していても、現在actorのaccess permissionはRailsがresource chainとoperationから判断する。
+Membership rowが存在しても、statusが`suspended`かもしれず、roleがoperationを許さないかもしれない。ProjectがOrganizationへ属していても、現在actorのaccess permissionはRailsがresource chainとoperationから判断します。
 
 ## 9. Constraints and Rails validation
 
@@ -170,17 +178,17 @@ Membership rowが存在しても、statusが`suspended`かもしれず、roleが
 
 ### Layer boundary
 
-| Layer               | Purpose                                        | Example                                        |
+| 層（Layer）         | 目的                                           | 例                                             |
 | ------------------- | ---------------------------------------------- | ---------------------------------------------- |
 | Frontend validation | 即時feedback、入力補助                         | required表示、format hint                      |
 | Rails validation    | application/business-friendly validation       | slug format、name length、enum、operation rule |
 | DB constraint       | raceや別write pathにも効くintegrity safety net | UNIQUE、NOT NULL、FK、CHECK                    |
 
-Rails validationだけでは、同時requestの競合やRails以外のwriteからDBを完全には守れない。DB constraintだけでは、context-sensitiveなbusiness error、authorization、複数resourceのpolicyを十分に説明できない。重複して見える場合も、canonical meaningと各layerの目的を明示する。
+Rails validationだけでは、同時requestの競合やRails以外のwriteからDBを完全には守れない。DB constraintだけでは、context-sensitiveなbusiness error、authorization、複数resourceのpolicyを十分に説明できません。重複して見える場合も、canonical meaningと各layerの目的を明示します。
 
 ## 10. Transaction
 
-Transactionは複数のDB changeを1つのatomic unitとして扱う。
+Transactionは複数のDB changeを1つのatomic unitとして扱います。
 
 ```text
 BEGIN
@@ -204,13 +212,13 @@ Rails authorization / eligibility decision
   -> enqueue technical work after durable Job identity exists
 ```
 
-Jobだけ作成されUsage/Auditが欠ける、またはUsageだけ消費されJobがない、といったpartial writeを防ぐためにtransaction boundaryが必要になる。ただしQueue publishとのatomicityにはoutbox等の追加設計が必要になり得る。exact implementationはDEFERREDである。
+Jobだけ作成されUsage/Auditが欠ける、またはUsageだけ消費されJobがない、といったpartial writeを防ぐためにtransaction boundaryが必要になります。ただしQueue publishとのatomicityにはoutbox等の追加設計が必要になり得ます。exact implementationはDEFERREDです。
 
-CURRENTの確認範囲では、AnalysisJob/Usage/Audit transactionはなく、application codeに明示的なmulti-record transactionも確認できない。教材の例をCURRENTと表現しない。
+CURRENTの確認範囲では、AnalysisJob/Usage/Audit transactionはなく、application codeに明示的なmulti-record transactionも確認できません。教材の例をCURRENTと表現しません。
 
 ## 11. Isolation and concurrency
 
-同じdataへ複数requestが同時に到達すると、application側で先に読んだ状態が保存時には古くなっていることがある。
+同じdataへ複数requestが同時に到達すると、application側で先に読んだ状態が保存時には古くなっていることがあります。
 
 | Risk                   | Rails decision                 | DB support candidate                      |
 | ---------------------- | ------------------------------ | ----------------------------------------- |
@@ -219,9 +227,9 @@ CURRENTの確認範囲では、AnalysisJob/Usage/Audit transactionはなく、ap
 | duplicate Snapshot     | materialization policy         | unique lineage/Job relation               |
 | 同じMembership二重作成 | readable validation/error      | CURRENT unique `(organization,user)`      |
 
-CURRENTの`UserMapper`はunique `supabase_user_id`に対するraceで`ActiveRecord::RecordNotUnique`をretryする。これはDB UNIQUEが最終的な競合防止線である小さな例である。
+CURRENTの`UserMapper`はunique `supabase_user_id`に対するraceで`ActiveRecord::RecordNotUnique`をretryします。これはDB UNIQUEが最終的な競合防止線である小さな例です。
 
-Exact isolation level、lock方式、deadlock retry、outbox/idempotency schemaは後続実装・reliability Moduleへhandoffする。
+Exact isolation level、lock方式、deadlock retry、outbox/idempotency schemaは後続実装・reliability Moduleへhandoffします。
 
 ## 12. Current resource vs historical Snapshot
 
@@ -233,13 +241,13 @@ Current pointer           = mutable policy-selected reference
 Strategy source relation  = explicit approved source selection
 ```
 
-したがって次は同義ではない。
+したがって次は同義ではありません。
 
 ```text
 latest != current != Strategy source != historical Snapshot
 ```
 
-Chronological latest rowを自動的にcurrentと解釈してはいけない。Snapshotを上書きしてcurrent stateのように使うと、「当時何を根拠に判断したか」を再現できなくなる。
+Chronological latest rowを自動的にcurrentと解釈してはいけません。Snapshotを上書きしてcurrent stateのように使うと、「当時何を根拠に判断したか」を再現できなくなる。
 
 ## 13. Snapshot persistence and PD-04
 
@@ -252,11 +260,11 @@ Chronological latest rowを自動的にcurrentと解釈してはいけない。S
 | `failed`                  | Formal Snapshot作成不可                                                             |
 | `cancelled` / `timed_out` | 途中artifactとFormal Snapshotを分離                                                 |
 
-Snapshotはimmutable historyとして、生成時のmeaning、version、evidence、lineageを保持する。Partial Snapshotのexact threshold、physical schema、retention、promotion exceptionはDEFERREDである。
+Snapshotはimmutable historyとして、生成時のmeaning、version、evidence、lineageを保持します。Partial Snapshotのexact threshold、physical schema、retention、promotion exceptionはDEFERREDです。
 
 ## 14. Lineage and versioning
 
-Lineageは「このResultが何から、どのcontract/versionで作られたか」を追跡できる関係である。
+Lineageは、結果がどの入力・証跡に基づき、どの契約やversionで作られたかを追跡できる関係です。
 
 ```text
 AnalysisJob
@@ -266,13 +274,13 @@ AnalysisJob
   -> explicit Strategy Source relation
 ```
 
-Target metadata候補には、input/resource ID、evidence/artifact ID、Axis/Formula/Observation/Pipeline version、prompt/model、calculated time、parent/reanalysis Job等がある。承認済みcontractはsilent reinterpretを禁止するが、exact tables/columnsは未決定・未実装である。
+Target metadata候補には、input/resource ID、evidence/artifact ID、Axis/Formula/Observation/Pipeline version、prompt/model、calculated time、parent/reanalysis Job等があります。承認済みcontractはsilent reinterpretを禁止するが、exact tables/columnsは未決定・未実装です。
 
 ## 15. Canonical, derived, cache, and presentation data
 
 ### Derived data
 
-Derived dataはcanonical inputから計算・再構築できるdataである。display score、summary、selected count等が候補になる。
+Derived dataはcanonical inputから計算・再構築できるdataです。display score、summary、selected count等が候補になります。
 
 保存する利点:
 
@@ -286,21 +294,21 @@ Derived dataはcanonical inputから計算・再構築できるdataである。d
 - formula/versionなしでは意味を再現できない。
 - 同じmeaningの第二正本になり得る。
 
-「再計算できるから絶対保存しない」でも「表示するから常に保存する」でもない。cost、history、version、consistency requirementで決める。
+再計算できる値を保存するかどうかは、計算cost、履歴の必要性、version、整合性の要件から決めます。再計算できることや画面に表示することだけでは、一律には判断できません。
 
 ### Cache
 
-Cacheはperformance optimizationでありSource of Truthではない。cache miss時はcanonical storeから復元でき、stale cacheによってauthorizationやbusiness correctnessが変わってはいけない。
+Cacheは性能改善のための仕組みです。値が見つからないときは正本の保存先から復元できる必要があります。古いCacheによって、認可や業務上の正しい判断が変わってはいけません。
 
 - Frontend cache/store: 表示と再fetch最適化。
 - BFF/server cache: upstream requestやshared readの最適化。
 - DB buffer/replica: infrastructure-level optimization。
 
-いずれもwrite authorityやbusiness decision ownerへ自動昇格しない。
+いずれもwrite authorityやbusiness decision ownerへ自動昇格しません。
 
 ## 16. Audit data
 
-Business auditは通常のapplication logと異なり、後からbusiness-sensitive operationを追跡するdurable recordである。
+Business auditは通常のapplication logと異なり、後からbusiness-sensitive operationを追跡するdurable recordです。
 
 最低限の問い:
 
@@ -311,24 +319,24 @@ Business auditは通常のapplication logと異なり、後からbusiness-sensit
 - outcome: success/rejection/failureは何か。
 - correlation: request/Jobとどう結び付くか。
 
-CURRENT schemaにはbusiness audit tableがない。exact schema、retention、privacy/access policyはDEFERREDである。単なるdebug logをcanonical audit recordと呼ばない。
+CURRENT schemaにはbusiness audit tableがありません。exact schema、retention、privacy/access policyはDEFERREDです。単なるdebug logをcanonical audit recordと呼ばない。
 
 ## 17. Migration
 
-Rails migrationはschemaを順序立てて変更するdefinitionである。
+Rails migrationはschemaを順序立てて変更するdefinitionです。
 
 - Schema migration: table/column/index/constraint等を変更。
 - Data migration: existing rowを新contractへ変換。
 - Forward migration: deploy先を新schemaへ進める。
 - Backward compatibility: rolling deploy中にold/new codeが共存できる範囲を考える。
 
-`rails/db/schema.rb`はCURRENT database structureのsnapshotであり、直接編集するruntime business logicではない。migration fileも「schemaをどう変えるか」の履歴であり、requestごとにbusiness decisionを実行する場所ではない。
+`rails/db/schema.rb`はCURRENT database structureのsnapshotであり、直接編集するruntime business logicではありません。migration fileも「schemaをどう変えるか」の履歴であり、requestごとにbusiness decisionを実行する場所ではありません。
 
-Source変更を伴うfuture migrationでは、expand/contract、backfill、constraint追加順、rollback/recovery、large-table lock riskを別途検討する。
+Source変更を伴うfuture migrationでは、expand/contract、backfill、constraint追加順、rollback/recovery、large-table lock riskを別途検討します。
 
 ## 18. Index
 
-Indexはquery performanceを支える。CURRENTではlookup/uniqueness/FK access用indexを確認できる。
+Indexはquery performanceを支えます。CURRENTではlookup/uniqueness/FK access用indexを確認できます。
 
 - unique Supabase User ID
 - case-insensitive unique Organization slug
@@ -336,11 +344,11 @@ Indexはquery performanceを支える。CURRENTではlookup/uniqueness/FK access
 - unique User/Role pair
 - MembershipのOrganization/User FK index
 
-Indexにはwrite/update costとstorage costがある。index数を増やせば常に速くなるわけではなく、実query、selectivity、execution plan、workloadを根拠に選ぶ。Indexはrelationやauthorizationの意味そのものではない。
+Indexにはwrite/update costとstorage costがあります。index数を増やせば常に速くなるわけではなく、実query、selectivity、execution plan、workloadを根拠に選びます。Indexはrelationやauthorizationの意味そのものではありません。
 
 ## 19. CURRENT / TARGET / DEFERRED
 
-| Area             | CURRENT                                                             | TARGET                                  | DEFERRED                                    |
+| 領域             | CURRENT                                                             | TARGET                                  | DEFERRED                                    |
 | ---------------- | ------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------- |
 | DB adapter       | PostgreSQL、development/test/production config                      | managed production persistence          | platform provisioning/tuning                |
 | Identity schema  | User、Organization、Membership、SystemRole                          | resource-derived Organization scope     | advanced identity lifecycle                 |
@@ -353,9 +361,9 @@ Indexにはwrite/update costとstorage costがある。index数を増やせば�
 
 ## 20. Representative repository mapping
 
-以下は限定確認した10例であり、全schema/migration監査ではない。
+以下は限定確認した10例であり、全schema/migration監査ではありません。
 
-| Source                                                                         | Current role                                    | Relation / constraint                           | Rails owner                | Status              |
+| Source                                                                         | 現行の役割                                      | 関係・制約                                      | Rails側の担当              | 状態                |
 | ------------------------------------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------- | -------------------------- | ------------------- |
 | `rails/config/database.yml`                                                    | PostgreSQL connection/environment config        | adapter、pool、DB name/URL                      | Rails configuration        | `CURRENT`           |
 | `rails/db/schema.rb`                                                           | CURRENT schema snapshot                         | 4 tables、UUID、index、CHECK、FK                | migration結果をRailsがload | `CURRENT`           |
@@ -372,19 +380,19 @@ Indexにはwrite/update costとstorage costがある。index数を増やせば�
 
 ### 「DBがSource of TruthならDBがBusiness Rule Owner」
 
-Durable canonical dataの保持と、operationの意味・可否を決めるauthorityは別である。前者はPostgreSQL、後者はRails。
+Durable canonical dataの保持と、operationの意味・可否を決めるauthorityは別です。前者はPostgreSQL、後者はRails。
 
 ### 「Foreign keyがあればAuthorizationできる」
 
-FKは参照先存在を守るだけで、actor、membership status、role、operation permissionを評価しない。
+FKは参照先存在を守るだけで、actor、membership status、role、operation permissionを評価しません。
 
 ### 「Rails validationがあればDB constraintは不要」
 
-同時requestや別write pathを考えると、DB invariantにはconstraintが必要である。
+同時requestや別write pathを考えると、DB invariantにはconstraintが必要です。
 
 ### 「DB constraintがあればBusiness validationは不要」
 
-DBはcontext-sensitive rule、safe error、authorization、cross-resource policyのcanonical ownerではない。
+DBはcontext-sensitive rule、safe error、authorization、cross-resource policyのcanonical ownerではありません。
 
 ### 「latest = current」
 
@@ -396,15 +404,15 @@ Snapshotはimmutable historical evidenceであり、変更はnew Job/new Snapsho
 
 ### 「Cacheを読めればDBを確認しなくてよい」
 
-Cacheはstale/missし得る。business correctnessとauthorizationはcanonical boundaryへ戻れる必要がある。
+Cacheはstale/missする可能性があります。business correctnessとauthorizationはcanonical boundaryへ戻れる必要があります。
 
 ### 「Migrationはruntime processing」
 
-Migrationはschema/data shapeを展開するdeploy-time operationであり、request business flowではない。
+Migrationはschema/data shapeを展開するdeploy-time operationであり、request business flowではありません。
 
 ### 「Indexがrelationを作る」
 
-Indexはaccess path/uniqueness supportであり、relation meaningはFK/model/business contractが担う。
+Indexはaccess path/uniqueness supportであり、relation meaningはFK/model/business contractが担います。
 
 ## 22. Decision heuristic — どこへ置くか
 
@@ -415,13 +423,13 @@ Indexはaccess path/uniqueness supportであり、relation meaningはFK/model/bu
 3. Relation存在やdata shapeのinvariantか。  
    → DB constraint。Rails validationも適切に併用。
 4. 即時UX feedbackか。  
-   → Frontend validation。ただしcanonical validationではない。
+   → Frontend validation。ただしcanonical validationではありません。
 5. 高価なread/calculationの高速化か。  
    → index、cache、materialized/derived dataを候補にし、正本を明示。
 6. 過去時点を再現するimmutable recordか。  
    → Snapshot/history modelとlineage。
 
-例: 「同じOrganizationに同じUserのMembershipを二重作成しない」はDB UNIQUEで守る。「そのMembership roleでAnalysisを開始できるか」はRailsが判断する。「Form入力が空」はFrontendで即時表示し、Railsでも検証する。
+例: 「同じOrganizationに同じUserのMembershipを二重作成しない」はDB UNIQUEで守る。「そのMembership roleでAnalysisを開始できるか」はRailsが判断します。「Form入力が空」はFrontendで即時表示し、Railsでも検証します。
 
 ## 23. Practice
 
@@ -430,12 +438,12 @@ Indexはaccess path/uniqueness supportであり、relation meaningはFK/model/bu
 1. Primary keyとforeign keyの違いは何か。
 2. UNIQUE constraintとindexはどのように関係し、同義ではない点は何か。
 3. RailsがBusiness Decision Owner、PostgreSQLがPersistent Canonical Data Storeとはどういう意味か。
-4. transactionのCOMMITとROLLBACKを説明せよ。
+4. transactionのCOMMITとROLLBACKを説明してください。
 5. cacheをSource of Truthにしてはいけない理由は何か。
 
 ### 23.2 Responsibility Exercise
 
-次をFrontend / Rails / PostgreSQLへ分類する。
+次をFrontend / Rails / PostgreSQLへ分類します。
 
 1. input formatをtyping中に表示する。
 2. Analysis開始eligibilityを決める。
@@ -446,11 +454,11 @@ Indexはaccess path/uniqueness supportであり、relation meaningはFK/model/bu
 
 ### 23.3 Relation Exercise
 
-`Organization -> Project -> AnalysisJob -> Snapshot`について、各arrowが何を意味するか、FKで守れることとRailsが判断すべきことを分けて説明せよ。
+`Organization -> Project -> AnalysisJob -> Snapshot`について、各arrowが何を意味するか、FKで守れることとRailsが判断すべきことを分けて説明してください。
 
 ### 23.4 Constraint Exercise
 
-次に適切なconstraint候補を選び、Rails validationも必要か説明せよ。
+次に適切なconstraint候補を選び、Rails validationも必要か説明してください。
 
 1. `AnalysisJob.organization_id`は必須。
 2. 同じidempotency keyでJobを二重作成しない。
@@ -460,11 +468,11 @@ Indexはaccess path/uniqueness supportであり、relation meaningはFK/model/bu
 
 ### 23.5 Transaction Exercise
 
-Job creation、Usage decision、Audit eventを別々にcommitすると、どのpartial failureが起こるか。どこまでをtransactionに含め、Queue publishはどう扱うべきか論点を挙げよ。
+Job creation、Usage decision、Audit eventを別々にcommitすると、どのpartial failureが起こるか。どこまでをtransactionに含め、Queue publishはどう扱うべきか論点を挙げてください。
 
 ### 23.6 Violation Detection
 
-問題点を指摘せよ。
+問題点を指摘してください。
 
 1. Project rowが存在したので、任意のauthenticated Userへ返した。
 2. Frontend validationを通ったためRailsはeligibilityを確認しなかった。
@@ -474,7 +482,7 @@ Job creation、Usage decision、Audit eventを別々にcommitすると、どのp
 
 ### 23.7 Design Exercise — Create AnalysisJob
 
-「AnalysisJobを作成する」を次に分けて設計せよ。
+「AnalysisJobを作成する」を次に分けて設計してください。
 
 - Rails decision
 - DB transaction
@@ -504,7 +512,7 @@ Job creation、Usage decision、Audit eventを別々にcommitすると、どのp
 
 ### 24.3 Relation回答
 
-FKは各childが存在するparentを参照することを守る。RailsはactorがOrganizationへ属するか、Project/Job/Snapshotへそのoperationでアクセスできるか、Snapshot materialization条件を満たすかを判断する。CURRENTにはこのtarget chainのphysical schemaはない。
+FKは各childが存在するparentを参照することを守ります。RailsはactorがOrganizationへ属するか、Project/Job/Snapshotへそのoperationでアクセスできるか、Snapshot materialization条件を満たすかを判断します。CURRENTにはこのtarget chainのphysical schemaはない。
 
 ### 24.4 Constraint回答
 
@@ -516,7 +524,7 @@ FKは各childが存在するparentを参照することを守る。Railsはactor
 
 ### 24.5 Transaction回答
 
-Jobだけ存在してUsage/Auditが欠ける、Usageだけ記録されJobがない等が起こり得る。canonical DB changesは同一transaction候補である。Queue publishはDB transactionと別systemならdual-write failureが残るため、commit後enqueue、outbox、idempotent consumer等を検討する。exact choiceは未決定。
+Jobだけ存在してUsage/Auditが欠ける、Usageだけ記録されJobがない等が起こる可能性があります。canonical DB changesは同一transaction候補です。Queue publishはDB transactionと別systemならdual-write failureが残るため、commit後enqueue、outbox、idempotent consumer等を検討します。exact choiceは未決定。
 
 ### 24.6 Violation回答
 
@@ -546,7 +554,7 @@ After durable commit
   use idempotent/outbox-aware delivery design
 ```
 
-CURRENT schemaはIdentity/Organization boundaryまで。AnalysisJob/Usage/Audit/Queue handoffのphysical implementationはTARGET/DEFERREDであり、この回答例は実装済み証拠ではない。
+CURRENT schemaはIdentity/Organization boundaryまで。AnalysisJob/Usage/Audit/Queue handoffのphysical implementationはTARGET/DEFERREDであり、この回答例は実装済み証拠ではありません。
 
 ## 25. Completion Criteria
 
@@ -565,13 +573,13 @@ CURRENT schemaはIdentity/Organization boundaryまで。AnalysisJob/Usage/Audit/
 
 Authoring DoD: `10 / 10 PASS`。
 
-これは教材artifactの完成を示す。Learner assessment合格、production schema完成、migration実行、DB performance/security検証、Production Readinessを意味しない。
+これは教材artifactの完成を示します。Learner assessment合格、production schema完成、migration実行、DB performance/security検証、Production Readinessを意味しません。
 
 ## 26. Handoff to M10
 
 Recommended next phase: `TB-11 — Module 10: Auth / Authorization / Organization`。
 
-M10ではCURRENTのSupabase identity、Rails Authentication、Organization membership/role、resource authorization、404/403 boundaryを詳しく扱う。本Moduleではrelation/constraintとauthorizationを分離する原則までを確定し、認証・認可教材を先取りしない。
+M10ではCURRENTのSupabase identity、Rails Authentication、Organization membership/role、resource authorization、404/403 boundaryを詳しく扱います。本Moduleではrelation/constraintとauthorizationを分離する原則までを確定し、認証・認可教材を先取りしません。
 
 ## References
 

@@ -5,9 +5,9 @@ Phase: `TB-15`
 Difficulty: `ADVANCED`  
 Prerequisites: `M01`–`M13`
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. Workerをbackground technical executorとして説明し、Business Decision Ownerと区別する。
 2. HTTP fetchとBrowser executionを目的・cost・failure modeから使い分ける。
@@ -19,15 +19,23 @@ Prerequisites: `M01`–`M13`
 8. untrusted web content、resource cleanup、limitsをProduction Workerの必須論点として説明する。
 9. CURRENT、TARGET、DEFERREDを混同しない。
 
+## 用語ガイド
+
+- **Worker:** Queueなどからtechnical taskを受け取り、HTTP request-responseの外で実行するprocess。
+- **Chromium:** JavaScript実行や描画後のDOM、screenshotが必要な収集で使うBrowser engine。
+- **Collection:** 対象siteからHTML、screenshot、metadataなどの分析材料を取得する処理。
+- **Artifact:** 収集・処理によって生成されたfileやdata。保存場所と業務上の意味は分けて扱う。
+- **Provenance（由来情報）:** そのdataを、いつ、どの対象から、どの方法で取得したかを追跡する情報。
+
 ## 2. Worker fundamentals
 
-WorkerはQueue/Job等からtechnical taskを受け取り、request-response lifecycleの外で処理を実行するexecutorである。
+WorkerはQueue/Job等からtechnical taskを受け取り、request-response lifecycleの外で処理を実行するexecutorです。
 
-| Input                                                                                 | Execution                                                                 | Output                                                                           |
+| 入力                                                                                  | Execution                                                                 | 出力                                                                             |
 | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | Job/attempt identity、Railsが確定したOrganization/Project、target、versioned contract | fetch、browser rendering、capture、extraction、technical analysis、upload | artifacts、technical facts、progress、diagnostics、retryable/non-retryable error |
 
-Workerが扱うのは「何が取得・生成できたか」というtechnical factである。「Userに権限があるか」「ResultがProductとしてusableか」「Snapshotをcurrentへ昇格するか」はRailsのbusiness decisionである。
+Workerが扱うのは、「何を取得・生成できたか」という技術上の事実です。「ユーザーに権限があるか」「結果をProductとして利用できるか」「Snapshotをcurrentとして採用するか」は、Railsが業務上の規則に基づいて判断します。
 
 ```text
 Worker != Business Backend
@@ -56,7 +64,7 @@ Worker success != Product success
 - Product strategyの正本化
 - Rails/PostgreSQLへの任意business state更新
 
-Workerが式計算engineを担当する承認済み方向があっても、Railsはcanonical orchestration、registry、validation、persistenceを所有する。計算の実行主体とbusiness authorityを混同しない。
+Workerが式計算engineを担当する承認済み方向があっても、Railsはcanonical orchestration、registry、validation、persistenceを所有します。計算の実行主体とbusiness authorityを混同しません。
 
 ## 4. HTTP Fetch vs Browser Execution
 
@@ -68,9 +76,9 @@ Workerが式計算engineを担当する承認済み方向があっても、Rails
 | Main failures | DNS、connect、TLS、status、redirect、size、timeout              | navigation、script、render wait、browser crash、resource leak、timeout             |
 | Evidence      | raw bytes/HTMLとHTTP metadata                                   | rendered DOM、viewport-specific visual evidence                                    |
 
-「全部Chromium」は高cost・large attack surface・resource contentionを招く。「全部HTTP client」ではclient-side renderingやvisual stateを観測できない。必要なEvidence contractに応じて選ぶ。
+すべてにChromiumを使うと、costや攻撃を受け得る範囲が増え、CPUやmemoryの取り合いが起きやすくなります。一方、HTTP clientだけでは、client-sideで描画した結果や視覚的な状態を観測できません。必要なEvidenceの契約に応じて選びます。
 
-CURRENT RepositoryにはPython HTTP client、BeautifulSoup、Selenium、Playwright、Chromium launcherのProduction実装・依存manifestは確認できなかった。したがって特定libraryを正本化しない。
+CURRENT RepositoryにはPython HTTP client、BeautifulSoup、Selenium、Playwright、Chromium launcherのProduction実装・依存manifestは確認できませんでした。したがって特定libraryを正本化しません。
 
 ## 5. Collection pipeline
 
@@ -109,7 +117,7 @@ Target flow:
 
 ## 6. Preflight and URL/network validation
 
-Workerは外部URLを扱うため、入力文字列の形式確認だけでは足りない。最低限の論点は次の通りである。
+Workerは外部URLを扱うため、入力文字列の形式確認だけでは足りません。最低限の論点は次の通りです。
 
 - URL syntaxと許可scheme
 - redirect回数・destinationの再検証
@@ -118,9 +126,9 @@ Workerは外部URLを扱うため、入力文字列の形式確認だけでは�
 - content typeとresponse/artifact size
 - final URLとredirect chain
 
-Requested URLとFinal URLは異なり得る。Workerは観測factとして両者とredirect contextを報告できるが、Product上のsite/competitor identityを独断で統合しない。
+Requested URLとFinal URLは異なり得ます。Workerは観測factとして両者とredirect contextを報告できるが、Product上のsite/competitor identityを独断で統合しません。
 
-SSRF hardeningやallow/deny policyの具体化はSecurity Moduleへhandoffする。robots.txt、利用規約、collection policyも法務・Product判断を必要とし、本Moduleで新規決定しない。
+SSRF hardeningやallow/deny policyの具体化はSecurity Moduleへhandoffします。robots.txt、利用規約、collection policyも法務・Product判断を必要とし、本Moduleで新規決定しません。
 
 ## 7. HTTP collection
 
@@ -132,11 +140,11 @@ HTTP collectionで得られる代表的technical facts:
 - raw bytes/raw HTML
 - timing、size、encoding等のtechnical metadata
 
-`HTTP 200 != usable Product Evidence`である。200でもlogin wall、bot challenge、empty shell、unsupported media、error messageを返す場合がある。逆に一部HTTP errorでもdiagnostic evidenceは残せる。Workerはfactを報告し、Railsがrequired evidenceとProduct usabilityを判断する。
+`HTTP 200 != usable Product Evidence`です。200でも、ログイン要求、bot対策、空の画面枠、未対応のmedia、error messageが返る場合があります。一方、一部のHTTP errorでも調査用のEvidenceは残せます。Workerは事実を報告し、Railsが必要なEvidenceの充足とProductとしての利用可否を判断します。
 
 ## 8. Chromium lifecycle
 
-Chromiumは実Browser環境でpageをrenderし、runtime/visual evidenceを取得するexecution environmentである。Crawler全体ではない。
+Chromiumは、実際のBrowser環境でpageを描画し、実行時の状態や視覚的なEvidenceを取得する実行環境です。巡回・収集の仕組み全体を指すものではありません。
 
 概念的lifecycle:
 
@@ -162,19 +170,19 @@ Stabilizationへ影響するもの:
 - animations/transitions
 - consent/dialog/overlay
 
-`networkidle`等の単一signalだけで「正しい画面になった」と一般化しない。常時通信するsite、遅延component、analytics等で成立しない場合がある。Exact wait strategyはEvidence contract、site behavior、timeout budgetに基づき後続実装で決める。
+`networkidle`など、一つのsignalだけで「必要な画面の描画が終わった」と一般化しません。常時通信するsite、遅れて表示されるComponent、analyticsなどによって、この条件が成立しない場合があります。具体的な待機方法は、Evidenceの契約、siteの動作、許容する待ち時間に基づいて、後続実装で決めます。
 
 ## 9. HTML, DOM, and Screenshot evidence
 
-| Evidence     | Meaning                                          | What it is not                              |
+| Evidence     | 意味                                             | What it is not                              |
 | ------------ | ------------------------------------------------ | ------------------------------------------- |
 | Raw HTML     | HTTP responseとして得た原本HTML                  | JavaScript実行後のDOM、Analysis Result      |
 | Rendered DOM | Browser execution後の現在のdocument structure    | original response、pixel appearanceそのもの |
 | Screenshot   | 特定viewport・時刻・render stateのpixel evidence | DOM構造、Visual Analysis Result             |
 
-Visual evidenceにはviewport、pixel ratio等のcapture contextが影響する。full-page captureとscoped captureは目的が異なる。どちらかを無条件の正本にしない。
+Visual evidenceにはviewport、pixel ratio等のcapture contextが影響します。full-page captureとscoped captureは目的が異なります。どちらかを無条件の正本にしません。
 
-Collection viewportは再現可能なEvidence取得条件であり、FS-07のResponsive Acceptance ViewportはUI品質確認条件である。値が一致する可能性はあるが目的は別で、CURRENT collection viewportは未決定である。
+Collection viewportは再現可能なEvidence取得条件であり、FS-07のResponsive Acceptance ViewportはUI品質確認条件です。値が一致する可能性はあるが目的は別で、CURRENT collection viewportは未決定です。
 
 ## 10. Evidence hierarchy
 
@@ -188,7 +196,7 @@ flowchart TD
     P --> S[Snapshot<br/>immutable historical product record]
 ```
 
-| Layer           | Example                                                           | Owner/boundary                                            |
+| 層（Layer）     | 例                                                                | 担当する主体・境界                                        |
 | --------------- | ----------------------------------------------------------------- | --------------------------------------------------------- |
 | Raw Evidence    | HTML、DOM、Screenshot、HTTP metadata                              | Worker captures; Artifact Store persists candidate        |
 | Normalized      | heading/link/section representation等                             | Worker processing candidate                               |
@@ -197,11 +205,11 @@ flowchart TD
 | Product Result  | usableと認定されたresult                                          | Rails                                                     |
 | Snapshot        | immutable historical aggregate/reference                          | Rails/PostgreSQL                                          |
 
-`Raw != Normalized != Derived`、`Artifact != Snapshot`である。Raw保持はparser/model変更後の再現・調査に有用だが、保存対象、retention、privacy/costは未決定である。
+`Raw != Normalized != Derived`、`Artifact != Snapshot`です。Raw保持はparser/model変更後の再現・調査に有用だが、保存対象、retention、privacy/costは未決定です。
 
 ## 11. Observation Output Contract connection
 
-承認済みObservation Output Contract v1は、次の論理境界を持つ。
+承認済みObservation Output Contract v1は、次の論理境界を持ちます。
 
 - `observationId` instanceと`observationType` definitionを分離
 - Evidence reference、typed value、measurement mode、Internal/Visual layer、scope/sourceを保持
@@ -210,11 +218,11 @@ flowchart TD
 - completeness、coverage availability、version lineageを保持
 - Workerはcandidate/provenanceを出力し、Railsはownership/validation/registry/persistenceを担当
 
-Contractは`APPROVED`だがimplementationは`NOT_IMPLEMENTED`である。Exact JSON、DB/OpenAPI、dedup algorithm、Worker/Rails topologyを教材から発明しない。
+Contractは`APPROVED`だがimplementationは`NOT_IMPLEMENTED`です。Exact JSON、DB/OpenAPI、dedup algorithm、Worker/Rails topologyを教材から発明しません。
 
 ## 12. Artifact model and identity
 
-ArtifactはWorker executionから生成される保存可能なtechnical outputである。
+ArtifactはWorker executionから生成される保存可能なtechnical outputです。
 
 例:
 
@@ -225,7 +233,7 @@ ArtifactはWorker executionから生成される保存可能なtechnical output�
 - technical diagnostics/log bundle
 - model/analysis output
 
-Retry時には同じJobから複数artifactが生まれ得る。必要なidentity/provenance論点はAnalysisJob、attempt/run、target/final URL、artifact type、version、capture/generation time、pipeline/tool versionである。ただしexact storage keyやschemaは未決定である。
+Retry時には同じJobから複数artifactが生まれ得る。必要なidentity/provenance論点はAnalysisJob、attempt/run、target/final URL、artifact type、version、capture/generation time、pipeline/tool versionです。ただしexact storage keyやschemaは未決定です。
 
 安全な原則:
 
@@ -237,7 +245,7 @@ Retry時には同じJobから複数artifactが生まれ得る。必要なidentit
 
 ## 13. Determinism and provenance
 
-Web collectionは完全にはdeterministicでない。
+Web上の収集は、同じ設定で繰り返しても、完全に同じ結果になるとは限りません。
 
 - time/date dependent content
 - ads、A/B test、personalization
@@ -247,7 +255,7 @@ Web collectionは完全にはdeterministicでない。
 - network timing、font/image availability
 - browser/tool version
 
-したがってEvidenceには「何を」だけでなく「いつ、どのtarget/final URL、どのJob/run、どのcapture条件・pipelineで」を追跡できるcontextが重要である。Deterministic settingは変動を減らせても外部Webの完全再現を保証しない。
+そのためEvidenceには、「何を」だけでなく、「いつ、どの対象URL・最終URLから、どのJob/runで、どの取得条件・処理経路を使って得たか」を追跡できる情報が重要です。設定を固定すれば変動は減らせますが、外部Webの状態を完全に再現できる保証にはなりません。
 
 ## 14. Failure and retry model
 
@@ -264,15 +272,15 @@ Web collectionは完全にはdeterministicでない。
 | Screenshot failure                      | capture               | HTML/DOM成功とは別factとして報告          |
 | Artifact Store transient failure        | persistence transport | idempotent upload/commit前提で候補        |
 
-Workerは`HTML success / Screenshot failure / extraction success`のようにstepごとのtechnical factを保持する。Railsはrequired evidence、Observation completeness、Product usabilityに基づき`completed`、`partially_completed`、`failed`等を決める。Workerがtechnical errorを直接business `failed`へ変換しない。
+Workerは`HTML success / Screenshot failure / extraction success`のようにstepごとのtechnical factを保持します。Railsはrequired evidence、Observation completeness、Product usabilityに基づき`completed`、`partially_completed`、`failed`等を決めます。Workerがtechnical errorを直接business `failed`へ変換しません。
 
-Retryはsame AnalysisJobのtechnical recoveryであり、new Reanalysisではない。browser crashやstorage timeoutだけでnew Jobを作らない。
+Retryはsame AnalysisJobのtechnical recoveryであり、new Reanalysisではありません。browser crashやstorage timeoutだけでnew Jobを作りません。
 
 ## 15. Progress, cancellation, and cleanup
 
-Workerが報告できるのはcurrent technical step、progress checkpoint、heartbeat、artifact produced、warning/errorである。これらはcanonical Job stateと同一ではなく、Railsがaccepted eventとして状態遷移を検証する。
+Workerが報告できるのはcurrent technical step、progress checkpoint、heartbeat、artifact produced、warning/errorです。これらはcanonical Job stateと同一ではなく、Railsがaccepted eventとして状態遷移を検証します。
 
-Cooperative cancellationでは、Workerがfetch/browser/extraction/upload間のcheckpointでcancel intentを確認し、安全な境界で停止する。中途半端なartifactをcanonical commitせず、page/context/process/temp files等をcleanupする。
+Cooperative cancellationでは、Workerがfetch/browser/extraction/upload間のcheckpointでcancel intentを確認し、安全な境界で停止します。中途半端なartifactをcanonical commitせず、page/context/process/temp files等をcleanupします。
 
 長時間稼働Workerで重要なcleanup:
 
@@ -283,7 +291,7 @@ Cooperative cancellationでは、Workerがfetch/browser/extraction/upload間のc
 - unfinished upload/partial artifactの扱い
 - memory/process leakの検知
 
-Cancelはinstant killではない。強制killが必要な場合も、lease expiry、orphan process、partial artifact、late callbackを回収するoperations設計が必要である。
+Cancelを要求しても、processが即座に強制終了するわけではありません。強制終了が必要な場合も、leaseの期限切れ、取り残されたprocess、不完全なArtifact、遅れて届くcallbackへ対処する運用設計が必要です。
 
 ## 16. Resource and security boundaries
 
@@ -297,11 +305,11 @@ Cancelはinstant killではない。強制killが必要な場合も、lease expi
 - outbound request、redirect、page/resource数
 - Queue backpressureとcapacity
 
-具体値はInfrastructure/Performance Moduleへhandoffする。無制限Chromium process生成はhost exhaustionを引き起こす。
+具体値はInfrastructure/Performance Moduleへhandoffします。無制限Chromium process生成はhost exhaustionを引き起こす。
 
 ### Security controls
 
-Workerはuntrusted external websiteのHTML/JavaScript/resourceを処理するtrust boundaryである。
+Workerはuntrusted external websiteのHTML/JavaScript/resourceを処理するtrust boundaryです。
 
 - private/link-local/metadata networkへのaccess防止
 - browser/process/container isolation
@@ -311,11 +319,11 @@ Workerはuntrusted external websiteのHTML/JavaScript/resourceを処理するtru
 - raw content/logのsensitive data取り扱い
 - callback/message identityとartifact accessの検証
 
-本Moduleは概念境界のみを扱う。sandbox方式、network policy、secret delivery等のhardeningはSecurity/Infrastructure Moduleで決める。
+本Moduleは概念境界のみを扱います。sandbox方式、network policy、secret delivery等のhardeningはSecurity/Infrastructure Moduleで決めます。
 
 ## 17. Rails / Queue / Worker / Artifact Store boundary
 
-| Layer          | Owns                                                                                                                         | Receives / returns                                                  | Must not own                                        |
+| 層（Layer）    | 担当すること                                                                                                                 | 受け取るもの・返すもの                                              | 担当してはいけないこと                              |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------- |
 | Rails          | authorization、Job creation、canonical lifecycle、Result/Snapshot eligibility、Usage、audit、registry/validation/persistence | User intent、Worker technical facts/artifact refs / canonical state | crawl/Chromium execution                            |
 | Queue          | execution delivery、attempt/lease metadata                                                                                   | trusted message / delivery status                                   | authorization、final outcome、artifact truth        |
@@ -325,17 +333,17 @@ Workerはuntrusted external websiteのHTML/JavaScript/resourceを処理するtru
 
 ## 18. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope                                                                                                                                                                                                                                                                                                                              |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CURRENT        | FrontendにAnalysisJob/Snapshot presentation types、polling/adapter、browser-local mock Snapshot generationがある。RailsにはOrganization read APIがあるが、AnalysisJob/Artifact/Worker production modelはない。root/repo/rails/scriptsの限定確認でProduction Python、Playwright/Selenium/BeautifulSoup/Chromium実装・manifestは確認できない。 |
-| TARGET         | Rails→Queue→Python Worker→Object Storage→Rails commit、WorkerによるSSRF検証/fetch/Chromium/Screenshot/analysis/upload、Observation Output Contract v1のcandidate/provenance出力という論理境界が文書化・承認されている。                                                                                                                      |
-| DEFERRED       | Worker runtime/topology、Python framework/library、Queue integration、HTTP/browser strategy、wait/viewport、Artifact Store製品/key/retention、resource limits、retry具体値、cancellation propagation、security hardening、exact Observation JSON/DB/OpenAPI。                                                                                |
+| 分類     | Confirmed scope                                                                                                                                                                                                                                                                                                                              |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CURRENT  | FrontendにAnalysisJob/Snapshot presentation types、polling/adapter、browser-local mock Snapshot generationがある。RailsにはOrganization read APIがあるが、AnalysisJob/Artifact/Worker production modelはない。root/repo/rails/scriptsの限定確認でProduction Python、Playwright/Selenium/BeautifulSoup/Chromium実装・manifestは確認できない。 |
+| TARGET   | Rails→Queue→Python Worker→Object Storage→Rails commit、WorkerによるSSRF検証/fetch/Chromium/Screenshot/analysis/upload、Observation Output Contract v1のcandidate/provenance出力という論理境界が文書化・承認されている。                                                                                                                      |
+| DEFERRED | Worker runtime/topology、Python framework/library、Queue integration、HTTP/browser strategy、wait/viewport、Artifact Store製品/key/retention、resource limits、retry具体値、cancellation propagation、security hardening、exact Observation JSON/DB/OpenAPI。                                                                                |
 
-旧prototypeや文書candidateが見つかっても、Production canonical implementationへ自動昇格させない。今回は実Web access、crawler/Chromium実行、Repo-wide Python監査を行っていない。
+旧prototypeや文書candidateが見つかっても、Production canonical implementationへ自動昇格させません。今回は実Web access、crawler/Chromium実行、Repo-wide Python監査を行っていない。
 
 ## 19. Representative repository mapping
 
-| Representative source                                                                    | Responsibility                           | Input                          | Output / evidence                    | Failure behavior                   | Status                                       |
+| Representative source                                                                    | 責務                                     | 入力                           | Output / evidence                    | Failure behavior                   | 状態                                         |
 | ---------------------------------------------------------------------------------------- | ---------------------------------------- | ------------------------------ | ------------------------------------ | ---------------------------------- | -------------------------------------------- |
 | [M12 AnalysisJob Lifecycle](./12-analysis-job-lifecycle.md)                              | Job/business lifecycle                   | User command/facts             | canonical state/Snapshot eligibility | Rails determines outcome           | Approved learning contract                   |
 | [M13 Async Job / Queue / Retry / Idempotency](./13-async-job-queue-retry-idempotency.md) | delivery/attempt reliability             | Job message                    | technical attempt/facts              | retry/idempotency/DLQ concepts     | Approved learning contract                   |
@@ -396,13 +404,13 @@ Workerはuntrusted external websiteのHTML/JavaScript/resourceを処理するtru
 
 ### A. Knowledge check
 
-1. WorkerがBusiness Decision Ownerでない理由を説明せよ。
-2. ChromiumがCrawler全体ではない理由を説明せよ。
-3. `HTTP 200`だけでusable evidenceと判断できない例を2つ挙げよ。
+1. WorkerがBusiness Decision Ownerでない理由を説明してください。
+2. ChromiumがCrawler全体ではない理由を説明してください。
+3. `HTTP 200`だけでusable evidenceと判断できない例を2つ挙げてください。
 
 ### B. Classification
 
-`raw HTML` / `rendered DOM` / `Screenshot` / `normalized extraction` / `typed Observation` / `Visual Analysis` / `Product Result` / `Snapshot`をEvidence、Normalized、Observation、Derived Analysis、Business Result、Historical Recordへ分類せよ。
+`raw HTML` / `rendered DOM` / `Screenshot` / `normalized extraction` / `typed Observation` / `Visual Analysis` / `Product Result` / `Snapshot`をEvidence、Normalized、Observation、Derived Analysis、Business Result、Historical Recordへ分類してください。
 
 ### C. HTTP vs Chromium
 
@@ -411,7 +419,7 @@ Workerはuntrusted external websiteのHTML/JavaScript/resourceを処理するtru
 3. Heroのvisual hierarchyをpixelで確認
 4. sitemap XMLの収集
 
-各caseでHTTP fetch、Chromium、または両方を選び理由を説明せよ。
+各caseでHTTP fetch、Chromium、または両方を選び理由を説明してください。
 
 ### D. Collection trace
 
@@ -436,7 +444,7 @@ RetryによりScreenshotが2枚生成された。どのidentity/contextを追跡
 
 ### H. Architecture explanation
 
-「なぜRails web processではなくWorkerがChromiumを実行するのか」を、latency、resource、failure isolation、business boundaryから説明せよ。
+「なぜRails web processではなくWorkerがChromiumを実行するのか」を、latency、resource、failure isolation、business boundaryから説明してください。
 
 ## 24. Answers and explanation guide
 
@@ -465,11 +473,11 @@ RetryによりScreenshotが2枚生成された。どのidentity/contextを追跡
 
 ### E. Partial failure
 
-WorkerはHTML/extraction success、Screenshot failure、error classification、artifact refsを別factsとして報告する。required evidenceとusable Product Resultを評価し`completed/partially_completed/failed`を決めるのはRailsである。
+WorkerはHTML/extraction success、Screenshot failure、error classification、artifact refsを別factsとして報告します。required evidenceとusable Product Resultを評価し`completed/partially_completed/failed`を決めるのはRailsです。
 
 ### F. Artifact/idempotency
 
-Job、attempt/run、artifact type、target/final URL、capture context/time、pipeline/tool versionを関連付ける。両objectの存在を許容しても、Railsがaccepted attemptとeligibilityを検証しcanonical Result/Snapshot referenceを一意にする。
+Job、attempt/run、artifact type、target/final URL、capture context/time、pipeline/tool versionを関連付ける。両objectの存在を許容しても、Railsがaccepted attemptとeligibilityを検証しcanonical Result/Snapshot referenceを一意にします。
 
 ### G. Violation detection
 
@@ -477,7 +485,7 @@ Job、attempt/run、artifact type、target/final URL、capture context/time、pi
 
 ### H. Architecture explanation
 
-Chromiumは高latency・高CPU/memoryで、crashやuntrusted pageを伴う。短いRails request/transactionから分離すればtimeoutとresource contentionを隔離し、Queueによるcapacity control/retryを行える。Workerはtechnical factsを返し、Railsはauthorization、canonical lifecycle、Result eligibilityを一貫して所有できる。
+Chromiumは高latency・高CPU/memoryで、crashやuntrusted pageを伴う。短いRails request/transactionから分離すればtimeoutとresource contentionを隔離し、Queueによるcapacity control/retryを行える。Workerはtechnical factsを返し、Railsはauthorization、canonical lifecycle、Result eligibilityを一貫して所有できます。
 
 ## 25. Completion criteria
 
@@ -494,10 +502,10 @@ Chromiumは高latency・高CPU/memoryで、crashやuntrusted pageを伴う。短
 |   9 | Repository mapping + two diagrams included     | `PASS` |
 |  10 | Exercises + answers included                   | `PASS` |
 
-M14 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Production Python Worker、Chromium、Queue、Artifact Store、Observation persistence、security hardeningの完成判定ではない。
+M14 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Production Python Worker、Chromium、Queue、Artifact Store、Observation persistence、security hardeningの完成判定ではありません。
 
 ## 26. M15 handoff
 
 Recommended next phase: `TB-16 — Module 15: Snapshot / History / Lineage`。
 
-M15ではArtifact/ResultとSnapshotの境界、immutable history、AnalysisJob relationship、current/stable Snapshot、version/provenance、historical compatibility/restorationを扱う。Worker/Artifact Storeの未決定実装を前提化しない。
+M15ではArtifact/ResultとSnapshotの境界、immutable history、AnalysisJob relationship、current/stable Snapshot、version/provenance、historical compatibility/restorationを扱います。Worker/Artifact Storeの未決定実装を前提化しません。

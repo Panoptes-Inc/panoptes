@@ -5,9 +5,9 @@ Phase: `TB-21`
 Difficulty: `INTERMEDIATE`  
 Prerequisites: `M01`–`M19`（direct curriculum dependency: `M19`）
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. Tailwindとutility-first CSSの役割・利点・riskを説明する。
 2. TailwindをDesign Token Source of TruthではなくStyling Consumerとして扱う。
@@ -18,9 +18,17 @@ Prerequisites: `M01`–`M19`（direct curriculum dependency: `M19`）
 7. visual parityを維持しながら段階migrationを計画する。
 8. Target StandardとCURRENT implementationを混同しない。
 
+## 用語ガイド
+
+- **Tailwind:** 小さなutility classを組み合わせてstyleを構成するCSS framework。
+- **Utility-first:** 余白、配置、色など単一目的のclassを組み合わせてUIを作る考え方。
+- **Adapter:** Design TokenをTailwindから使える形へ接続する変換層。
+- **Arbitrary value:** `[]`記法などで、その場の任意値を直接指定する方法。Token化できない例外へ限定する。
+- **Styling ownership:** UI、Feature、Layoutのどこが、どの範囲の見た目や配置を担当するかという責任分担。
+
 ## 2. Tailwind fundamentals
 
-Tailwindは、小さなUtility Classを組み合わせてUI stylingを構成するCSS frameworkである。
+Tailwindは、小さなUtility Classを組み合わせてUI stylingを構成するCSS frameworkです。
 
 - Utility Class: 一つまたは小さな責務のstyleを表す。
 - Responsive Variant: named breakpoint以降の差分を表す。
@@ -34,7 +42,7 @@ Tailwind != Product Contract
 Tailwind != Design Token Source of Truth
 ```
 
-Tailwindは、承認済みDesign Decisionを使いやすく投影する道具である。
+Tailwindは、承認済みのdesign上の判断を、Componentで使いやすいutilityへ接続する道具です。
 
 ## 3. Utility-first model
 
@@ -56,7 +64,7 @@ Risk:
 - 同じUI contractが各Componentへ複製される。
 - Business conditionがclass expressionへ埋め込まれる。
 
-Utility-firstは「すべてをclassにする」という規則ではない。
+Utility-firstは「すべてをclassにする」という規則ではありません。
 
 ## 4. PanoptesでのTailwindの役割
 
@@ -106,11 +114,11 @@ tokens.css -> Design values A
 Tailwind config -> independent Design values B
 ```
 
-AdapterはSemantic CSS Custom Propertyを参照し、Hex、px、shadow literalを複製しない。Raw TokenやTailwind default paletteへの直接依存をPanoptes standardにしない。
+AdapterはSemantic CSS Custom Propertyを参照し、Hex、px、shadow literalを複製しません。Raw TokenやTailwind default paletteへの直接依存をPanoptes standardにしません。
 
 ## 6. Tailwind adapter
 
-AdapterはSemantic TokenをUtilityとして利用可能にするprojection layerである。
+Adapterは、Semantic TokenをTailwindのutilityとして利用できる形へ変換する層です。
 
 Conceptual example:
 
@@ -120,13 +128,13 @@ Conceptual example:
   -> Component
 ```
 
-正式Utility名やconfig syntaxは、採用するTailwind major versionとSvelteKit integrationが決まるImplementation Phaseで確定する。本教材の`text-primary`等は説明用であり、実装済みclassではない。
+正式Utility名やconfig syntaxは、採用するTailwind major versionとSvelteKit integrationが決まるImplementation Phaseで確定します。本教材の`text-primary`等は説明用であり、実装済みclassではありません。
 
-反復する`bg-[var(--p-...)]`等でadapter実装を代替しない。反復するsemantic roleはnamed projection候補にする。
+反復する`bg-[var(--p-...)]`等でadapter実装を代替しません。反復するsemantic roleはnamed projection候補にします。
 
 ## 7. Utility categories
 
-| Category            | Purpose                                           | Good use                               | Misuse                                 |
+| 分類                | 目的                                              | 適切な用途                             | 不適切な用途                           |
 | ------------------- | ------------------------------------------------- | -------------------------------------- | -------------------------------------- |
 | Layout              | display、position、grid/flex、alignment、overflow | ownerが決めたstructureを表現           | classでComponent ownershipを決める     |
 | Spacing / Sizing    | gap、padding、margin、control/icon/container size | Token scaleへ接続                      | arbitrary pxの乱発、spacing/sizing混同 |
@@ -138,34 +146,34 @@ Conceptual example:
 
 ## 8. Layout utilities
 
-Flex、grid、block、position、alignment、overflow等は構造の表現に適する。しかしutilityが責務ownerを決めるわけではない。
+Flex、grid、block、position、alignment、overflow等は構造の表現に適します。しかしutilityが責務ownerを決めるわけではありません。
 
 - Component: internal wrap/stack/local overflow。
 - Page: section order/content priority。
 - Layout: major columns/max-width/navigation/shell。
 
-Tailwind classが書けるからといって、UI Componentがglobal shell responsibilityを持ってよいわけではない。
+Tailwind classが書けるからといって、UI Componentがglobal shell responsibilityを持ってよいわけではありません。
 
 ## 9. Spacing and sizing utilities
 
-Gap、padding、margin、width、heightは、M19のSpacing/Sizing Tokenへ接続する。
+Gap、padding、margin、width、heightは、M19のSpacing/Sizing Tokenへ接続します。
 
 ```text
 Spacing = rhythm and separation
 Sizing  = control/icon/container dimensions
 ```
 
-標準scaleで表現できる値を`mt-[13px]`や`h-[47px]`へしない。Asset intrinsic sizeやalgorithmic geometryは例外候補になり得る。
+標準scaleで表現できる値を`mt-[13px]`や`h-[47px]`へしません。Asset intrinsic sizeやalgorithmic geometryは例外候補になり得ます。
 
 ## 10. Typography utilities
 
-Typography utilityはsize、weight、line-height、alignment、wrappingを扱う。Shared UIではSemantic typography roleへ接続し、単なるfont-sizeの集合にしない。
+Typography utilityはsize、weight、line-height、alignment、wrappingを扱います。Shared UIではSemantic typography roleへ接続し、単なるfont-sizeの集合にしません。
 
-DOM heading levelとvisual typography roleは別である。Utility選択だけでHTML semanticsを決めない。
+DOM heading levelとvisual typography roleは別です。Utility選択だけでHTML semanticsを決めません。
 
 ## 11. Semantic appearance
 
-Text、surface、border、action、status等はSemantic Tokenに接続したUtilityを優先する。
+Text、surface、border、action、status等はSemantic Tokenに接続したUtilityを優先します。
 
 説明用concept:
 
@@ -177,7 +185,7 @@ action-primary
 status-error
 ```
 
-これらはTarget directionであり、現時点の実装済みclass名ではない。Product stateを何と判定するかはRails/Feature、受け取ったstateをどのsemantic appearanceで表すかはpresentation responsibilityである。
+これらはTarget directionであり、現時点の実装済みclass名ではありません。正式なProduct stateの判定はRails Business APIが担い、Frontendは受け取った状態を表示用へ変換し、どのsemantic roleで表すかを決めます。
 
 ## 12. State utilities
 
@@ -197,15 +205,15 @@ disabled appearance + still clickable = violation
 selected color without aria/state semantics = incomplete
 ```
 
-CSS classだけでBusiness eligibilityやauthorizationを決めない。Business decisionはRails/Feature、visual stateはUI/Tailwindが担当する。
+CSS classだけでBusiness eligibilityやauthorizationを決めません。Tailwindはスタイル指定を担い、Svelte / Frontendは表示用の状態やユーザー操作、表示条件を制御します。SvelteKit BFFはsession・Organization contextを確認してFrontendとBusiness APIの通信を仲介し、Rails Business APIが業務ルールに従う正式な判断・結果の確定を担います。Frontendでの表示上の判断は、この正式な業務判断を置き換えません。
 
-Conditional classはcomplete literalまたはstatic mapをdefaultとし、build-time scannerが検出できない文字列連結へ依存しない。
+条件によってclassを切り替える場合も、原則として完全なclass名を記述するか、静的な対応表を使います。build時のscannerが検出できない文字列連結には依存しません。
 
 ## 13. Responsive utilities
 
 FS-07 Canonical Breakpoints:
 
-| Variant | Threshold | Meaning                       |
+| Variant | Threshold | 意味                          |
 | ------- | --------: | ----------------------------- |
 | base    |  `<640px` | base/mobile-first behavior    |
 | `sm:`   |   `640px` | compact enhancement           |
@@ -214,21 +222,21 @@ FS-07 Canonical Breakpoints:
 | `xl:`   |  `1280px` | wide grid/desktop spacing     |
 | `2xl:`  |  `1536px` | wide analytics density only   |
 
-Mobile-firstではbaseを定義し、必要なthresholdから差分を追加する。
+Mobile-firstではbaseを定義し、必要なthresholdから差分を追加します。
 
 ```text
 base -> sm: -> md: -> lg: -> xl: -> 2xl:
 ```
 
-Breakpointはdevice名ではなくlayout adaptation thresholdである。既存`720px`等をclosest named breakpointへ機械変換しない。
+Breakpointはdevice名ではなくlayout adaptation thresholdです。既存`720px`等をclosest named breakpointへ機械変換しません。
 
 ## 14. Hidden content and overflow
 
-`hidden`はresponsive designそのものではない。Meaningful/critical contentを安易に消さず、hide、collapse、wrap、reorder、scroll、truncateをcontent priorityから選ぶ。
+`hidden`はresponsive designそのものではありません。Meaningful/critical contentを安易に消さず、hide、collapse、wrap、reorder、scroll、truncateをcontent priorityから選びます。
 
-Navigation linkをhideするなら、同じdestinationへの代替navigationを用意する。
+Navigation linkをhideするなら、同じdestinationへの代替navigationを用意します。
 
-Root horizontal scrollは禁止する。Table、Chart、Tabs、dense UIのlocal horizontal scrollは条件付きで許容するが、keyboard/touch reachability、overflow cue、focus visibilityを保持する。Rootへ`overflow-x-auto`を付けてlayout defectを隠さない。
+Page全体に横scrollを発生させることは禁止します。Table、Chart、Tabs、情報量の多いUIでは、container内の横scrollを条件付きで許容します。その場合も、keyboard・touchで操作できること、続きがあると分かる手掛かり、focusの見やすさを保ちます。Rootへ`overflow-x-auto`を付けてlayoutの欠陥を隠しません。
 
 ## 15. Tailwind and Component-local CSS
 
@@ -244,7 +252,7 @@ Component-local CSSに適するもの:
 - Tailwind化で責務や可読性が悪化するstyle
 - migration中のlegacy CSS
 
-Tailwind導入はCSS禁止を意味しない。同じproperty/stateをUtilityとlocal CSSで競合所有しないよう、Component単位でownerを決める。
+Tailwindを導入した後もCSSは使えます。同じpropertyや状態に対してutilityとlocal CSSが競合しないよう、Componentごとにどちらで管理するかを決めます。
 
 ## 16. Global CSS boundary
 
@@ -256,13 +264,13 @@ Global CSSに適するもの:
 - truly global rules
 - global asset/cursor behavior
 
-Component-specific ruleを無秩序にGlobal CSSへ置かない。Tailwind/Preflight相当を接続する時は、現行reset/baseとの二重適用を避け、一つのownerとimport orderを決める。
+Component-specific ruleを無秩序にGlobal CSSへ置きません。Tailwind/Preflight相当を接続する時は、現行reset/baseとの二重適用を避け、一つのownerとimport orderを決めます。
 
 ## 17. Animation, pseudo selectors, runtime values
 
-Complex animationやGSAP連携を大量Utilityへ無理に変換しない。Motion Token、cleanup、route transition、reduced-motionを維持し、Component-local CSSまたは適切なCSS layerを使える。
+Complex animationやGSAP連携を大量Utilityへ無理に変換しません。Motion Token、cleanup、route transition、reduced-motionを維持し、Component-local CSSまたは適切なCSS layerを使える。
 
-`::before`、`::after`も可読性と責務に応じてCSSを使う。
+`::before`、`::after`も可読性と責務に応じてCSSを使います。
 
 Runtime algorithmic valueは次のような境界を使える。
 
@@ -270,11 +278,11 @@ Runtime algorithmic valueは次のような境界を使える。
 runtime calculation -> CSS Custom Property -> local CSS / compatible utility
 ```
 
-Dynamic geometryを固定Design Tokenへ昇格させない。
+Dynamic geometryを固定Design Tokenへ昇格させません。
 
 ## 18. Arbitrary value model
 
-`w-[37px]`や`mt-[13px]`のようなarbitrary valueはdefaultにしない。
+`w-[37px]`や`mt-[13px]`のようなarbitrary valueはdefaultにしません。
 
 Approved exception candidates:
 
@@ -284,7 +292,7 @@ Approved exception candidates:
 - approved one-off composition/art direction
 - temporary migration debt
 
-例外には`reason / owner / scope / exact value / risk / review or removal condition`を持たせる。反復する値はToken/custom utility/Component候補として再審査する。
+例外には`reason / owner / scope / exact value / risk / review or removal condition`を持たせる。反復する値はToken/custom utility/Component候補として再審査します。
 
 ```text
 Arbitrary != prohibited
@@ -293,9 +301,9 @@ Arbitrary != standard default
 
 ## 19. One-off composition and reuse
 
-Feature/Page固有の一度きりのcompositionを、すべてShared TokenやShared Componentへ昇格させる必要はない。Feature-local defaultを維持する。
+Feature/Page固有の一度きりのcompositionを、すべてShared TokenやShared Componentへ昇格させる必要はありません。Feature-local defaultを維持します。
 
-同じclass combinationが2回現れても、即Shared Componentやcustom utilityにはしない。次を確認する。
+同じclass combinationが2回現れても、即Shared Componentやcustom utilityにはしません。次を確認します。
 
 - 同じsemantic purposeか。
 - 同じstate/accessibility contractか。
@@ -304,7 +312,7 @@ Feature/Page固有の一度きりのcompositionを、すべてShared TokenやSha
 
 ## 20. Class list and extraction
 
-Class listが長いだけでは問題ではない。問題はsemantic duplication、unreadability、repeated contract、responsibility mixingである。
+Class列が長いことだけでは、抽出の理由になりません。意味の重複、読みにくさ、同じ契約の複製、異なる責務の混在があるかを確認します。
 
 抽出候補:
 
@@ -313,29 +321,29 @@ Class listが長いだけでは問題ではない。問題はsemantic duplicatio
 - shared Componentとしてprops/variantが成立する。
 - class群がComponent responsibilityを隠す。
 
-抽出先は、Reusable UI Component、feature-local Component、限定Custom Utilityの順に責務で判断する。
+抽出先は、Reusable UI Component、feature-local Component、限定Custom Utilityの順に責務で判断します。
 
-`@apply`等は採用versionで利用可能かつ可読性を改善する局所用途に限る。Tailwindをtraditional semantic CSSへ戻すためのdefaultにはしない。Exact policyはImplementation Phaseで決める。
+`@apply`等は採用versionで利用可能かつ可読性を改善する局所用途に限る。Tailwindをtraditional semantic CSSへ戻すためのdefaultにはしません。Exact policyはImplementation Phaseで決めます。
 
 ## 21. Accessibility boundary
 
-Tailwindはfocus visibility、responsive visibility、target size、contrast-related Semantic Utilityを支援できる。しかし、Semantic HTML、keyboard interaction、accessible name、ARIA/state同期、live feedbackは別途必要である。
+Tailwindは、focusの見やすさ、画面幅に応じた表示、操作対象のsize、contrastに関わるSemantic Utilityを支援できます。一方で、意味に合ったHTML、keyboard操作、accessible name、ARIAと状態の同期、動的な通知は、別途実装する必要があります。
 
 ```text
 Tailwind used != accessible
 ```
 
-Utility名やColor Tokenが正しくても、実ブラウザーでfocus、contrast、reduced-motion、target size、reading orderを検証する必要がある。
+Utility名やColor Tokenが正しくても、実ブラウザーでfocus、contrast、reduced-motion、target size、reading orderを検証する必要があります。
 
 ## 22. Component responsibility
 
-| Owner          | Tailwind usage boundary                                |
-| -------------- | ------------------------------------------------------ |
-| UI / Primitive | Semantic appearance、control-local layout/state        |
-| Composite      | presentation composition                               |
-| Feature        | feature-specific placement/state mapping後のappearance |
-| Layout         | persistent structural styling、major region adaptation |
-| Page           | section order、content priority、page composition      |
+| 管理・決定の責任を持つ主体 | Tailwindを使う範囲                                     |
+| -------------------------- | ------------------------------------------------------ |
+| UI / Primitive             | Semantic appearance、control-local layout/state        |
+| Composite                  | presentation composition                               |
+| Feature                    | feature-specific placement/state mapping後のappearance |
+| Layout                     | persistent structural styling、major region adaptation |
+| Page                       | section order、content priority、page composition      |
 
 Tailwind class placementもM04のFeature/UI/Layout boundaryとimport/state ownershipを壊さない。
 
@@ -358,7 +366,7 @@ flowchart TD
 
 ## 24. Worked example
 
-次はTarget directionを説明する概念例であり、正式なPanoptes Utility/Token名ではない。
+次はTarget directionを説明する概念例であり、正式なPanoptes Utility/Token名ではありません。
 
 Before:
 
@@ -395,7 +403,7 @@ Feature/Backend:
   disabled/eligible等のBusiness stateを判定
 ```
 
-Migrationではまずvisual baselineを記録し、Token/Utility接続後に同じ見た目とbehaviorを検証する。同時Redesignは別Decisionにする。
+Migrationではまずvisual baselineを記録し、Token/Utility接続後に同じ見た目とbehaviorを検証します。同時Redesignは別Decisionにします。
 
 ## 25. Migration strategy
 
@@ -409,7 +417,7 @@ Migrationではまずvisual baselineを記録し、Token/Utility接続後に同�
 6. legacy CSSをComponent単位で`keep / migrate / exception`判定する。
 7. hardcoded/arbitrary debtを段階的に縮退する。
 
-Touch-and-migrateにより一括変換せず、変更対象からDebtを減らす。
+既存画面を一括変換せず、機能追加や修正で触れる箇所から段階的に移行し、残っている旧styleへの依存を減らします。
 
 ## 26. Visual parity
 
@@ -417,7 +425,7 @@ Touch-and-migrateにより一括変換せず、変更対象からDebtを減ら�
 Migration != Redesign
 ```
 
-Legacy CSSからTailwindへ移す時は、機能だけでなく次を確認する。
+Legacy CSSからTailwindへ移す時は、機能だけでなく次を確認します。
 
 - layout/spacing/sizing
 - typography/color/border/shadow
@@ -426,24 +434,24 @@ Legacy CSSからTailwindへ移す時は、機能だけでなく次を確認す�
 - animation/reduced-motion
 - browser renderingとaccessibility
 
-意図的Visual変更はmigrationへ混ぜず、Design/Product Decisionとvalidationを別に持つ。
+意図的Visual変更はmigrationへ混ぜず、Design/Product Decisionとvalidationを別に持ちます。
 
 ## 27. CURRENT / TARGET / DEFERRED
 
-| Classification  | Confirmed scope                                                                                                                                        |
+| 分類            | Confirmed scope                                                                                                                                        |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | CURRENT         | Svelte/local/global CSS、hardcoded values、media queries、inline/class stylingがある。SvelteKit/Viteを使用する。                                       |
 | CURRENT tooling | `package.json`にTailwind dependencyはなく、Tailwind config/PostCSS integrationも確認できない。`src/lib/ui/tokens.css`も未実装。                        |
 | TARGET          | `tokens.css -> Tailwind adapter -> Semantic Utility -> Component`。Mobile-first named breakpointとresponsibility別Utilityを利用する。                  |
 | DEFERRED        | Tailwind install/version/config、Token実装、adapter/reset connection、bulk migration、legacy cleanup、full browser/visual/accessibility verification。 |
 
-Target Standardの承認はTooling/Source実装済みを意味しない。最新Tailwindの特定syntaxをCURRENTへ仮定しない。
+Target Standardの承認はTooling/Source実装済みを意味しません。最新Tailwindの特定syntaxをCURRENTへ仮定しません。
 
 ## 28. Representative repository mapping
 
 全CSS/class監査ではなく、FS-06で限定確認済みの10 examplesとtooling manifestを教材上で照合した。
 
-| Source                                             | Current styling method                                  | Tailwind applicability / Token relation                 | Migration status         |
+| Source                                             | 現行のstyle実装                                         | Tailwindの適用可否・Tokenとの関係                       | 移行状況                 |
 | -------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------- | ------------------------ |
 | `package.json` / Vite config                       | SvelteKit/Vite、Tailwind dependencyなし                 | adapter/toolingはTARGET                                 | NOT IMPLEMENTED          |
 | `src/app.css`                                      | global body typography/surface/reset-related rule       | Semantic Token接続可、global base継続                   | Token後にreview          |
@@ -490,21 +498,21 @@ Target Standardの承認はTooling/Source実装済みを意味しない。最新
 
 ### A. Knowledge check
 
-1. TailwindとDesign Systemの違いを説明せよ。
-2. Utility-firstの利点とriskを二つずつ挙げよ。
+1. TailwindとDesign Systemの違いを説明してください。
+2. Utility-firstの利点とriskを二つずつ挙げてください。
 3. なぜTailwindをToken SoTにしないのか。
 
 ### B. Token vs Tailwind
 
-Hex value、Semantic color role、Utility projection、Component class、Product eligibility判定を`tokens.css / adapter / Component / Rails or Feature`へ分類せよ。
+Hex value、Semantic color role、Utility projection、Component class、Product eligibility判定を`tokens.css / adapter / Component / Rails or Feature`へ分類してください。
 
 ### C. Utility classification
 
-`flex`、`gap-*`、font weight、surface color、`hover:*`、`md:*`をLayout / Spacing / Typography / Appearance / State / Responsiveへ分類せよ。
+`flex`、`gap-*`、font weight、surface color、`hover:*`、`md:*`をLayout / Spacing / Typography / Appearance / State / Responsiveへ分類してください。
 
 ### D. Styling decision
 
-次をToken / Tailwind / Component CSS / Exceptionへ分類せよ。
+次をToken / Tailwind / Component CSS / Exceptionへ分類してください。
 
 1. Shared primary text color。
 2. Grid alignment。
@@ -514,15 +522,15 @@ Hex value、Semantic color role、Utility projection、Component class、Product
 
 ### E. Responsive exercise
 
-Baseではstack、`md`以上で2 columns、local table scrollを持つUIについて、ownerとMobile-first styling順序を説明せよ。
+Baseではstack、`md`以上で2 columns、local table scrollを持つUIについて、ownerとMobile-first styling順序を説明してください。
 
 ### F. Arbitrary value exercise
 
-Logo intrinsic width、全button共通の37px height、一時legacy offset、chart runtime座標についてarbitrary value可否を説明せよ。
+Logo intrinsic width、全button共通の37px height、一時legacy offset、chart runtime座標についてarbitrary value可否を説明してください。
 
 ### G. Migration exercise
 
-Local CSSを持つShared Buttonを、visual parityを保ちながら段階移行する順序を示せ。
+Local CSSを持つShared Buttonを、visual parityを保ちながら段階移行する順序を示してください。
 
 ### H. Violation detection
 
@@ -536,13 +544,13 @@ Local CSSを持つShared Buttonを、visual parityを保ちながら段階移行
 
 ### I. Architecture explanation
 
-「なぜPanoptesではTailwindをToken Source of Truthにしないのか」を、ownership、CSS coexistence、migration、将来のconsumerの観点から説明せよ。
+「なぜPanoptesではTailwindをToken Source of Truthにしないのか」を、ownership、CSS coexistence、migration、将来のconsumerの観点から説明してください。
 
 ## 32. Answers / explanation guide
 
 ### A. Knowledge check
 
-TailwindはStyling Utility framework、Design SystemはToken、Component、interaction、accessibility等を含む広いcontractである。Utility-firstは適用箇所・variantが明確になる一方、class肥大・arbitrary乱用のriskがある。SoTを`tokens.css`へ置くことでTailwind以外のCSS/SVG等も同じDesign Decisionを使え、framework configへのlock-inと二重正本を避けられる。
+TailwindはStyling Utility framework、Design SystemはToken、Component、interaction、accessibility等を含む広いcontractです。Utility-firstは適用箇所・variantが明確になる一方、class肥大・arbitrary乱用のriskがあります。SoTを`tokens.css`へ置くことでTailwind以外のCSS/SVG等も同じDesign Decisionを使え、framework configへのlock-inと二重正本を避けられる。
 
 ### B. Token vs Tailwind
 
@@ -561,11 +569,11 @@ TailwindはStyling Utility framework、Design SystemはToken、Component、inter
 
 ### E. Responsive exercise
 
-Page/Layoutがmajor 1→2 column compositionを所有し、Componentはtable local overflowを所有する。Base stackを先に書き、`md`差分でcolumnsを追加する。Root overflowを作らずtable containerにreachability/cueを持たせる。
+Page/Layoutがmajor 1→2 column compositionを所有し、Componentはtable local overflowを所有します。Base stackを先に書き、`md`差分でcolumnsを追加します。Root overflowを作らずtable containerにreachability/cueを持たせる。
 
 ### F. Arbitrary value exercise
 
-Logo intrinsic widthとchart座標は例外候補。一時offsetはowner/removal condition付きdebt。全button共通heightはSizing Token/standard Utility候補でarbitrary defaultにしない。
+Logo intrinsic widthとchart座標は例外候補。一時offsetはowner/removal condition付きdebt。全button共通heightはSizing Token/standard Utility候補でarbitrary defaultにしません。
 
 ### G. Migration exercise
 
@@ -573,11 +581,11 @@ Visual/state/responsive baseline取得 → Token implementation確認 → Semant
 
 ### H. Violation detection
 
-順に二重正本、Token bypass、layout defect隠蔽、content priority違反、Business/UI責務混同、Big Bang violation、Migration/Redesign混同である。
+順に二重正本、Token bypass、layout defect隠蔽、content priority違反、Business/UI責務混同、Big Bang violation、Migration/Redesign混同です。
 
 ### I. Architecture explanation
 
-Token SoTをframework外の`tokens.css`へ置けば、Tailwind Utility、Svelte local CSS、Global CSS、SVG等が同じSemantic Contractを消費できる。Tailwind version/config変更でもDesign meaningを維持でき、既存CSSと段階共存しながら二重正本なしでmigrationできる。
+Token SoTをframework外の`tokens.css`へ置けば、Tailwind Utility、Svelte local CSS、Global CSS、SVG等が同じSemantic Contractを消費できます。Tailwind version/config変更でもDesign meaningを維持でき、既存CSSと段階共存しながら二重正本なしでmigrationできます。
 
 ## 33. Completion criteria
 
@@ -594,13 +602,13 @@ Token SoTをframework外の`tokens.css`へ置けば、Tailwind Utility、Svelte 
 |   9 | Repository mapping + two diagrams included | `PASS` |
 |  10 | Exercises + answers included               | `PASS` |
 
-M20 authoring result: `10 / 10 PASS`。教材完成はTailwind dependency/config、Token implementation、CSS migration、visual/accessibility verificationの完成を意味しない。
+M20 authoring result: `10 / 10 PASS`。教材完成はTailwind dependency/config、Token implementation、CSS migration、visual/accessibility verificationの完成を意味しません。
 
 ## 34. M21 handoff
 
 Recommended next phase: `TB-22 — Module 21: Responsive`。
 
-M21ではFS-07 Responsive Contract v1を教材化し、Breakpoint、Mobile-first、Layout/Page/Component adaptation、content priority、dense UI、overflow、acceptance viewportを扱う。Responsive Source変更やbrowser E2Eは教材作成と分離する。
+M21ではFS-07 Responsive Contract v1を教材化し、Breakpoint、Mobile-first、Layout/Page/Component adaptation、content priority、dense UI、overflow、acceptance viewportを扱います。Responsive Source変更やbrowser E2Eは教材作成と分離します。
 
 ## References
 

@@ -7,9 +7,9 @@ Prerequisite: `M01 — Panoptes Overall Architecture`, `M02 — Svelte / SvelteK
 Parent: [Panoptes Technical Bootcamp](../panoptes-technical-bootcamp.md)  
 Primary Standard: [Frontend Structure Policy](../../architecture/frontend-structure-policy.md)
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を判断できる。
+このModuleを終えた学習者は、次の内容について判断できます。
 
 1. Feature、UI / Presentation、Layout / Shellがそれぞれ所有する責務。
 2. Canonical、Feature、Presentation、Transient stateのowner。
@@ -19,11 +19,19 @@ Primary Standard: [Frontend Structure Policy](../../architecture/frontend-struct
 6. UI→API、Layout→Feature Command等の越境を検出し、正しいownerへ戻す方法。
 7. 名前やcomponent sizeではなくownershipから分類する方法。
 
-M03でCategoryは確定済みである。M04ではTaxonomyを変えず、Category間でstate、command、compositionがどう流れるかを具体化する。
+M03でCategoryは確定済みです。M04ではTaxonomyを変えず、Category間でstate、command、compositionがどう流れるかを具体化します。
+
+## 用語ガイド
+
+- **Ownership（所有責任）:** ある状態や判断を、どのLayerが変更・確定する責任を持つか。
+- **Feature:** 一つのuse caseを進めるため、state、command、子Componentを組み合わせる層。
+- **UI / Presentation:** 渡された値を表示し、操作をcallbackやeventとして上位へ返す層。
+- **Layout / Shell:** Header、Navigation、主要領域の配置など、画面の持続的な骨組みを担当する層。
+- **Callback boundary:** UIが業務処理を直接実行せず、「何が操作されたか」をFeatureへ通知する境界。
 
 ## 2. Boundaryとは何か
 
-Boundaryは、処理を別fileへ分けることではない。「誰が決定し、誰が変更し、誰が結果を表示するか」というownership contractである。
+Boundaryは、「誰が決定し、誰が変更し、誰が結果を表示するか」を定める責任分担の契約です。処理を別ファイルへ分けただけでは、この境界を定めたことにはなりません。
 
 ### なぜ必要か
 
@@ -34,11 +42,11 @@ Boundaryは、処理を別fileへ分けることではない。「誰が決定�
 - **Business rule leakage prevention:** Frontend表示ロジックがRailsのcanonical ruleを複製しない。
 - **State ownership clarity:** 同じstateを複数箇所が勝手に更新することを防ぐ。
 
-Componentを小さくすること自体は目的ではない。100行でも複数ownerが混ざれば分離候補であり、300行でも一つのcohesive presentation責務なら直ちに分割する根拠にはならない。
+Componentを小さくすること自体は目的ではありません。100行でも異なる管理責任が混ざっていれば分離候補になります。一方、300行あっても一つのまとまった表示上の役割を担うなら、行数だけで直ちに分割する根拠にはなりません。
 
 ## 3. Canonical boundary at a glance
 
-| Concern        | Feature                                   | UI / Presentation                      | Layout / Shell                           |
+| 確認する観点   | Feature                                   | UI / Presentation                      | Layout / Shell                           |
 | -------------- | ----------------------------------------- | -------------------------------------- | ---------------------------------------- |
 | Composition    | use-case child coordination               | props-based render / local composition | persistent chrome / children arrangement |
 | State          | feature lifecycle、request/mutation state | presentation/transient state           | route-family chrome/context state        |
@@ -58,7 +66,7 @@ interaction intent <---------------- callback
 
 ## 4. Feature responsibility
 
-Featureは「大きい画面」ではなく、一つのuse caseのFrontend ownerである。
+Featureは「大きい画面」ではなく、一つのuse caseのFrontend ownerです。
 
 ### Feature owns
 
@@ -80,13 +88,13 @@ Featureは「大きい画面」ではなく、一つのuse caseのFrontend owner
 
 ### なぜFeatureがownerなのか
 
-User Actionを実際のuse caseへ変換するには、複数のpresentation child、state、async result、error、cleanupを一つのlifecycleで調整する必要がある。UIへ分散すると同じcommandが複数箇所から呼ばれ、Layoutへ置くとroute family全体へ不要なside effectが広がる。
+ユーザーの操作をuse caseとして実行するには、複数の表示用Component、状態、非同期処理の結果、error、終了時の後片付けを、一連の流れとして調整する必要があります。この調整をUIへ分散すると同じcommandが複数箇所から呼ばれ、Layoutへ置くと配下のroute全体へ不要な副作用が広がります。
 
-`PanoptesShellPage`はcontrollerを作り、複数storeとview modelを読み、create/retry/confirm/select等をchild callbackへ接続するためFeature Orchestratorである。`SignUpForm`はSignup controller、form state、submit/resend、navigation、cleanupを所有するためFeatureである。
+`PanoptesShellPage`はcontrollerを作り、複数のStoreとview modelを読み、作成・再試行・確定・選択などの操作を子Componentのcallbackへ接続するため、Feature Orchestratorです。`SignUpForm`も、Signup controller、form状態、送信・再送、画面遷移、終了時の解放処理を管理するため、Featureです。
 
 ## 5. UI / Presentation responsibility
 
-UIは受け取ったstateを理解可能・操作可能な形で表示し、User intentをownerへ返す。
+UIは受け取ったstateを理解可能・操作可能な形で表示し、User intentをownerへ返します。
 
 ### UI owns
 
@@ -105,13 +113,13 @@ UIは受け取ったstateを理解可能・操作可能な形で表示し、User
 - unrelated Feature間のorchestration。
 - Feature storeの直接mutation。
 
-Buttonが`onclick`を持つことはuse-case ownershipを意味しない。`PanoptesTabNav`はtab IDを`onChange`へ返すだけで、tab選択後に何をload/mutateするかを決めない。
+Buttonが`onclick`を持つことはuse-case ownershipを意味しません。`PanoptesTabNav`はtab IDを`onChange`へ返すだけで、tab選択後に何をload/mutateするかを決めません。
 
-`PanoptesAnalysisSurface`はruntime/presentation propsを受け、表示branchを選び、`onCreate`、`onRetry`、`onConfirm`等をchildへ渡す。Analysis commandをimportしないためpresentation compositionである。
+`PanoptesAnalysisSurface`はruntimeや表示用のpropsを受け取り、表示内容を分岐し、`onCreate`、`onRetry`、`onConfirm`などを子Componentへ渡します。Analysis commandをimportして実行する役割は持たないため、表示を組み合わせる責務に分類します。
 
 ## 6. Layout / Shell responsibility
 
-Layoutはroute familyにわたって持続するstructural ownerである。
+Layoutはroute familyにわたって持続するstructural ownerです。
 
 ### Layout owns
 
@@ -134,15 +142,15 @@ Layoutはroute familyにわたって持続するstructural ownerである。
 - SvelteKit `+layout.svelte`はframework route treeでchildrenを包む。
 - Reusable structural shellは複数pageで同じframeを提供するComponent。Target placementは`src/lib/layouts`。
 
-現行`src/routes/app/+layout.svelte`はpersistent App Header、shell sizing/spacing、`/app`だけのTop Hero、children arrangementを所有する。Analysis controllerやcommandは持たない。
+現行`src/routes/app/+layout.svelte`はpersistent App Header、shell sizing/spacing、`/app`だけのTop Hero、children arrangementを所有します。Analysis controllerやcommandは持ちません。
 
-Headerは常にLayout所有ではない。App Headerはroute-family persistentなのでLayout、Marketing Header/HeroはMarketing Page compositionなので`MarketingLandingPage`所有である。
+Headerは常にLayout所有ではありません。App Headerはroute-family persistentなのでLayout、Marketing Header/HeroはMarketing Page compositionなので`MarketingLandingPage`所有です。
 
 ## 7. State Ownership Model
 
 ### 7.1 Four state classes
 
-| State class              | Canonical owner                                          | Frontend holder / mutation path                                                                     | Examples                                                        |
+| 状態の分類               | Canonical owner                                          | Frontend holder / mutation path                                                                     | 例                                                              |
 | ------------------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | Canonical / Server State | Rails + persisted backend                                | Client responseをFeature/controller/storeがprojectionとして保持。Command→Client→BFF→Railsでmutation | Project、AnalysisJob、Snapshot、Role、workflow、canonical score |
 | Feature State            | Feature controller/store、単一ownerならFeature component | Feature action/controllerだけがmutation                                                             | polling、bootstrap、request status、selected project workflow   |
@@ -151,7 +159,7 @@ Headerは常にLayout所有ではない。App Headerはroute-family persistent�
 
 ### 7.2 Panoptes examples
 
-| State                           | Owner                                                                                           | Reasoning                                            |
+| State                           | 管理・決定の責任を持つ主体                                                                      | 判断の理由                                           |
 | ------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | selected tab                    | nearest presentation composition。現行Shellでは複数surfaceを切り替えるFeature-level local state | canonical business stateではなくrender selection     |
 | modal open                      | modal trigger/nearest composition。複数childから制御する場合だけFeatureへlift                   | transient interaction                                |
@@ -162,13 +170,13 @@ Headerは常にLayout所有ではない。App Headerはroute-family persistent�
 | validation message              | UIは表示、Feature/controllerはclient validationとserver error mappingを調整                     | message表示とvalidation outcomeを分離                |
 | Job progress                    | Railsがcanonical progress、Feature runtime storeがprojection、UIがbar/text表示                  | server transitionをFrontendで捏造しない              |
 
-Stateを持つだけではFeatureにならない。Modal openはUI、Header compact stateはLayout/UI、request statusはFeature、Job statusはRails authorityである。
+Stateを持つだけではFeatureになりません。Modal openはUI、Header compact stateはLayout/UI、request statusはFeature、Job statusはRails authorityです。
 
 ## 8. Controller / Command ownership
 
 ### 8.1 Controllerとは
 
-ControllerはFeature lifecycleとasync coordinationをまとめるFrontend ownerである。
+ControllerはFeature lifecycleとasync coordinationをまとめるFrontend ownerです。
 
 Panoptes標準で扱うもの:
 
@@ -179,11 +187,11 @@ Panoptes標準で扱うもの:
 - 複数store/state transition。
 - Feature command coordination。
 
-Controllerはmarkup、CSS、raw HTTP、Product copyを所有しない。
+Controllerはmarkup、CSS、raw HTTP、Product copyを所有しません。
 
 ### 8.2 Commandとは
 
-CommandはUser intentをtyped use caseへ変換する操作である。
+CommandはUser intentをtyped use caseへ変換する操作です。
 
 - typed input/outputを持つ。
 - Organization-scopedなら`organizationId`を明示inputにする。
@@ -209,7 +217,7 @@ Rails response
   -> UI rendering
 ```
 
-Featureがcontroller/commandを所有すると、authorization、transport、presentationを混ぜずにuse-case entryを一か所へ集められる。Command詳細はM06、BFFはM07で扱う。
+Featureがcontroller/commandを所有すると、authorization、transport、presentationを混ぜずにuse-case entryを一か所へ集められる。Command詳細はM06、BFFはM07で扱います。
 
 ## 9. Data Down / Callback Up
 
@@ -225,7 +233,7 @@ Child UI
   -> Owner-side handler
 ```
 
-Callbackはtransport action名よりdomain/user intentを表す。`onRetry()`、`onSelectProject(projectId)`、`onUpdateTaskStatus(taskId, status)`のように、必要なpayloadだけを返す。
+Callbackには、通信処理の名前よりも、業務上の操作やユーザーの意図を表す名前を使います。`onRetry()`、`onSelectProject(projectId)`、`onUpdateTaskStatus(taskId, status)`のように、必要な引数だけを返します。
 
 ### Repository trace
 
@@ -235,24 +243,24 @@ Callbackはtransport action名よりdomain/user intentを表す。`onRetry()`、
 4. `PanoptesAnalysisSurface`はRetry button等のintentを`onRetry`で返す。
 5. Feature ownerが`controller.retryAnalysis`を実行する。
 
-UIが直接store mutation/API callを行う場合、Step 4と5が一つになり、presentationを再利用・isolated testしにくくなる。Callback patternはeventを増やすためではなく、mutation authorityをownerへ戻すために使う。
+UIがStoreの更新やAPI呼び出しを直接実行すると、Step 4と5が一体化し、表示部分の再利用や単独でのtestが難しくなります。Callbackを使う目的はeventを増やすことではなく、状態を変更する判断を本来の管理元へ集約することです。
 
 ## 10. Page / Compositeとの境界
 
-| Owner      | Coordinationの単位                                                     | Example                                        | Must not become                    |
-| ---------- | ---------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------- |
-| Page Entry | route固有section order、Feature assembly、Header/Hero where page-owned | `MarketingLandingPage`                         | use-case controller、raw transport |
-| Feature    | use case、request/mutation、controller、view model                     | `PanoptesShellPage`、`SignUpForm`              | Rails rule、global shell           |
-| Composite  | cohesive presentation child群、callback forwarding                     | `PanoptesShellMainSurface`、Roadmap Phase Card | command/API owner                  |
-| Layout     | route-family persistent frame/context/children                         | App `+layout.svelte`                           | Feature lifecycle                  |
+| 管理・決定の責任を持つ主体 | Coordinationの単位                                                     | 例                                             | 混同してはいけない役割             |
+| -------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------- |
+| Page Entry                 | route固有section order、Feature assembly、Header/Hero where page-owned | `MarketingLandingPage`                         | use-case controller、raw transport |
+| Feature                    | use case、request/mutation、controller、view model                     | `PanoptesShellPage`、`SignUpForm`              | Rails rule、global shell           |
+| Composite                  | cohesive presentation child群、callback forwarding                     | `PanoptesShellMainSurface`、Roadmap Phase Card | command/API owner                  |
+| Layout                     | route-family persistent frame/context/children                         | App `+layout.svelte`                           | Feature lifecycle                  |
 
-Pageへuse-case orchestrationを詰めると、URLとbusiness interactionが密結合し、別routeから同じFeatureを使えなくなる。CompositeをFeature化すると、presentation childがtransport/state mutationへ依存し、props/callback contractが崩れる。
+Pageへuse-case orchestrationを詰めると、URLとbusiness interactionが密結合し、別routeから同じFeatureを使えなくなる。CompositeをFeature化すると、presentation childがtransport/state mutationへ依存し、props/callback contractが崩れます。
 
-見た目の複雑さやchild数ではなく、何を決定するかで判定する。
+見た目の複雑さや子Componentの数ではなく、何を決定する責任があるかで判定します。
 
 ## 11. Representative repository cases
 
-| Case                                      | Classification             | Owns                                                                | Does not own                                          | Dependencies                       | State owner                         |
+| Case                                      | 分類                       | 担当すること                                                        | 担当しないこと                                        | Dependencies                       | 状態の管理元                        |
 | ----------------------------------------- | -------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------- | ---------------------------------- | ----------------------------------- |
 | `src/routes/app/+layout.svelte`           | Layout                     | App Header、spacing、Top Hero condition、children                   | analysis command/controller                           | Header/Hero/UI、route data         | route-family presentation           |
 | `MarketingLandingPage.svelte`             | Page Entry                 | Marketing Header/Hero section composition                           | Signup/analysis use-case lifecycle                    | page components/UI                 | minimal page state                  |
@@ -264,7 +272,7 @@ Pageへuse-case orchestrationを詰めると、URLとbusiness interactionが密�
 | `StrategyAnalysisRoadmapPhaseCard.svelte` | Composite                  | task/status child composition、selected visual、callback forwarding | task command、business workflow                       | Strategy UI children               | local presentation projection       |
 | `PanoptesTabNav.svelte`                   | UI / Presentation          | accessible tab-like buttons、active styling、onChange intent        | tab workflow/store mutation                           | props/native buttons               | supplied/local presentation         |
 
-これは限定sampleであり、全Component Boundary auditではない。
+これは限定sampleであり、全Component Boundary auditではありません。
 
 ## 12. Boundary violation patterns
 
@@ -294,7 +302,7 @@ UI onRetry()
 
 ### Example: Layout → Feature Command
 
-Layoutのmount時に「画面が開いたからanalysisを開始する」と実装すると、同じLayout配下の全page、navigation、remountがbusiness side effectになりうる。Layoutはverified contextをPage/Featureへ渡し、開始条件はFeature use caseとして明示する。
+Layoutのmount時に「画面が開いたからanalysisを開始する」と実装すると、同じLayout配下の全page、navigation、remountがbusiness side effectになり得ます。Layoutはverified contextをPage/Featureへ渡し、開始条件はFeature use caseとして明示します。
 
 ## 13. Naming traps
 
@@ -318,7 +326,7 @@ Layout -> Page children / UI / Primitive / approved context
 - Layout → Feature controller/command。
 - Shared UI → Feature store/domain service。
 
-FeatureはClient/API abstractionへ依存できるが、UIへtransport detailを渡さない。Layoutはapproved auth/contextを配布できるが、Feature mutationを始めない。Contextやstoreへ変更してもowner迂回は正当化されない。
+FeatureはClient/API abstractionへ依存できるが、UIへtransport detailを渡しません。Layoutはapproved auth/contextを配布できるが、Feature mutationを始めない。Contextやstoreへ変更してもowner迂回は正当化されません。
 
 ## 15. Decision heuristic — この処理はどこへ置くか
 
@@ -337,25 +345,25 @@ FeatureはClient/API abstractionへ依存できるが、UIへtransport detailを
 7. **Semantics-neutralで安定した最小contractか？**  
    Yes → Primitive candidate。複数consumerとcontractを確認してから抽出。
 
-複数に当てはまる場合は、external side effect、controller、canonical state mutationを持つownerを上位責務として選び、presentation部分を下位へ分離する。
+複数に当てはまる場合は、external side effect、controller、canonical state mutationを持つownerを上位責務として選び、presentation部分を下位へ分離します。
 
 ## 16. Common misunderstandings
 
 ### 「Stateを持つのでFeature」
 
-UIのopen/hover/input、Layoutのnavigation stateもstateである。Stateの意味とlifecycleで判断する。
+UIのopen/hover/input、Layoutのnavigation stateもstateです。Stateの意味とlifecycleで判断します。
 
 ### 「Event handlerがあるのでFeature」
 
-UIはnative eventをtyped callbackへ変換できる。Commandを実行するownerかが境界。
+UIはnative eventをtyped callbackへ変換できます。Commandを実行するownerかが境界。
 
 ### 「大きいComponentなのでFeature」
 
-Sizeはsignalにすぎない。大きなpure presentationはComposite/UI、小さなcommand ownerはFeatureになりうる。
+Sizeはsignalにすぎません。大きなpure presentationはComposite/UI、小さなcommand ownerはFeatureになり得ます。
 
 ### 「HeaderはLayout」
 
-Persistent route-family HeaderはLayout。Page固有HeaderはPage Entry ownerになりうる。
+Persistent route-family HeaderはLayout。Page固有HeaderはPage Entry ownerになり得ます。
 
 ### 「FormはUI」
 
@@ -363,22 +371,22 @@ Fields表示だけならUI。Controller、submit/resend、async lifecycleを持�
 
 ### 「Storeをimportしているので正しいFeature」
 
-Store mutation authorityがそのComponentにあるかを確認する。UI/Compositeからの直接mutationは越境。
+Store mutation authorityがそのComponentにあるかを確認します。UI/Compositeからの直接mutationは越境。
 
 ### 「Pageがuse-case owner」
 
-Pageはroute-specific composition。Use caseはFeatureへ委譲する。
+Pageはroute-specific composition。Use caseはFeatureへ委譲します。
 
 ### 「Featureがbusiness rule owner」
 
-FeatureはRails resultをorchestrateする。Canonical business decisionはRails。
+FeatureはRails resultをorchestrateします。Canonical business decisionはRails。
 
 ## 17. Practice
 
 ### 17.1 Knowledge Check
 
 1. Boundaryとfile分割の違いは何か。
-2. Featureが所有するstateとUIが所有するstateを一つずつ挙げよ。
+2. Featureが所有するstateとUIが所有するstateを一つずつ挙げてください。
 3. LayoutがFeature controllerを所有してはいけない理由は何か。
 4. UIがcallbackを持ってもFeatureにならない理由は何か。
 5. ControllerとCommandの違いは何か。
@@ -388,7 +396,7 @@ FeatureはRails resultをorchestrateする。Canonical business decisionはRails
 
 ### 17.2 Ownership Exercise
 
-次を最も適切なownerへ分類する。
+次を最も適切なownerへ分類します。
 
 1. AnalysisJobの正式status。
 2. Polling timerとretry/backoff presentation coordination。
@@ -403,7 +411,7 @@ FeatureはRails resultをorchestrateする。Canonical business decisionはRails
 
 ### 17.3 Violation Detection
 
-次のどこが越境かを答える。
+次のどこが越境かを答えてください。
 
 ```ts
 // A: UI Card
@@ -434,7 +442,7 @@ const canonicalScore = observations.reduce(calculateOfficialFormula, 0);
 
 ### 17.4 Refactoring Exercise
 
-一つのCardが次をすべて行っている。
+一つのCardが次をすべて行っています。
 
 - API fetch。
 - loading/error state。
@@ -443,13 +451,13 @@ const canonicalScore = observations.reduce(calculateOfficialFormula, 0);
 - global store mutation。
 - HTML/CSS。
 
-Feature / Composite / UI / Clientへ責務を分け、data/callback flowを示す。
+Feature / Composite / UI / Clientへ責務を分け、data/callback flowを示します。
 
 ### 17.5 Architecture Explanation
 
 > なぜPanoptesではUIから直接Commandを呼ばず、typed callbackでFeature ownerへintentを返すのか。
 
-Change isolation、reuse、testability、state mutation authority、error/retry lifecycleを含めて説明する。
+Change isolation、reuse、testability、state mutation authority、error/retry lifecycleを含めて説明します。
 
 ## 18. Answers / Explanation Guide
 
@@ -505,11 +513,11 @@ Feature view model -> Composite -> UI
 UI onRetry -> Composite forward -> Feature handler -> Command/Client
 ```
 
-Global store mutationはFeature controller/actionへ集約する。Canonical scoreはRailsから受け、formattingだけをview model/UIへ渡す。
+Global store mutationはFeature controller/actionへ集約します。Canonical scoreはRailsから受け、formattingだけをview model/UIへ渡します。
 
 ### 18.5 Architecture Explanation回答例
 
-UIがCommandを直接呼ぶと、presentation componentがrequest state、retry、authorization context、store mutationまで知る必要があり、別Featureで再利用しにくくなる。また複数のbuttonやCardが同じmutationを独立実行すると、loading/error/stale resultのauthorityが分散する。UIはtyped callbackでUser intentと必要なpayloadだけを返し、Feature ownerがcontrollerとCommandを通して一つのlifecycleとして処理する。これによりUIをprops/callbackだけでtestでき、Feature側ではcommand、error、retry、state transitionをまとめて検証できる。Canonical business decisionはさらにRailsへ委譲する。
+UIがCommandを直接呼ぶと、presentation componentがrequest state、retry、authorization context、store mutationまで知る必要があり、別Featureで再利用しにくくなる。また複数のbuttonやCardが同じmutationを独立実行すると、loading/error/stale resultのauthorityが分散します。UIはtyped callbackでUser intentと必要なpayloadだけを返し、Feature ownerがcontrollerとCommandを通して一つのlifecycleとして処理します。これによりUIをprops/callbackだけでtestでき、Feature側ではcommand、error、retry、state transitionをまとめて検証できます。Canonical business decisionはさらにRailsへ委譲します。
 
 ## 19. Completion Criteria
 
@@ -529,11 +537,11 @@ UIがCommandを直接呼ぶと、presentation componentがrequest state、retry�
 M04 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M05`
 
-このstatusは教材artifactの完成を示す。Learner assessment合格、全Component Boundary audit、Source migration完了を意味しない。
+このstatusは教材artifactの完成を示します。Learner assessment合格、全Component Boundary audit、Source migration完了を意味しません。
 
 ## 20. Handoff to M05
 
-次は`M05 — Directory Structure`。M03/M04で確定したCategoryとownershipを、Route、Page、Feature、Layout、Shared UI、Primitive、Previewのcanonical placementとmigration ruleへ写像する。
+次は`M05 — Directory Structure`。M03/M04で確定したCategoryとownershipを、Route、Page、Feature、Layout、Shared UI、Primitive、Previewのcanonical placementとmigration ruleへ写像します。
 
 ## References
 

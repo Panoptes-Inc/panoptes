@@ -5,9 +5,9 @@ Phase: `TB-18`
 Difficulty: `ADVANCED`  
 Prerequisites: `M01`–`M16`
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. EvidenceからObservation、Submetric、Axis/Layer/Overall Scoreへ進むmeasurement pipelineを説明する。
 2. Observation Output Contract v1のidentity、typed value、provenance、completenessを説明する。
@@ -19,6 +19,15 @@ Prerequisites: `M01`–`M16`
 8. Worker calculation engineとRails registry/validation/persistenceを区別する。
 9. Formula、Calibration、Strategyを別layerとして扱う。
 10. CURRENT、TARGET、DEFERREDを混同しない。
+
+## 用語ガイド
+
+- **Observation:** Evidenceから読み取った事実を、型、出典、完全性とともに表した出力。
+- **Submetric:** Axisを構成する、より小さく検証可能な評価項目。
+- **Formula:** ObservationやSubmetricをAxis Scoreへまとめる計算規則。
+- **Formula Version:** どの計算規則でscoreを算出したか再現するためのversion識別子。
+- **Registry:** 利用可能なFormulaと、そのactive/approved versionをRails側で管理する登録簿。
+- **Completeness（完全性）:** 必要な観測がどの程度そろっているか。scoreの高低とは別の情報。
 
 ## 2. Measurement pipeline
 
@@ -36,7 +45,7 @@ External Web
 -> Comparison / Diagnosis
 ```
 
-各layerは意味とauthorityが違う。Evidenceから直接scoreを決めず、Observationのtyped meaning、Submetric profile、eligibility、formula versionを通す。
+各Layerでは、扱う情報の意味と決定権が異なります。Evidenceから直接scoreを決めず、型付きのObservation、SubmetricのProfile、計算可否の条件、Formulaのversionに従って段階的に処理します。
 
 ```mermaid
 flowchart LR
@@ -58,7 +67,7 @@ flowchart LR
 
 ## 3. Observation fundamentals
 
-ObservationはEvidenceから抽出・構造化された観測factである。
+ObservationはEvidenceから抽出・構造化された観測factです。
 
 ```text
 Evidence: Hero regionのDOMにprimary CTA buttonが存在する
@@ -66,7 +75,7 @@ Observation: Primary CTA is present in the hero region
 Opinion: This hero is good
 ```
 
-前二者はsourceへtraceできるが、「良い」は評価基準を持たない自由な感想である。Semantic Observationも許可されるが、Evidence、classifier/model、version、confidence/rationale等のconditional metadataで境界を明示する。
+前二者は取得元へ遡れますが、「良い」は評価基準が示されていない感想です。意味の解釈を伴うSemantic Observationも許可されますが、Evidence、分類器・Model、version、確信度・判断理由など、条件に応じたmetadataで、何を根拠にどこまで解釈したかを明示します。
 
 Observationは少なくとも次の性質を目指す。
 
@@ -96,13 +105,13 @@ Observationは少なくとも次の性質を目指す。
 | Confidence             | Deterministicでは原則不要。Semanticではsource/classifier/version/rationale等をconditional required |
 | Version lineage        | Axis Contract、Analysis Pipeline、Observation Schema。Formula VersionはScore側                     |
 
-Observation identityはEvidence identityではない。同じEvidenceからAxis/Submetric/semantic aspectの異なるObservationを作り得る。Evidence reuseとFormula contribution/double countingは別問題である。
+ObservationとEvidenceは、別の識別対象です。同じEvidenceからでも、Axis、Submetric、着目する意味の側面が異なるObservationを作る場合があります。Evidenceを再利用することと、Formulaで寄与を重複計上することは別の問題です。
 
-Exact JSON property、DB/OpenAPI schema、physical ID formatは未実装・DEFERREDである。
+Exact JSON property、DB/OpenAPI schema、physical ID formatは未実装・DEFERREDです。
 
 ## 5. Submetric fundamentals
 
-Submetricは、Axisという大きなsemantic questionを測るための、より具体的なmeasurement dimensionである。
+Submetricは、Axisが示す大きな評価の問いを、より具体的に測るための評価項目です。
 
 ```text
 Axis: valueProposition
@@ -113,7 +122,7 @@ Possible documented candidate dimensions:
   offer visibility
 ```
 
-これらはData Dictionaryのevidence/formula discovery候補を説明に使ったものであり、本Moduleが新しいcanonical registryやexact Formulaを制定するものではない。
+これらはData Dictionaryのevidence/formula discovery候補を説明に使ったものであり、本Moduleが新しいcanonical registryやexact Formulaを制定するものではありません。
 
 ### Axis vs Submetric
 
@@ -124,7 +133,7 @@ Possible documented candidate dimensions:
 | Weightやnormalizationを含まない | normalization/aggregation/weight/applicability ruleへ接続し得る        |
 | 例: `decisionSupport`           | 例候補: option comparison support、scope clarity、process transparency |
 
-1 ObservationだけでAxis Scoreを決めるとは限らない。複数Observation、scope、coverage、required roleをSubmetric boundaryで整理する。
+1 ObservationだけでAxis Scoreを決めるとは限りません。複数Observation、scope、coverage、required roleをSubmetric boundaryで整理します。
 
 ## 6. Observation → Submetric
 
@@ -138,13 +147,13 @@ Possible documented candidate dimensions:
 - semantic confidence/quality where applicable
 - normalization method/profile/version
 
-承認済みArchitectureでは、value type/Submetric別のtyped normalizationを使う。BOOLEAN、COUNT、RATIO、semantic classificationへ同じ変換を一律適用しない。
+承認済みArchitectureでは、value type/Submetric別のtyped normalizationを使います。BOOLEAN、COUNT、RATIO、semantic classificationへ同じ変換を一律適用しません。
 
-Exact bounds、cap、slope、midpoint、percentile、weightは未決定である。Dataの更新だけでpublished parameterをsilent変更しない。
+Exact bounds、cap、slope、midpoint、percentile、weightは未決定です。Dataの更新だけでpublished parameterをsilent変更しません。
 
 ## 7. Formula fundamentals
 
-FormulaはObservation/Submetricを再現可能なcalculation ruleによってScoreへ変換する仕組みである。
+FormulaはObservation/Submetricを再現可能なcalculation ruleによってScoreへ変換する仕組みです。
 
 Formulaに求める性質:
 
@@ -163,7 +172,7 @@ Formula != Strategy rule
 
 ## 8. Approved Formula Architecture
 
-承認済みCandidate Cは`Layer-first Common Core + Axis-specific Versioned Profiles`である。
+承認済みCandidate Cは`Layer-first Common Core + Axis-specific Versioned Profiles`です。
 
 ### Common Core
 
@@ -190,9 +199,9 @@ Atomic Observation
 -> Overall late fusion
 ```
 
-Internal/VisualはAxisまで別系統で保持し、Layer Score後にlate fusionする。Exact fusion ratioは未決定で、旧候補`0.55/0.45`は`UNAPPROVED CANDIDATE`である。教材や実装で正式値として使わない。
+InternalとVisualはAxisまで別系統で保持し、それぞれのLayer Scoreを計算した後で統合します。この後段での統合がlate fusionです。具体的な統合比率は未決定で、旧候補`0.55/0.45`は`UNAPPROVED CANDIDATE`です。教材や実装で正式値として使いません。
 
-Confidenceはv1ではSeparate Quality Indicator、Crawl Coverageはquality/completeness metadataであり、Product Scoreへsilent modifierとして混ぜない。
+Confidenceはv1ではSeparate Quality Indicator、Crawl Coverageはquality/completeness metadataであり、Product Scoreへsilent modifierとして混ぜません。
 
 ## 9. Formula input and output
 
@@ -206,11 +215,11 @@ Confidenceはv1ではSeparate Quality Indicator、Crawl Coverageはquality/compl
 - Axis Contract / Pipeline / Observation Schema lineage
 - selected immutable Formula Manifest
 
-Frontendのclamped score、radar座標、percentage表示等をFormula inputの正本にしない。
+Frontendのclamped score、radar座標、percentage表示等をFormula inputの正本にしません。
 
 ### Logical output
 
-承認済みBackend Wire Logical Contractのrootは`AnalysisScoreResult`である。
+承認済みBackend Wire Logical Contractのrootは`AnalysisScoreResult`です。
 
 保持可能なlogical information:
 
@@ -223,17 +232,17 @@ Frontendのclamped score、radar座標、percentage表示等をFormula inputの�
 - input/provenance references
 - `calculatedAt`
 
-Exact casing、nesting、physical ID、JSON、table、OpenAPIは未決定である。Score valueだけでは、計算できたか・どのversionか・coverageが十分かを説明できない。
+Exact casing、nesting、physical ID、JSON、table、OpenAPIは未決定です。Score valueだけでは、計算できたか・どのversionか・coverageが十分かを説明できません。
 
 ## 10. Missing, N/A, Unknown, Partial, and valid zero
 
-| State                    | Meaning                                | Must not become silently    |
-| ------------------------ | -------------------------------------- | --------------------------- |
-| `PRESENT` with value `0` | 観測・計算が成立し、結果が0            | Missing/Unknownの代替       |
-| `MISSING`                | 十分な観測scopeでmeaningful absence    | generic 0/penalty           |
-| `NOT_APPLICABLE`         | 対象にmeasurement自体が適用されない    | 0、Missing                  |
-| `UNKNOWN`                | 観測・technical/semantic理由で確定不能 | negative Evidence、0        |
-| `PARTIAL`                | 必要input/coverageの一部だけ有効       | completeと無標識の同一score |
+| State                    | 意味                                   | 通知せず変換してはいけないもの |
+| ------------------------ | -------------------------------------- | ------------------------------ |
+| `PRESENT` with value `0` | 観測・計算が成立し、結果が0            | Missing/Unknownの代替          |
+| `MISSING`                | 十分な観測scopeでmeaningful absence    | generic 0/penalty              |
+| `NOT_APPLICABLE`         | 対象にmeasurement自体が適用されない    | 0、Missing                     |
+| `UNKNOWN`                | 観測・technical/semantic理由で確定不能 | negative Evidence、0           |
+| `PARTIAL`                | 必要input/coverageの一部だけ有効       | completeと無標識の同一score    |
 
 例:
 
@@ -243,11 +252,11 @@ Exact casing、nesting、physical ID、JSON、table、OpenAPIは未決定であ�
 - business context上public pricingが適用されない → `NOT_APPLICABLE`候補
 - 10ページ中4ページだけ観測 → `PARTIAL`候補
 
-原因・scope・profile ruleなしにstateを決めない。
+原因・scope・profile ruleなしにstateを決めません。
 
 ## 11. Eligibility and Score State
 
-Eligibilityは「このinput/conditionでScoreを正式に計算可能か」を表す。
+Eligibilityは「このinput/conditionでScoreを正式に計算可能か」を表します。
 
 - `ELIGIBLE`
 - `INELIGIBLE`
@@ -259,15 +268,15 @@ Score State:
 - `CALCULATED`
 - `NON_CALCULATED`
 
-Completeness、Eligibility、Score State、quality/confidenceは別軸である。
+Completenessは入力がどれだけそろったか、Eligibilityは正式に計算してよいか、Score Stateは計算が成立したかを表します。品質・確信度の情報も含め、それぞれ別の観点として保持します。
 
-例: `PARTIAL`でもProfileがlimited calculationを許しrequired conditionを満たせば`CALCULATED`になり得る。ただしreason/coverage/limitationsを伴い、complete scoreと同じ表示にしない。逆に`PRESENT`なObservationがあってもrequired input不足ならAxis scoreは`NON_CALCULATED`になり得る。
+例: `PARTIAL`でもProfileがlimited calculationを許しrequired conditionを満たせば`CALCULATED`になり得ます。ただしreason/coverage/limitationsを伴い、complete scoreと同じ表示にしません。逆に`PRESENT`なObservationがあってもrequired input不足ならAxis scoreは`NON_CALCULATED`になり得ます。
 
-Exact threshold、required set、per-Submetric treatmentは未決定である。Non-calculatedへ0、neutral、last-known valueを代入しない。
+Exact threshold、required set、per-Submetric treatmentは未決定です。Non-calculatedへ0、neutral、last-known valueを代入しません。
 
 ## 12. Aggregation, Weight, Normalization, and Fusion
 
-一般的なaggregationにはweighted average、normalized sum、rule-based aggregation等がある。しかしPanoptesのexact method/parameterは未決定である。
+一般的なaggregationにはweighted average、normalized sum、rule-based aggregation等があります。しかしPanoptesのexact method/parameterは未決定です。
 
 承認済みPolicy:
 
@@ -279,11 +288,11 @@ Exact threshold、required set、per-Submetric treatmentは未決定である。
 - unknown/unapproved parameterへsilent fallbackしない
 - v1はGlobal baseline。Industry-specific profileはDEFERRED
 
-Presentation clamp、ring geometry、percentage formattingはBusiness Formulaではない。
+Presentation clamp、ring geometry、percentage formattingはBusiness Formulaではありません。
 
 ## 13. Formula Version and Registry
 
-`formulaVersion`はpublished immutable positive integerのCanonical Formula Identityとして承認されている。
+`formulaVersion`はpublished immutable positive integerのCanonical Formula Identityとして承認されています。
 
 Formula Versionからimmutable Manifestを通じて一意に解決するもの:
 
@@ -309,7 +318,7 @@ Version change対象外:
 - display-only formatting/layout
 - presentation safety clamp
 
-Rails-owned logical `FormulaDefinition` Registryがactive/approved version selectionとManifest resolutionのcanonical ownerである。Worker hardcodeだけをFormula Source of Truthにしない。Profile revisionはsubordinate identityで、第二のhistorical comparison SoTではない。
+Rails-owned logical `FormulaDefinition` Registryがactive/approved version selectionとManifest resolutionのcanonical ownerです。Worker hardcodeだけをFormula Source of Truthにしません。Profile revisionはsubordinate identityで、第二のhistorical comparison SoTではありません。
 
 ## 14. Formula ownership and calculation flow
 
@@ -345,11 +354,11 @@ sequenceDiagram
 - canonical eligibility/business policy coordination
 - persistence、Snapshot lineage、API publication
 
-BFFはOrganization-scoped transport、Frontendはvalidated result consumption/explanation/presentationを担当し、Formula Business Logicを持たない。
+BFFはOrganization-scoped transport、Frontendはvalidated result consumption/explanation/presentationを担当し、Formula Business Logicを持ちません。
 
 ## 15. Persistence and lineage
 
-M15のlineageへ次のchainを接続する。
+M15のlineageへ次のchainを接続します。
 
 ```text
 Snapshot
@@ -361,15 +370,15 @@ Snapshot
 -> AnalysisJob / capture context
 ```
 
-Snapshotはgeneration-time Formula、Axis、Observation、Pipeline、completeness、Score Result lineageを保持する方向で、Current Formulaによるsilent reinterpretを禁止する。
+Snapshotはgeneration-time Formula、Axis、Observation、Pipeline、completeness、Score Result lineageを保持する方向で、Current Formulaによるsilent reinterpretを禁止します。
 
-Formula versionが異なるScoreは、明示compatibility/calibration metadataがなければ自動比較可能と推測しない。0–100 presentation scaleが同じだけではsemantic compatibilityを証明しない。
+Formula versionが異なるScoreは、明示compatibility/calibration metadataがなければ自動比較可能と推測しません。0–100 presentation scaleが同じだけではsemantic compatibilityを証明しません。
 
-ExplainabilityはLLMの説明文だけではない。Scoreからsupporting Submetric、Observation、Evidence、version、completeness、Layer contributionへtraceできることが中心である。
+Explainability（説明可能性）の中心は、scoreから根拠となるSubmetric、Observation、Evidence、version、入力の充足状況、各Layerの寄与へ遡れることです。LLMが説明文を生成するだけでは、この追跡可能性を代替できません。
 
 ## 16. Calibration boundary
 
-Formulaはcalculation rule、Calibrationはrule/parameterが評価意図へ合うかを検証・調整するprocessである。
+Formulaは計算規則です。Calibrationは、その規則やparameterが評価の意図に合っているかを検証し、調整する過程です。
 
 承認済みCalibration Policyの方向:
 
@@ -382,21 +391,21 @@ Formulaはcalculation rule、Calibrationはrule/parameterが評価意図へ合�
 - CTR/CVR/revenue等external outcomeはsecondary validation
 - sensitivity、false positive/negative、stabilityの確認
 
-Calibrationは`NOT_PERFORMED`、exact parameterは`NOT_DECIDED`である。Product Ownerの好みだけでproduction weight/ratioを決めない。
+Calibrationは`NOT_PERFORMED`、exact parameterは`NOT_DECIDED`です。Product Ownerの好みだけでproduction weight/ratioを決めません。
 
 ## 17. Formula vs Strategy
 
-Formula/ScoreはEvidence-based diagnosisである。StrategyはProduct context、goal、constraint、risk、priority、feasibilityを踏まえたaction/recommendationである。
+Formula/ScoreはEvidence-based diagnosisです。StrategyはProduct context、goal、constraint、risk、priority、feasibilityを踏まえたaction/recommendationです。
 
 ```text
 Axis Score 30 -> 必ず施策X
 ```
 
-のような直結ruleを本Moduleで作らない。Score、limitations、EvidenceをStrategy layerのinputにできても、Strategy Source/decisionは別contractである。
+のような直結ruleを本Moduleで作りません。Score、limitations、EvidenceをStrategy layerのinputにできても、Strategy Source/decisionは別contractです。
 
 ## 18. Worked conceptual example
 
-この例はflow説明用で、Submetric registry、weight、parameterを正式化しない。
+この例はflow説明用で、Submetric registry、weight、parameterを正式化しません。
 
 ```text
 Evidence E1: Hero DOMにprimary CTAが存在
@@ -429,18 +438,18 @@ Axis relation:
 
 ## 19. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope                                                                                                                                                                                                                               |
+| 分類           | Confirmed scope                                                                                                                                                                                                                               |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | CURRENT        | Frontendにoverall/internal/visual score、radar、delta等のpresentation types/view modelsとmock valuesがある。Product docsにはObservation、Formula Architecture/Policy/Version/Wire、Missing/Partial Contractがある。                           |
 | CURRENT caveat | TypeScript/OpenAPIにcanonical Observation、Submetric result、`AnalysisScoreResult`、`formulaVersion`、eligibility/completeness provenanceは実装されていない。mockはfinal scoreを直接生成し、presentation mapperはfallback/synthetic値を作る。 |
 | TARGET         | Worker calculation engineがRails-resolved Formula Manifestとtyped ObservationsからSubmetric/Axis/Layer/Overallを計算し、Railsがvalidate/persistしてversioned resultをAPI/UIへ提供する。                                                       |
 | DEFERRED       | exact weight/ratio/normalization parameter/threshold/rounding、calibration dataset/execution、confidence calibration、dedup/double-count、physical JSON/DB/OpenAPI、Worker/Rails/Frontend implementation。                                    |
 
-Decision CompleteはExact Parameter、Calibration、Production implementation完了を意味しない。
+Decision CompleteはExact Parameter、Calibration、Production implementation完了を意味しません。
 
 ## 20. Representative repository mapping
 
-| Representative source                                                            | Pipeline layer         | Responsibility                               | Status                     | Version relation                  |
+| Representative source                                                            | Pipeline layer         | 責務                                         | 状態                       | Version relation                  |
 | -------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------- | -------------------------- | --------------------------------- |
 | [Score / Axis Data Dictionary](../../product/score-axis-data-dictionary.md)      | Full contract chain    | Formula/Observation/Missing detail SoT       | Approved logical contracts | Axis/Observation/Formula versions |
 | [Product Decision Register](../../product/product-decision-register.md) PD-02C/D | Decision summary       | approval/status/handoff                      | Decision complete          | exact parameter deferred          |
@@ -488,13 +497,13 @@ Decision CompleteはExact Parameter、Calibration、Production implementation完
 
 ### A. Knowledge check
 
-1. Evidence、Observation、Submetric、Formula、Axis Scoreの違いを説明せよ。
-2. Observation identityとEvidence identityを分ける理由を説明せよ。
-3. FormulaとCalibrationの違いを説明せよ。
+1. Evidence、Observation、Submetric、Formula、Axis Scoreの違いを説明してください。
+2. Observation identityとEvidence identityを分ける理由を説明してください。
+3. FormulaとCalibrationの違いを説明してください。
 
 ### B. Classification
 
-`Screenshot` / `CTA detected` / `CTA prominence measurement` / `formula rule` / `Axis Score` / `formulaVersion` / `Eligibility` / `calibration evaluation`をlayerへ分類せよ。
+`Screenshot` / `CTA detected` / `CTA prominence measurement` / `formula rule` / `Axis Score` / `formulaVersion` / `Eligibility` / `calibration evaluation`をlayerへ分類してください。
 
 ### C. Pipeline ordering
 
@@ -508,11 +517,11 @@ EvidenceからPresentation Valueまでを、Internal/Visual separationを含め�
 4. public priceが対象business modelでは適用されない
 5. Screenshotの一部だけ評価可能
 
-Valid Zero / Missing / Unknown / N/A / Partialへ分類せよ。
+Valid Zero / Missing / Unknown / N/A / Partialへ分類してください。
 
 ### E. Eligibility exercise
 
-ObservationがPRESENTでもrequired Visual inputがUNKNOWNである。Axis scoreを出せるかを、exact thresholdを発明せず説明せよ。
+ObservationがPRESENTでもrequired Visual inputがUNKNOWNです。Axis scoreを出せるかを、exact thresholdを発明せず説明してください。
 
 ### F. Version exercise
 
@@ -520,7 +529,7 @@ Formula v1/v2で作られた0–100 Snapshot scoreを比較する前に何を確
 
 ### G. Ownership exercise
 
-Active Formula selection、calculation execution、output validation、canonical persistence、business eligibility、UI formattingをRails/Worker/Frontendへ分類せよ。
+Active Formula selection、calculation execution、output validation、canonical persistence、business eligibility、UI formattingをRails/Worker/Frontendへ分類してください。
 
 ### H. Violation detection
 
@@ -533,7 +542,7 @@ Active Formula selection、calculation execution、output validation、canonical
 
 ### I. Architecture explanation
 
-「なぜFormula VersionをSnapshot lineageへ残す必要があるのか」を説明せよ。
+「なぜFormula VersionをSnapshot lineageへ残す必要があるのか」を説明してください。
 
 ## 24. Answers and explanation guide
 
@@ -564,11 +573,11 @@ Active Formula selection、calculation execution、output validation、canonical
 
 ### E. Eligibility exercise
 
-ProfileのEvidence Roleとrequired conditionが必要で、情報だけでは確定できない。Visualがrequiredなら`INELIGIBLE`/`UNDETERMINED`で`NON_CALCULATED`候補、conditionalならlimited `CALCULATED + PARTIAL`候補。未決定thresholdを補わない。
+ProfileのEvidence Roleとrequired conditionが必要で、情報だけでは確定できません。Visualがrequiredなら`INELIGIBLE`/`UNDETERMINED`で`NON_CALCULATED`候補、conditionalならlimited `CALCULATED + PARTIAL`候補。未決定thresholdを補わない。
 
 ### F. Version exercise
 
-Formula Manifest、Axis/Profile/Submetric、normalization/weight/fusion/eligibility、calibration/compatibility metadata、coverage/completenessを確認する。explicit compatibilityがなければscale一致だけで比較しない。
+Formula Manifest、Axis/Profile/Submetric、normalization/weight/fusion/eligibility、calibration/compatibility metadata、coverage/completenessを確認します。explicit compatibilityがなければscale一致だけで比較しません。
 
 ### G. Ownership exercise
 
@@ -582,7 +591,7 @@ Formula Manifest、Axis/Profile/Submetric、normalization/weight/fusion/eligibil
 
 ### I. Architecture explanation
 
-Formula Versionがあれば、当時使ったSubmetric、normalization、weight、fusion、eligibility、calibration/approval metadataを一意に解決できる。Snapshot scoreを現在のFormulaでsilent reinterpretせず再現・debug・comparison可否判定できるため、generation-time lineageへ必要である。
+Formula Versionがあれば、当時使ったSubmetric、normalization、weight、fusion、eligibility、calibration/approval metadataを一意に解決できます。Snapshot scoreを現在のFormulaでsilent reinterpretせず再現・debug・comparison可否判定できるため、generation-time lineageへ必要です。
 
 ## 25. Completion criteria
 
@@ -599,10 +608,10 @@ Formula Versionがあれば、当時使ったSubmetric、normalization、weight�
 |   9 | Repository mapping + two diagrams included             | `PASS` |
 |  10 | Exercises + answers included                           | `PASS` |
 
-M17 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Exact Formula Parameter、Calibration、physical schema、Worker/Rails/Frontend implementationの完成判定ではない。
+M17 authoring result: `10 / 10 PASS`。これは教材完成の判定であり、Exact Formula Parameter、Calibration、physical schema、Worker/Rails/Frontend implementationの完成判定ではありません。
 
 ## 26. M18 handoff
 
 Recommended next phase: `TB-19 — Module 18: Missing / Partial / Eligibility`。
 
-M18ではPD-02DとPD-04を接続し、Observation/Submetric/Axis/Layer/Overall、AnalysisJob、Limited Snapshot、UI/API stateのedge casesを詳しく扱う。Exact thresholdやfallbackを新規決定しない。
+M18ではPD-02DとPD-04を接続し、Observation/Submetric/Axis/Layer/Overall、AnalysisJob、Limited Snapshot、UI/API stateのedge casesを詳しく扱います。Exact thresholdやfallbackを新規決定しません。

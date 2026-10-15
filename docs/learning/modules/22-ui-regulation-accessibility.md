@@ -5,9 +5,9 @@ Phase: `TB-23`
 Difficulty: `INTERMEDIATE`  
 Prerequisites: `M01`–`M21`（direct curriculum dependencies: `M03`–`M05`, `M18`–`M21`）
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. UI RegulationをVisual Style Guideより広い共通Contractとして説明する。
 2. 同じ意味・状態・操作へCanonical Component、Semantic Token、共通interactionを適用する。
@@ -18,15 +18,23 @@ Prerequisites: `M01`–`M21`（direct curriculum dependencies: `M03`–`M05`, `M
 7. Responsive、Token、Tailwind、Component責務とAccessibilityを接続する。
 8. ExceptionとReview結果を追跡し、Documentationと実測Verificationを区別する。
 
+## 用語ガイド
+
+- **UI Regulation:** 見た目だけでなく、interaction、state表現、accessibility、Component利用を含む共通規約。
+- **Accessibility（アクセシビリティ）:** 障害の有無や操作手段にかかわらず、内容と機能を利用できるようにする性質。
+- **Affordance:** 何をクリック・入力・操作できるかが、見た目や文脈から理解できる手掛かり。
+- **Accessible name:** Screen readerなどがcontrolの目的を読み上げるための名前。
+- **Tracked exception:** 規約から外れる理由、owner、範囲、見直し条件を記録した例外。
+
 ## 2. UI Regulation fundamentals
 
-UI Regulationは、UIの見た目、操作、状態、Accessibilityを一貫して扱う共通Contractである。
+UI Regulationは、UIの見た目、操作、状態、Accessibilityを一貫して扱う共通Contractです。
 
 ```text
 UI Regulation != Visual Style Guide only
 ```
 
-少なくとも次を統合する。
+少なくとも次を統合します。
 
 - visual consistency
 - interaction semantics
@@ -36,7 +44,7 @@ UI Regulation != Visual Style Guide only
 - Responsive/Token/Tailwind compliance
 - exception handling and review
 
-「綺麗に見えるか」だけでなく、「意味が正しく、操作でき、状態が伝わるか」を判断する。
+「綺麗に見えるか」だけでなく、「意味が正しく、操作でき、状態が伝わるか」を判断します。
 
 ## 3. Visual consistency
 
@@ -47,13 +55,13 @@ same meaning + same state + same operation
 -> Canonical Component + Semantic Token + common interaction pattern
 ```
 
-Color、Typography、Spacing、Sizing、Radius、Border、ShadowはDesign Token Contractを正本とする。見た目が近いだけで共通化せず、purpose、state、Product semantics、interaction lifecycleが同じかを確認する。
+Color、Typography、Spacing、Sizing、Radius、Border、Shadowは、Design Tokenの契約を正本とします。共通化するときは、見た目の近さだけでなく、目的、状態、Product上の意味、操作の開始から終了までの流れが同じかを確認します。
 
-Featureはlocal compositionを所有できるが、shared visual foundationを再定義しない。
+Featureはlocal compositionを所有できるが、shared visual foundationを再定義しません。
 
 ## 4. Canonical Component reuse
 
-新しいComponentを作る前に、owning FeatureとShared UIから同じ責務のCanonical Componentを確認する。
+新しいComponentを作る前に、owning FeatureとShared UIから同じ責務のCanonical Componentを確認します。
 
 Reuse判断:
 
@@ -64,11 +72,11 @@ Reuse判断:
 - responsibility/owner
 - stable props/variant contract
 
-見た目が同じでも、navigationとactionは別の意味を持つ。逆に見た目が多少違っても、同じcontractをvariantで表せる場合がある。
+見た目が同じでも、navigationとactionは別の意味を持ちます。逆に見た目が多少違っても、同じcontractをvariantで表せる場合があります。
 
 ## 5. Visual and interaction model
 
-| State / control    | Meaning                             | Required behavior                                  |
+| State / control    | 意味                                | Required behavior                                  |
 | ------------------ | ----------------------------------- | -------------------------------------------------- |
 | Link               | 別location/resourceへのnavigation   | native `a`をdefault、destinationを持つ             |
 | Button             | current contextでのaction           | native `button`をdefault、keyboard activation      |
@@ -79,7 +87,7 @@ Reuse判断:
 | Disabled           | 操作不能                            | native semantics、visual indication、必要なら理由  |
 | Loading            | 処理進行中                          | 二重実行防止、progress/label、必要ならannouncement |
 
-Visual stateとprogrammatic stateは両方必要である。
+Visual stateとprogrammatic stateは両方必要です。
 
 ```text
 gray appearance != disabled semantics
@@ -91,15 +99,15 @@ selected color  != aria-selected/current automatically
 - Link: navigation。
 - Button: action。
 
-見た目ではなくpurposeで選ぶ。`div onclick`はnative keyboard behavior、focus、role、disabled等を自動では持たないためdefaultにしない。Clickable containerを使う場合はnested interactive element、keyboard activation、focus orderを解決する。
+要素は見た目ではなく、操作の目的で選びます。`div onclick`には、標準のkeyboard操作、focus、role、disabledなどが自動では備わらないため、基本の選択肢にはしません。Container全体をclick可能にする場合は、内部の操作要素との入れ子、keyboardでの実行方法、focusの順序を解決します。
 
 ## 7. Hover, focus, pressed, selected
 
 Hoverはtouch/keyboard userに存在しない場合があるため補助に留める。
 
-Focus indicatorは「design上邪魔」という理由で削除しない。`:focus-visible`等を使う場合もkeyboard focusが常に識別できることを確認する。
+Focus indicatorは「design上邪魔」という理由で削除しません。`:focus-visible`等を使う場合もkeyboard focusが常に識別できることを確認します。
 
-Pressedは一時的interaction、Selected/Currentは持続的stateである。Active Tabなら`aria-selected`等、そのwidget patternに合うprogrammatic stateを持たせる。
+Pressedは一時的interaction、Selected/Currentは持続的stateです。Active Tabなら`aria-selected`等、そのwidget patternに合うprogrammatic stateを持たせる。
 
 ## 8. Disabled and loading
 
@@ -117,11 +125,11 @@ Loading:
 - progress/statusを伝える。
 - 必要に応じて`aria-busy`またはstatus announcementを使う。
 
-UIのLoadingはrequest/action presentation stateであり、M12のAnalysisJob lifecycle stateそのものではない。
+UIのLoadingはrequest/action presentation stateであり、M12のAnalysisJob lifecycle stateそのものではありません。
 
 ## 9. State representation
 
-| Canonical UI state     | Meaning                          | Representation principle                                    |
+| Canonical UI state     | 意味                             | Representation principle                                    |
 | ---------------------- | -------------------------------- | ----------------------------------------------------------- |
 | Loading                | request/job/action進行中         | progress、重複防止、既存内容を無理由に消さない              |
 | Empty / no data        | 正常取得したが対象0件            | 対象と次の可能行動、Error toneなし                          |
@@ -136,7 +144,7 @@ UIのLoadingはrequest/action presentation stateであり、M12のAnalysisJob li
 | Limited                | Product contract上の制約付き結果 | scope、allowed use、next action                             |
 | Unsupported historical | 古いrecordを完全表示できない     | explicit historical limitation、silent current fallback禁止 |
 
-これらをGeneric Emptyへ統合しない。
+これらをGeneric Emptyへ統合しません。
 
 ## 10. Product State to UI flow
 
@@ -150,11 +158,11 @@ flowchart LR
     U -. stateを推測しない .-> B
 ```
 
-AnalysisJob `failed`、Partial Result、Forbidden Resource、No AnalysisはProduct semanticsを持つ。UI mapperは意味をgeneric cardや0/emptyへ潰さない。
+AnalysisJob `failed`、Partial Result、Forbidden Resource、No AnalysisはProduct semanticsを持ちます。UI mapperは意味をgeneric cardや0/emptyへ潰しません。
 
 ## 11. Accessibility fundamentals
 
-Accessibilityは、障害の有無にかかわらず、できるだけ多くのUserが情報と操作へ到達できる設計である。
+Accessibilityは、障害の有無にかかわらず、できるだけ多くのUserが情報と操作へ到達できる設計です。
 
 Panoptes v1 baseline:
 
@@ -169,11 +177,11 @@ Panoptes v1 baseline:
 - Not color-only
 - Appropriate live feedback
 
-Accessibilityは完成後に上から追加する装飾ではなく、Component Contractの一部である。
+Accessibilityは完成後に上から追加する装飾ではなく、Component Contractの一部です。
 
 ## 12. Semantic HTML
 
-意味に合うnative elementを優先する。
+意味に合うnative elementを優先します。
 
 - `button`: action
 - `a`: navigation
@@ -183,26 +191,26 @@ Accessibilityは完成後に上から追加する装飾ではなく、Component 
 - `form` / `label` / native control
 - table/list/dialog等のsemantic structure
 
-Native semanticsをARIAで再実装しない。ARIAは不足する名前・state・relationshipを補うために使い、native behaviorの代替shortcutにしない。
+標準HTML要素が持つ意味や操作を、ARIAで作り直しません。ARIAは不足する名前・状態・関係を補うために使い、標準の操作を省略する手段にはしません。
 
 ### Heading structure
 
-Headingはvisual sizeではなくdocument hierarchyを表す。`h1/h2/h3`を見た目都合だけで選ばない。Visual typographyはTokenで、document levelはHTML structureで管理する。
+Headingはvisual sizeではなくdocument hierarchyを表します。`h1/h2/h3`を見た目都合だけで選びません。Visual typographyはTokenで、document levelはHTML structureで管理します。
 
 ## 13. Keyboard and focus
 
-Pointerで可能な操作は原則keyboardでも可能にする。
+Pointerで可能な操作は原則keyboardでも可能にします。
 
 - Tab: focus移動
 - Enter/Space: control patternに応じたactivation
 - Escape: dismissible dialog/menu等で適切にclose
 - Arrow keys: Tabs/menu等の標準widget patternで必要な場合
 
-Custom widgetではnative patternまたは標準interaction modelを理解する。
+Custom widgetではnative patternまたは標準interaction modelを理解します。
 
-Responsive visual reorder時もDOM/focus orderを不自然にしない。
+Responsive visual reorder時もDOM/focus orderを不自然にしません。
 
-Modal/Dialogではfocus entry、必要なcontainment、close後のtriggerへのfocus returnを考慮する。新しいUI frameworkは本Moduleで導入しない。
+Modal/Dialogではfocus entry、必要なcontainment、close後のtriggerへのfocus returnを考慮します。新しいUI frameworkは本Moduleで導入しません。
 
 ## 14. Accessibility responsibility flow
 
@@ -216,15 +224,15 @@ flowchart LR
     H --> K --> N --> V --> Q
 ```
 
-一つだけ満たしてもAccessibility完了ではない。
+一つだけ満たしてもAccessibility完了ではありません。
 
 ## 15. Accessible name and label
 
-Interactive controlにはpurposeを表すaccessible nameが必要である。Icon-only close/menu buttonは、見た目のiconだけでなくscreen readerが理解できる名前を持つ。
+Interactive controlにはpurposeを表すaccessible nameが必要です。Icon-only close/menu buttonは、見た目のiconだけでなくscreen readerが理解できる名前を持ちます。
 
-同じ「詳細」だけではcontextを失う場合、対象を含むnameを検討する。`aria-label`は必要時に使い、visible text/native associationを置き換えるdefaultにしない。
+同じ「詳細」だけではcontextを失う場合、対象を含むnameを検討します。`aria-label`は必要時に使い、visible text/native associationを置き換えるdefaultにしません。
 
-Inputにはprogrammatically associated labelを持たせる。Placeholderは入力後に消え、constraint/error relationshipも表せないためlabelの代替にしない。
+Inputには、HTML上で関連付けられたlabelを設けます。Placeholderは入力後に消え、制約やerrorとの関係も表せないため、labelの代わりにしません。
 
 ## 16. Contrast, color, target size
 
@@ -236,13 +244,13 @@ FS-08 v1 internal baseline:
 - Primary touch control: `44 × 44 CSS px`以上をdefault。
 - Dense/inline control: `24 × 24 CSS px`以上、または同等target spacingと例外record。
 
-Tokenが存在するだけでcontrast適合を証明しない。Actual valuesを実測する。
+Tokenが存在するだけでcontrast適合を証明しません。Actual valuesを実測します。
 
-Error、Success、Warning、Selected、Score等を赤/緑/黄などの色だけで示さず、text、icon、label、pattern、positionを併用する。
+Error、Success、Warning、Selected、Score等を赤/緑/黄などの色だけで示さず、text、icon、label、pattern、positionを併用します。
 
 ## 17. Reduced motion
 
-Motionはfeedback、hierarchy、transitionの理解を助ける場合だけ使用する。
+Motionはfeedback、hierarchy、transitionの理解を助ける場合だけ使用します。
 
 - Motion Tokenを利用する。
 - `prefers-reduced-motion`を尊重する。
@@ -263,7 +271,7 @@ Motionはfeedback、hierarchy、transitionの理解を助ける場合だけ使�
 - Destructive Actionは動詞、対象、impactを明確にする。
 - Irreversible/重大な場合だけproportional confirmationを使い、可能ならundo/recoveryを優先する。
 
-Frontend validationはimmediate UX feedback、Rails validationはBusiness truthである。
+Frontend validationはimmediate UX feedback、Rails validationはBusiness truthです。
 
 ```text
 Frontend valid != Server validation unnecessary
@@ -278,39 +286,39 @@ Frontend valid != Server validation unnecessary
 | Banner / Page state | persistent warning、partial、unavailable、page-wide issue | condition解消まで残しimpact/actionを示す                   |
 | Blocking dialog     | continuation不能、重大decision、destructive confirmation  | focus management、primary/secondary action、dismiss policy |
 
-Urgency、persistence、recoverability、required actionでchannelを選ぶ。全ErrorをToastや同じred bannerにしない。
+通知方法は、緊急度、表示を残す必要性、復旧できるかどうか、ユーザーの操作が必要かどうかで選びます。すべてのErrorをToastや同じ赤いbannerで表示しません。
 
-Live feedbackではurgent errorとpolite statusを使い分け、同じmessageを重複announcementしない。
+Live feedbackではurgent errorとpolite statusを使い分け、同じmessageを重複announcementしません。
 
 ## 20. Empty, Error, Partial, Historical
 
 ### Empty
 
-No Analysis Yet、Search Result Empty、No Permission、Resource Missing、Failed Loadは意味が違う。正常な0件だけをEmptyとして扱い、ForbiddenやErrorを隠さない。
+まだ分析していない状態、検索結果が0件の状態、権限不足、resourceの不存在、読み込み失敗は、それぞれ意味が異なります。正常な0件だけをEmptyとして扱い、ForbiddenやErrorを隠しません。
 
 ### Error
 
-Recoverable、Blocking、Field-specific、Unavailable、Forbidden、System Failureを区別し、scopeとrecoveryを示す。Provider/raw errorや機密情報を露出しない。
+復旧可能なerror、処理を続けられないerror、入力項目固有のerror、利用不能、権限不足、System障害を区別します。影響する範囲と復旧方法を示し、Providerの生のerrorや機密情報は表示しません。
 
 ### Partial / Limited
 
-M18/PD-04に従い、limitation、available information、unavailable information、coverage、next actionを示す。Full Resultの見た目だけ流用して意味を隠さない。
+M18/PD-04に従い、limitation、available information、unavailable information、coverage、next actionを示します。Full Resultの見た目だけ流用して意味を隠しません。
 
 ### Unsupported Historical
 
-M15に従い、古いSnapshotを完全表示できない場合はexplicit historical stateまたはview-only limitationを示す。Current dataへsilent fallbackしない。
+M15に従い、古いSnapshotを完全表示できない場合はexplicit historical stateまたはview-only limitationを示します。Current dataへsilent fallbackしません。
 
 ## 21. Responsive and dense UI accessibility
 
-M21のResponsive adaptationでは、content hide、alternative navigation、DOM/focus order、local scroll、label visibilityを確認する。MobileでError、Result limitation、唯一のaction/navigationを消さない。
+M21のResponsive adaptationでは、content hide、alternative navigation、DOM/focus order、local scroll、label visibilityを確認します。MobileでError、Result limitation、唯一のaction/navigationを消しません。
 
-Table/Chart/Radar等はvisual representationだけに依存せず、必要に応じてlabel、text summary、data table、keyboard reachability、semantic alternativeを検討する。
+Table/Chart/Radar等はvisual representationだけに依存せず、必要に応じてlabel、text summary、data table、keyboard reachability、semantic alternativeを検討します。
 
-Local scrollはkeyboard/touchで到達でき、overflow cueとvisible focusを持つ。
+Local scrollはkeyboard/touchで到達でき、overflow cueとvisible focusを持ちます。
 
 ## 22. Component responsibility
 
-| Category          | Accessibility responsibility                                                     |
+| 分類              | Accessibilityの責務                                                              |
 | ----------------- | -------------------------------------------------------------------------------- |
 | Primitive         | minimal stable native/accessible contract                                        |
 | UI / Presentation | rendering、name/label、keyboard/focus、presentation interaction                  |
@@ -318,13 +326,13 @@ Local scrollはkeyboard/touchで到達でき、overflow cueとvisible focusを�
 | Feature           | use-case orchestration、Product state mapping、loading/error/action coordination |
 | Layout / Page     | landmarks、major reading order、navigation、responsive content priority          |
 
-Accessibilityを「後から別layerが追加するもの」にしない。各ownerが自分のcontract内で担う。
+Accessibilityを「後から別layerが追加するもの」にしません。各ownerが自分のcontract内で担う。
 
 ## 23. Token / Tailwind compliance
 
-M19/M20に従い、Semantic Token、semantic utility、state/responsive utilityを使う。Hardcoded colorだけでsemantic stateを表現しない。
+M19/M20に従い、Semantic Token、semantic utility、state/responsive utilityを使います。Hardcoded colorだけでsemantic stateを表現しません。
 
-Token/Tailwindはcontrast、focus style、target sizing等を支援できるが、native semantics、keyboard behavior、ARIA、state mappingを自動で提供しない。
+Token/Tailwindは、contrast、focusの見た目、操作対象のsizeなどを支援できます。ただし、HTMLの意味、keyboard操作、ARIA、Product状態との対応付けまで自動的に提供するわけではありません。
 
 ```text
 Token/Tailwind used != accessible
@@ -332,7 +340,7 @@ Token/Tailwind used != accessible
 
 ## 24. Exception process
 
-UI Regulation例外には次を記録する。
+UI Regulation例外には次を記録します。
 
 ```text
 Exception ID
@@ -348,7 +356,7 @@ Review date or trigger
 Removal criteria where temporary
 ```
 
-Temporary例外は期限/review triggerなしに承認しない。Permanent例外もToken、Product、Accessibility、Browser Contract変更時に再審査する。
+Temporary例外は期限/review triggerなしに承認しません。Permanent例外もToken、Product、Accessibility、Browser Contract変更時に再審査します。
 
 ```text
 One-off exception != new standard
@@ -356,7 +364,7 @@ One-off exception != new standard
 
 ## 25. Review process
 
-新規または大幅変更UIは次を確認する。
+新規または大幅変更UIは次を確認します。
 
 1. Taxonomy、owner、state/command boundary。
 2. Canonical Component検索とreuse/non-reuse理由。
@@ -372,11 +380,11 @@ Review result:
 - `PASS_WITH_TRACKED_EXCEPTION`
 - `BLOCKED`
 
-Product state/meaningが不明ならUIで推測せずProduct/Backend ownerへ戻す。
+Product state/meaningが不明ならUIで推測せずProduct/Backend ownerへ戻します。
 
 ## 26. Verification boundary
 
-このModuleはConcept/Contract教材である。実際のconformanceには次が必要になる。
+このModuleはConcept/Contract教材です。実際のconformanceには次が必要になります。
 
 - keyboard test
 - screen reader review
@@ -424,11 +432,11 @@ Source pattern exists   != Runtime behavior verified
 - Field errorならfieldへ、page-wide issueならBanner/Page stateへ配置する。
 - Raw provider detailを露出せず、retry/recoveryを示す。
 
-これはinteraction contractの説明であり、正式なUI redesignではない。
+これはinteraction contractの説明であり、正式なUI redesignではありません。
 
 ## 28. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope                                                                                                                                                 |
+| 分類           | Confirmed scope                                                                                                                                                 |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | CURRENT        | Sourceにはnative links/buttons/inputs、labels、`aria-*`、focus style、Toast、Tabs、state UI、SVG labels等の良いpatternとgapが混在する。                         |
 | CURRENT caveat | Source reviewだけでkeyboard、screen reader、contrast、target size、reduced motion、Responsive viewportの実動作は証明できない。全UIのRegulation適合宣言はない。  |
@@ -439,7 +447,7 @@ Source pattern exists   != Runtime behavior verified
 
 全UI監査ではなく、FS-08で限定確認済みの12 examplesを教材上で再利用した。
 
-| Source                                    | Confirmed semantic/interaction strength                      | Accessibility concern / Target                                | Status                     |
+| Source                                    | 確認できた意味・操作上の長所                                 | Accessibilityの課題・目標                                     | 状態                       |
 | ----------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------- | -------------------------- |
 | `PanoptesSiteHeader.svelte`               | semantic nav/link/button、`aria-expanded`、focus-visible     | compact時の代替navigation未証明                               | CURRENT partial            |
 | `LandingHeroPrimaryVisual.svelte`         | SVG title/descriptionとlabel association                     | fixed scale、motion/reduced-motion、contrast未検証            | verify later               |
@@ -454,7 +462,7 @@ Source pattern exists   != Runtime behavior verified
 | `StrategyAnalysisRoadmapPhaseCard.svelte` | native button、`aria-pressed`                                | dense keyboard/target/contrast                                | verify later               |
 | `SelfAnalysisDualRingGauge.svelte`        | scoreをaccessible labelへ含む                                | graphic role、detail alternative、color-only risk             | verify/remediate           |
 
-これはSource上のpattern/gap確認であり、runtime accessibility conformanceではない。
+これはSource上のpattern/gap確認であり、runtime accessibility conformanceではありません。
 
 ## 30. Common misunderstandings
 
@@ -492,13 +500,13 @@ Source pattern exists   != Runtime behavior verified
 
 ### A. Knowledge check
 
-1. UI RegulationとVisual Style Guideの違いを説明せよ。
-2. Visual stateとprogrammatic stateの違いを説明せよ。
-3. Documentation completionとAccessibility verificationの違いを説明せよ。
+1. UI RegulationとVisual Style Guideの違いを説明してください。
+2. Visual stateとprogrammatic stateの違いを説明してください。
+3. Documentation completionとAccessibility verificationの違いを説明してください。
 
 ### B. Semantic element exercise
 
-次をButton / Link / Native form control / generic containerへ分類せよ。
+次をButton / Link / Native form control / generic containerへ分類してください。
 
 1. 別routeへ移動する「詳細」。
 2. Modalを開く「詳細」。
@@ -507,11 +515,11 @@ Source pattern exists   != Runtime behavior verified
 
 ### C. State exercise
 
-Hover、Focus、Pressed、Selected、Disabled、Loadingについてtemporary/persistent、programmatic state、required feedbackを説明せよ。
+Hover、Focus、Pressed、Selected、Disabled、Loadingについてtemporary/persistent、programmatic state、required feedbackを説明してください。
 
 ### D. Accessibility review
 
-次の問題を検出せよ。
+次の問題を検出してください。
 
 1. Icon-only buttonにnameがない。
 2. Focus outlineを削除し代替がない。
@@ -521,15 +529,15 @@ Hover、Focus、Pressed、Selected、Disabled、Loadingについてtemporary/per
 
 ### E. Form exercise
 
-Submit FormのValidation Error、Loading、Success、Server Errorについて、button、field、focus、feedback、announcementを設計せよ。
+Submit FormのValidation Error、Loading、Success、Server Errorについて、button、field、focus、feedback、announcementを設計してください。
 
 ### F. Empty/Error/Partial exercise
 
-No Analysis、0 Search Results、Forbidden、Failed Load、Partial Result、Unsupported Historicalを適切なUI stateへ分類せよ。
+No Analysis、0 Search Results、Forbidden、Failed Load、Partial Result、Unsupported Historicalを適切なUI stateへ分類してください。
 
 ### G. Responsive accessibility
 
-Mobileでnavigation linkをhideし、Cardをvisual reorderし、Tabsをlocal scrollへ変える時に必要な確認を挙げよ。
+Mobileでnavigation linkをhideし、Cardをvisual reorderし、Tabsをlocal scrollへ変える時に必要な確認を挙げてください。
 
 ### H. Violation detection
 
@@ -546,13 +554,13 @@ Mobileでnavigation linkをhideし、Cardをvisual reorderし、Tabsをlocal scr
 
 ### I. Architecture explanation
 
-「なぜAccessibilityをUI完成後の追加作業ではなくComponent Contractの一部として扱うのか」を、semantics、interaction、reuse、remediation costの観点から説明せよ。
+「なぜAccessibilityをUI完成後の追加作業ではなくComponent Contractの一部として扱うのか」を、semantics、interaction、reuse、remediation costの観点から説明してください。
 
 ## 33. Answers / explanation guide
 
 ### A. Knowledge check
 
-UI Regulationはvisualだけでなくinteraction、state、Accessibility、reuse、exception/reviewを含む。Visual stateは見た目、programmatic stateはbrowser/assistive technology/interactionが理解する意味。Documentationは期待Contractを示すが、runtime keyboard/screen reader/contrast/browser behaviorを証明しない。
+UI Regulationはvisualだけでなくinteraction、state、Accessibility、reuse、exception/reviewを含む。Visual stateは見た目、programmatic stateはbrowser/assistive technology/interactionが理解する意味。Documentationは期待Contractを示すが、runtime keyboard/screen reader/contrast/browser behaviorを証明しません。
 
 ### B. Semantic element exercise
 
@@ -560,31 +568,31 @@ UI Regulationはvisualだけでなくinteraction、state、Accessibility、reuse
 
 ### C. State exercise
 
-Hover/Pressedは主にtemporary、Focusはcurrent keyboard target、Selectedはpersistent choice、Disabledはoperation unavailable、Loadingはprocessing中である。Selected/Disabled/Loading等はappearanceだけでなくcontrol patternに合うstate/behaviorを持つ。
+Hover/Pressedは主にtemporary、Focusはcurrent keyboard target、Selectedはpersistent choice、Disabledはoperation unavailable、Loadingはprocessing中です。Selected/Disabled/Loading等はappearanceだけでなくcontrol patternに合うstate/behaviorを持ちます。
 
 ### D. Accessibility review
 
-順にaccessible name欠落、visible focus欠落、color-only violation、native semantics/keyboard欠落、associated label欠落である。
+順にaccessible name欠落、visible focus欠落、color-only violation、native semantics/keyboard欠落、associated label欠落です。
 
 ### E. Form exercise
 
-Validation Errorはfield associationとfocus strategy、Loadingは二重submit防止とstatus、Successはappropriate channelと次state、Server ErrorはRails responseをsafe mappingしfield/inline/bannerへscopeに応じ配置する。
+Validation Errorはfield associationとfocus strategy、Loadingは二重submit防止とstatus、Successはappropriate channelと次state、Server ErrorはRails responseをsafe mappingしfield/inline/bannerへscopeに応じ配置します。
 
 ### F. Empty/Error/Partial exercise
 
-No Analysisは専用state、0 Resultsだけがnormal Empty、Forbiddenはaccess state、Failed LoadはError、Partialはlimitation付きResult、Unsupported Historicalはexplicit historical compatibility state。相互に潰さない。
+No Analysisは専用state、0 Resultsだけがnormal Empty、Forbiddenはaccess state、Failed LoadはError、Partialはlimitation付きResult、Unsupported Historicalはexplicit historical compatibility state。相互に潰しません。
 
 ### G. Responsive accessibility
 
-同じdestinationへの代替navigation、DOM/focus/reading order、hidden content semantics、active Tab reachability、keyboard/touch local scroll、overflow cue、visible focusを確認する。
+同じdestinationへの代替navigation、DOM/focus/reading order、hidden content semantics、active Tab reachability、keyboard/touch local scroll、overflow cue、visible focusを確認します。
 
 ### H. Violation detection
 
-順にnative semantics欠落、focus欠落、label欠落、color-only、disabled semantics欠落、Product state誤表現、limitation隠蔽、navigation到達不能、feedback channel不適切、verification不在である。
+順にnative semantics欠落、focus欠落、label欠落、color-only、disabled semantics欠落、Product state誤表現、limitation隠蔽、navigation到達不能、feedback channel不適切、verification不在です。
 
 ### I. Architecture explanation
 
-Semantic element、keyboard behavior、name/stateはComponentの構造とinteractionへ組み込まれる。後付けではAPI/markup/state contractを壊して修正するcostが高く、同じ欠陥がreuse先へ拡散する。Accessible contractをPrimitive/UIの初期責務にすれば、一貫したbehaviorを共有しFeatureはProduct state mappingへ集中できる。
+Semantic element、keyboard behavior、name/stateはComponentの構造とinteractionへ組み込まれる。後付けではAPI/markup/state contractを壊して修正するcostが高く、同じ欠陥がreuse先へ拡散します。Accessible contractをPrimitive/UIの初期責務にすれば、一貫したbehaviorを共有しFeatureはProduct state mappingへ集中できます。
 
 ## 34. Completion criteria
 
@@ -601,13 +609,13 @@ Semantic element、keyboard behavior、name/stateはComponentの構造とinterac
 |   9 | Repository mapping + two diagrams included      | `PASS` |
 |  10 | Exercises + answers included                    | `PASS` |
 
-M22 authoring result: `10 / 10 PASS`。教材完成はAccessibility conformance、browser/keyboard/screen reader実測、contrast/target audit、UI remediationの完成を意味しない。
+M22 authoring result: `10 / 10 PASS`。教材完成はAccessibility conformance、browser/keyboard/screen reader実測、contrast/target audit、UI remediationの完成を意味しません。
 
 ## 35. M23 handoff
 
 Recommended next phase: `TB-24 — Module 23: Security Fundamentals`。
 
-M23ではFrontend/BFF/Rails/Workerのtrust boundary、least privilege、secret、input/output validation、CSRF/XSS/SSRF、dependency/privacy/data handlingを扱う。Security auditやSource hardeningは教材作成と分離する。
+M23ではFrontend/BFF/Rails/Workerのtrust boundary、least privilege、secret、input/output validation、CSRF/XSS/SSRF、dependency/privacy/data handlingを扱います。Security auditやSource hardeningは教材作成と分離します。
 
 ## References
 

@@ -7,9 +7,9 @@ Prerequisite: `M01 — Panoptes Overall Architecture`, `M02 — Svelte / SvelteK
 Parent: [Panoptes Technical Bootcamp](../panoptes-technical-bootcamp.md)  
 Primary Standard: [Frontend Structure Policy](../../architecture/frontend-structure-policy.md)
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. Component Taxonomyがdirectory整理ではなく、責務と依存を揃えるcontractである理由。
 2. Panoptesの8つのCanonical Category。
@@ -19,13 +19,21 @@ Primary Standard: [Frontend Structure Policy](../../architecture/frontend-struct
 6. Composite、UI、Primitive、Previewの違い。
 7. `PanoptesShellPage`がLayoutではなくFeature Orchestratorである理由。
 
-Taxonomy自体はFS-02で承認済みである。M03は再設計をせず、既存contractをコード読解に使える形へ教材化する。
+Taxonomy自体はFS-02で承認済みです。M03は再設計をせず、既存contractをコード読解に使える形へ教材化します。
+
+## 用語ガイド
+
+- **Taxonomy（分類体系）:** Componentを見た目ではなく、主な役割に基づいて分類するための共通ルール。
+- **Primary Category:** 一つのComponentへ割り当てる主分類。複数の性質があっても、最も重要な責務で決める。
+- **Responsibility（責務）:** そのComponentが決定・保持・実行してよい仕事の範囲。
+- **Contract（契約）:** 入力、出力、許される依存、禁止事項について、利用側と実装側が共有する約束。
+- **Reuse scope（再利用範囲）:** 一つのFeature内だけで使うか、複数Featureから共用できるかという適用範囲。
 
 ## 2. Component Taxonomyとは何か
 
-Component Taxonomyは、Frontendの要素を「何を所有し、何へ依存してよいか」で分類する共通語彙である。
+Component Taxonomyは、Frontendの要素を「何を管理・決定し、何へ依存してよいか」で分類する共通の用語体系です。
 
-分類の目的はlabelを付けることではない。次の判断を安定させることにある。
+分類の目的はlabelを付けることではありません。次の判断を安定させることにあります。
 
 - stateやcommandをどこへ置くか。
 - どの方向のimportを許可するか。
@@ -34,17 +42,17 @@ Component Taxonomyは、Frontendの要素を「何を所有し、何へ依存し
 - 同じ見た目のComponentをshared化してよいか。
 - Route、Layout、Feature、presentationを混同していないか。
 
-同じ`.svelte` fileでも責務は異なる。数行のRoute Entryと数百行のFeature Orchestratorを、単に「Svelte Component」とだけ呼ぶと設計上の決定権が見えなくなる。
+同じ`.svelte` ファイルでも、担当する役割は異なります。数行のRoute Entryと数百行のFeature Orchestratorを、どちらも単に「Svelte Component」と呼ぶと、何を決める権限があるのかが見えなくなります。
 
 ### Primary Categoryは一つ
 
-各Componentにはprimary responsibilityに基づくCategoryを一つ付ける。`domain-specific`、`cross-feature`、`route-family`、`preview-only`等はscopeやmodeを補足するqualifierであり、Primary Categoryを二重化しない。
+各Componentには、主な責務に基づくCategoryを一つ割り当てます。`domain-specific`、`cross-feature`、`route-family`、`preview-only`などは、適用範囲や利用形態を補足する属性です。これらを追加しても、Primary Categoryを複数にするわけではありません。
 
-`Domain-specific reusable`は独立Categoryではない。たとえばStrategy domain内で再利用されるComponentでも、Primary CategoryはFeature、Composite、UIのいずれかである。
+`Domain-specific reusable`は独立Categoryではありません。たとえばStrategy domain内で再利用されるComponentでも、Primary CategoryはFeature、Composite、UIのいずれかです。
 
 ## 3. Panoptes Canonical Taxonomy
 
-Canonical Primary Categoryは次の8種である。
+Canonical Primary Categoryは次の8種です。
 
 ```text
 Route Entry
@@ -58,7 +66,7 @@ Layout / Shell wraps Page Entry
 Preview composes pure surfaces and deterministic fixtures
 ```
 
-| Category          | 一言で表すと                                     |
+| 分類              | 一言で表すと                                     |
 | ----------------- | ------------------------------------------------ |
 | Route Entry       | SvelteKitのURL/data boundary                     |
 | Page Entry        | Route contextとpage compositionの接続owner       |
@@ -73,7 +81,7 @@ Preview composes pure surfaces and deterministic fixtures
 
 ### 4.1 Contract overview
 
-| Category          | Purpose                            | Owns                                                                                    | Must not own                                                            | Allowed dependencies                                         | Typical state                  | Reuse scope             | Representative examples                                         |
+| 分類              | 目的                               | 担当すること                                                                            | 担当してはいけないこと                                                  | 許可する依存先                                               | 主に扱う状態                   | 再利用範囲              | 代表例                                                          |
 | ----------------- | ---------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------ | ----------------------- | --------------------------------------------------------------- |
 | Route Entry       | URL/data framework boundary        | typed route data/params forwarding、entry selection                                     | use-case orchestration、raw fetch、business mapping                     | generated route types、Page Entry                            | route dataのみ                 | 1 URL contract          | `src/routes/+page.svelte`、`src/routes/app/+page.svelte`        |
 | Page Entry        | routeとfeature compositionを接続   | route context注入、page-level composition、必要なcommand entry                          | raw transport、canonical business rule                                  | Feature、Composite、UI、Primitive                            | minimal page UI                | route family            | `MarketingLandingPage`、`PanoptesShellEntryPage`                |
@@ -86,13 +94,13 @@ Preview composes pure surfaces and deterministic fixtures
 
 ### 4.2 なぜ責務を分けるのか
 
-上位CategoryほどURL、page、use case等の具体的contextを知る。下位Categoryほどpropsとpresentation contractに限定される。この勾配を守ると、下位Componentが別のFeatureからも安全に利用でき、business changeがUI末端へ拡散しにくい。
+上位Categoryほど、URL、page、use caseなどの具体的な事情を扱います。下位Categoryが扱う範囲は、propsと表示上の契約へ絞られます。この依存関係を守ると、下位Componentを別のFeatureでも安全に利用でき、業務上の変更がUIの末端まで広がりにくくなります。
 
-Business LogicのSource of TruthはRailsである。Featureであっても、Frontendが所有できるのはpresentation logic、local interaction、composition、display-safe mapping、typed command invocationまでである。
+Business Logicの正本はRailsです。Featureであっても、Frontendが担当できるのは、表示上の判断、局所的な操作、Componentの構成、安全に表示できる形式への変換、型付きcommandの呼び出しまでです。
 
 ## 5. Route Entry
 
-Route EntryはSvelteKitがURLへ結び付けるframework boundaryである。
+Route EntryはSvelteKitがURLへ結び付けるframework boundaryです。
 
 ```text
 src/routes/**/+page.svelte
@@ -112,11 +120,11 @@ src/routes/**/+page.svelte
 - large feature markup。
 - business response mappingやformula。
 
-`src/routes/+page.svelte`はroot layout dataの`authenticated`を`MarketingLandingPage`へ渡す。`src/routes/app/+page.svelte`は`activeOrganizationId`をApp Page Entryへ渡す。薄いことは欠点ではない。URL/data contractを持つため、透明component wrapperとは別物である。
+`src/routes/+page.svelte`はroot layout dataの`authenticated`を`MarketingLandingPage`へ渡します。`src/routes/app/+page.svelte`は`activeOrganizationId`をApp Page Entryへ渡します。薄いことは欠点ではありません。URL/data contractを持つため、透明component wrapperとは別物です。
 
 ## 6. Page Entry
 
-Page EntryはRoute Entryから受けたcontextを、Featureやpage-level compositionへ接続する。
+Page EntryはRoute Entryから受けたcontextを、Featureやpage-level compositionへ接続します。
 
 ### Owns
 
@@ -127,13 +135,13 @@ Page EntryはRoute Entryから受けたcontextを、Featureやpage-level composi
 
 ### Featureとの違い
 
-Page Entryの変更理由は「このpageをどう構成するか」。Featureの変更理由は「このuse caseをどう遂行するか」である。
+Page Entryの変更理由は「このpageをどう構成するか」。Featureの変更理由は「このuse caseをどう遂行するか」です。
 
-`MarketingLandingPage`は3つのmarketing URLが共有するHeader、Primary Hero、Secondary Heroのpage composition ownerなのでPage Entryである。`PanoptesShellEntryPage`はroute input/default fallbackをShell Featureへ接続するためPage Entryである。どちらもcontroller lifecycleやbusiness command群を所有しない。
+`MarketingLandingPage`は3つのmarketing URLが共有するHeader、Primary Hero、Secondary Heroのpage composition ownerなのでPage Entryです。`PanoptesShellEntryPage`はroute input/default fallbackをShell Featureへ接続するためPage Entryです。どちらもcontroller lifecycleやbusiness command群を所有しません。
 
 ## 7. Layout / Shell
 
-Layout / ShellはPageを包むpersistent structural compositionである。
+Layout / ShellはPageを包むpersistent structural compositionです。
 
 ### Owns
 
@@ -154,13 +162,13 @@ Layout / ShellはPageを包むpersistent structural compositionである。
 - **Framework `+layout.svelte`:** SvelteKit route treeのboundary。`src/routes`に置く。
 - **Reusable structural shell:** 複数pageで同じstructural frameを使うComponent。Targetでは`src/lib/layouts`。
 
-現行root Layoutはglobal CSS/headとchildrenを、App Layoutはpersistent Header、route-family spacing、`/app`だけのTop Heroを所有する。Feature state/controllerを持たない。
+現行root Layoutはglobal CSS/headとchildrenを、App Layoutはpersistent Header、route-family spacing、`/app`だけのTop Heroを所有します。Feature state/controllerを持ちません。
 
-`Shell`という名前はCategoryを保証しない。Use-case orchestrationを持つShellはFeatureになりうる。
+`Shell`という名前はCategoryを保証しません。Use-case orchestrationを持つShellはFeatureになり得ます。
 
 ## 8. Feature
 
-Featureは一つのuse caseまたは変更理由のFrontend orchestration ownerである。
+Featureは一つのuse caseまたは変更理由のFrontend orchestration ownerです。
 
 ### Owns
 
@@ -176,11 +184,11 @@ Featureは一つのuse caseまたは変更理由のFrontend orchestration owner�
 - canonical authorization/business rule。
 - 他Featureのprivate state。
 
-`PanoptesShellPage`はcontroller、複数store、Snapshot mapping、analysis/create/retry等のcallback wiringを所有する。`SignUpForm`はSignup controller、form/use-case state、submit/resend、navigation coordinationを所有する。どちらも見た目を構成するだけではなく、use caseを進めるためFeatureである。
+`PanoptesShellPage`はcontroller、複数store、Snapshot mapping、analysis/create/retry等のcallback wiringを所有します。`SignUpForm`はSignup controller、form/use-case state、submit/resend、navigation coordinationを所有します。どちらも見た目を構成するだけではなく、use caseを進めるためFeatureです。
 
 ## 9. Composite
 
-Compositeは複数のUI/childを一つのcohesive presentation sectionへまとめる。
+Compositeは、複数のUIや子Componentを、表示上の目的がまとまった一つのsectionへ組み合わせます。
 
 ### Owns
 
@@ -191,13 +199,13 @@ Compositeは複数のUI/childを一つのcohesive presentation sectionへまと�
 
 ### Featureとの違い
 
-Compositeはuse-case ownerではない。API、client、command、business transitionを実行せず、上位ownerから受けたdataとcallbackでchildを調整する。
+Compositeはuse-case ownerではありません。API、client、command、business transitionを実行せず、上位ownerから受けたdataとcallbackでchildを調整します。
 
-`SelfAnalysisOverviewPanel`はSummaryとEvidenceを並べる。`StrategyAnalysisRoadmapPhaseCard`はTaskListとStatusActionsを合成し、local selected表示とcallback forwardingを行う。後者がtask status callbackを持っていても、commandを自分でimport/executeしないためFeatureではない。
+`SelfAnalysisOverviewPanel`はSummaryとEvidenceを並べる。`StrategyAnalysisRoadmapPhaseCard`はTaskListとStatusActionsを合成し、local selected表示とcallback forwardingを行います。後者がtask status callbackを持っていても、commandを自分でimport/executeしないためFeatureではありません。
 
 ## 10. UI / Presentation
 
-UI / Presentationはprops中心のrenderingとlocal interactionを担当する。
+UI / Presentationはprops中心のrenderingとlocal interactionを担当します。
 
 ```text
 data/state: Parent -> UI
@@ -218,13 +226,13 @@ interaction intent: UI -> typed callback -> Owner
 - business mutationやauthorization。
 - canonical score formula/threshold。
 
-`PanoptesTabNav`はtabsとactive stateを受け、button clickを`onChange`で返す。`CompetitorAnalysisCompanyCard`はview modelを表示し、detail/compare intentをcallbackで返す。どちらもuse-caseの結果を決定しない。
+`PanoptesTabNav`はtabsとactive stateを受け、button clickを`onChange`で返します。`CompetitorAnalysisCompanyCard`はview modelを表示し、detail/compare intentをcallbackで返します。どちらもuse-caseの結果を決定しません。
 
 ## 11. Primitive
 
-PrimitiveはProduct/domain semanticsを持たない最小で安定したUI contractである。
+Primitiveは、Productや業務領域に固有の意味を持たない、最小限で安定したUI契約です。
 
-候補はgeneric button、input、icon wrapper等だが、見た目が小さいだけではPrimitiveにならない。
+候補はgeneric button、input、icon wrapper等だが、見た目が小さいだけではPrimitiveになりません。
 
 ### Required boundary
 
@@ -233,16 +241,16 @@ PrimitiveはProduct/domain semanticsを持たない最小で安定したUI contr
 - accessibility/native behaviorとToken適用が中心。
 - 複数consumerで同じsemantic/interaction contractが確認できる。
 
-FS-02の限定sampleではcanonicalな汎用Primitive正例を確認できなかった。
+FS-02の限定sampleではcanonicalな汎用Primitive正例を確認できませんでした。
 
 - `SignUpBtn`はdefault labelとAuth固有visual contractを持つため、現状はUI。
 - `AppLogo`はPanoptes brand asset/copyへ依存するため、現状はUI。
 
-Primitive Categoryは承認済みだが、空欄を埋めるために無理に抽出しない。Semantics-neutral contractと複数consumerが成立した時点で検討する。
+PrimitiveというCategoryは承認済みですが、分類の空欄を埋めるために無理に抽出しません。業務に固有の意味を持たない契約が定まり、複数の利用元が成立した時点で検討します。
 
 ## 12. Preview
 
-Previewはdeterministic fixture/presetを使い、Product surfaceを安定して見せるためのcompositionである。
+Previewはdeterministic fixture/presetを使い、Product surfaceを安定して見せるためのcompositionです。
 
 ### Owns
 
@@ -257,7 +265,7 @@ Previewはdeterministic fixture/presetを使い、Product surfaceを安定して
 - production mutation。
 - actual Organization scopeの推測。
 
-`AppTopDummy`と`AppResultsDummy`はpreset propsを`PanoptesAppShellDummy`へ渡すdeterministic compositionである。PreviewがActual Appとpure presentation surfaceを共有することは可能だが、runtime controllerへ接続してはいけない。
+`AppTopDummy`と`AppResultsDummy`はpreset propsを`PanoptesAppShellDummy`へ渡すdeterministic compositionです。PreviewがActual Appとpure presentation surfaceを共有することは可能だが、runtime controllerへ接続してはいけません。
 
 ## 13. Dependency direction
 
@@ -287,11 +295,11 @@ Preview
 - `Layout -> Feature controller/command`: route family lifecycleへuse caseが漏れる。
 - `Preview -> runtime controller/BFF`: deterministic previewがproduction side effectを持つ。
 
-上位から下位への依存でも、必要のない深いimportや他Feature内部へのdeep importは許可されない。依存方向は「何でもimportしてよい」リストではない。
+上位から下位への依存であっても、不要な内部ファイルのimportや、他Featureの内部実装へ直接入り込むimportは許可されません。依存方向の規則は、その方向なら何でもimportしてよいという意味ではありません。
 
 ## 14. Classification heuristic
 
-迷った場合は次の順で判定する。
+迷った場合は次の順で判定します。
 
 1. **Purpose:** このfileがなくなると、URL、page composition、persistent frame、use case、presentationのどれが失われるか。
 2. **Framework boundary:** `src/routes`でURL/data contractを持つか。持つならRoute EntryまたはFramework Layout候補。
@@ -302,11 +310,11 @@ Preview
 7. **Runtime mode:** deterministic fixture/previewか、actual runtimeか。
 8. **Reuse/semantics:** domain/brand copyを持つか、semantics-neutralか。利用回数では決めない。
 
-同率に見える場合、外部副作用とstate ownershipを持つ責務をprimaryにする。名前、行数、現在のdirectoryはevidenceにはなるが、決定理由にはしない。
+複数の分類が同じ程度に当てはまる場合は、外部への副作用や状態の管理責任を持つ役割を主分類にします。名前、行数、現在のdirectoryは判断材料にはなりますが、それだけで分類を決めません。
 
 ## 15. Ambiguous cases
 
-| Component                          | First impression | Actual responsibility                                             | Final classification     | Reasoning                                                     |
+| Component                          | First impression | Actual responsibility                                             | Final classification     | 判断の理由                                                    |
 | ---------------------------------- | ---------------- | ----------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------- |
 | `MarketingLandingPage`             | Composite        | Marketing route familyのHeader/Hero/page section owner            | **Page Entry**           | route contextを受け、page全体compositionを所有する            |
 | `PanoptesShellEntryPage`           | Feature wrapper  | route/default inputをShell Featureへ接続                          | **Page Entry**           | use-case controllerを持たず、Page→Feature boundaryになる      |
@@ -316,11 +324,11 @@ Preview
 
 ### Domain-specific reusable qualifier
 
-`StrategyAnalysisRoadmapPhaseCard`はPrimary CategoryがCompositeで、Reuse Scope QualifierがStrategy domain-specificである。`CompetitorAnalysisCompanyCard`はPrimaryがUIで、QualifierがCompetitor domain-specificである。Qualifierを付けてもFeature/API依存は許可されない。
+`StrategyAnalysisRoadmapPhaseCard`はPrimary CategoryがCompositeで、Reuse Scope QualifierがStrategy domain-specificです。`CompetitorAnalysisCompanyCard`はPrimaryがUIで、QualifierがCompetitor domain-specificです。Qualifierを付けてもFeature/API依存は許可されません。
 
 ## 16. Important correction — PanoptesShellPage
 
-`PanoptesShellPage`という名前だけを見ると、route familyを包むLayout/Shellに見える。しかし、実装責務は次の通りである。
+`PanoptesShellPage`という名前だけを見ると、route familyを包むLayout/Shellに見える。しかし、実装責務は次の通りです。
 
 - `createDefaultPanoptesShellController`を作成しmountする。
 - Project、analysis runtime、session、strategy、notification storeを購読する。
@@ -328,15 +336,15 @@ Preview
 - create/retry/confirm/select/update等のFeature interactionをcontrollerへ接続する。
 - `PanoptesShellMainSurface`へview stateとcallbacksを渡す。
 
-これはpersistent Header/navigation/children arrangementではなく、Panoptes analysis use caseのorchestrationである。したがってPrimary Categoryは**Feature Orchestrator**。
+これはpersistent Header/navigation/children arrangementではなく、Panoptes analysis use caseのorchestrationです。したがってPrimary Categoryは**Feature Orchestrator**。
 
-対照的に`src/routes/app/+layout.svelte`はHeader、family spacing、pathnameに基づくTop Hero、children arrangementを持ち、Feature commandを実行しないためLayoutである。
+対照的に`src/routes/app/+layout.svelte`はHeader、family spacing、pathnameに基づくTop Hero、children arrangementを持ち、Feature commandを実行しないためLayoutです。
 
-この訂正はTaxonomy変更ではない。旧exampleをname-based classificationからresponsibility-based classificationへ直したものである。
+この訂正はTaxonomy変更ではありません。旧exampleをname-based classificationからresponsibility-based classificationへ直したものです。
 
 ## 17. Directory connection
 
-| Category                   | Canonical placement                                                | Current state                                               |
+| 分類                       | 正式な配置先                                                       | 現行の状態                                                  |
 | -------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------- |
 | Route Entry                | `src/routes/**/+page.svelte`                                       | `CURRENT`                                                   |
 | Framework Layout           | `src/routes/**/+layout.svelte`                                     | `CURRENT`                                                   |
@@ -348,7 +356,7 @@ Preview
 | Primitive                  | `src/lib/ui/primitives`                                            | `TARGET`。directory未作成、canonical正例未確定              |
 | Preview                    | owning featureの`preview/fixtures`、dev exposureは`src/routes/dev` | `TARGET/PARTIAL`。現行Dummyはlegacy location                |
 
-DirectoryはTaxonomyを決めない。TaxonomyとBoundaryがplacementを決める。FS-04 targetは承認済みだが、migrationは未完了であり、M03ではfile移動を行わない。
+DirectoryはTaxonomyを決めません。TaxonomyとBoundaryがplacementを決めます。FS-04 targetは承認済みだが、migrationは未完了であり、M03ではfile移動を行いません。
 
 ## 18. Representative code mapping
 
@@ -367,13 +375,13 @@ DirectoryはTaxonomyを決めない。TaxonomyとBoundaryがplacementを決め�
 | Primitive boundary | `SignUpBtn.svelte`、`loop/AppLogo.svelte`                             | smallだがAuth/Brand semanticsがありUI                 |
 | Preview            | `AppTopDummy.svelte`、`AppResultsDummy.svelte`                        | deterministic preset composition                      |
 
-確認対象はこの限定sampleであり、全107 Componentの分類結果ではない。
+確認対象はこの限定sampleであり、全107 Componentの分類結果ではありません。
 
 ## 19. よくある誤分類
 
 ### 「名前にPageがあるのでPage Entry」
 
-Page Entryかはpage composition/route contextを所有するかで決める。Feature Orchestratorにも歴史的に`Page`名が残りうる。
+Page Entryかはpage composition/route contextを所有するかで決めます。Feature Orchestratorにも歴史的に`Page`名が残る可能性があります。
 
 ### 「Shellという名前なのでLayout」
 
@@ -381,27 +389,27 @@ Persistent structural shellならLayout。Controller/command/use-case stateを�
 
 ### 「複数Componentを使うのでFeature」
 
-Childを組み合わせるだけでcommandを持たなければCompositeかPage Entryの可能性がある。
+Childを組み合わせるだけでcommandを持たなければCompositeかPage Entryの可能性があります。
 
 ### 「2箇所で使うのでShared UI」
 
-利用回数ではなく、責務、Product semantics、lifecycle、interaction/accessibility contractが同じかで決める。
+利用回数ではなく、責務、Product semantics、lifecycle、interaction/accessibility contractが同じかで決めます。
 
 ### 「CallbackがあるのでFeature」
 
-UI/Compositeはcallbackでintentを返してよい。Callback先のcommandをownershipするかが境界になる。
+UI/Compositeはcallbackでintentを返してよい。Callback先のcommandをownershipするかが境界になります。
 
 ### 「Storeを使うので必ずFeature」
 
-Store利用だけでは分類できない。ただしShared UIがFeature storeを直接読むのは依存違反のsignalである。
+Store利用だけでは分類できません。ただしShared UIがFeature storeを直接読むのは依存違反のsignalです。
 
 ### 「ReusableなのでPrimitive」
 
-Domain-specific UIも再利用できる。Primitiveにはsemantics-neutralな最小contractが必要。
+Domain-specific UIも再利用できます。Primitiveにはsemantics-neutralな最小contractが必要です。
 
 ### 「現在ComponentsBaseにあるのでshared」
 
-`ComponentsBase`はlegacy bucket。現在の配置はcanonical responsibilityを保証しない。
+`ComponentsBase`はlegacy bucket。現在の配置はcanonical responsibilityを保証しません。
 
 ## 20. Practice
 
@@ -411,7 +419,7 @@ Domain-specific UIも再利用できる。Primitiveにはsemantics-neutralな最
 2. Route EntryとPage Entryの違いは何か。
 3. LayoutとFeatureのstate ownershipの違いは何か。
 4. Compositeがcallbackを持ってよいのにcommandを実行してはいけない理由は何か。
-5. UIが持てるstateと持てないstateを一つずつ挙げよ。
+5. UIが持てるstateと持てないstateを一つずつ挙げてください。
 6. Primitiveにdomain copyを置かない理由は何か。
 7. Previewがruntime BFFへ接続してはいけない理由は何か。
 8. Domain-specific reusableがPrimary Categoryではない理由は何か。
@@ -435,7 +443,7 @@ Domain-specific UIも再利用できる。Primitiveにはsemantics-neutralな最
 
 > `PanoptesShellPage`は多数のchildを包み、名前にもShell/Pageがある。それでもLayout/Page EntryではなくFeatureなのはなぜか。
 
-回答にはcontroller、store、command、lifecycle、persistent structureの違いを含める。
+回答にはcontroller、store、command、lifecycle、persistent structureの違いを含めます。
 
 ### 20.4 Design Exercise
 
@@ -476,7 +484,7 @@ Domain-specific UIも再利用できる。Primitiveにはsemantics-neutralな最
 
 ### 21.3 Reasoning回答例
 
-`PanoptesShellPage`は単にchildrenをpersistent frameへ配置するのではなく、Feature controllerを生成してmountし、Project・Analysis・Session・Strategy等のstoreを購読し、Snapshot view modelを導出し、create/retry/confirm/select commandをchild callbackへ接続する。これはAnalysis use caseのstateとlifecycleのownershipである。Layoutが持つべきHeader、family spacing、verified context配布、children arrangementとは変更理由が異なるため、名前にShell/PageがあってもFeature Orchestratorに分類する。
+`PanoptesShellPage`は単にchildrenをpersistent frameへ配置するのではなく、Feature controllerを生成してmountし、Project・Analysis・Session・Strategy等のstoreを購読し、Snapshot view modelを導出し、create/retry/confirm/select commandをchild callbackへ接続します。これはAnalysis use caseのstateとlifecycleのownershipです。Layoutが持つべきHeader、family spacing、verified context配布、children arrangementとは変更理由が異なるため、名前にShell/PageがあってもFeature Orchestratorに分類します。
 
 ### 21.4 Design Exercise回答
 
@@ -505,11 +513,11 @@ Domain-specific UIも再利用できる。Primitiveにはsemantics-neutralな最
 M03 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M04`
 
-このstatusは教材artifactの完成を示す。Learner assessment合格、全Component分類、Directory migration完了を意味しない。
+このstatusは教材artifactの完成を示します。Learner assessment合格、全Component分類、Directory migration完了を意味しません。
 
 ## 23. Handoff to M04
 
-次は`M04 — Feature / UI / Layout Boundary`。M03のCategoryを再定義せず、state、controller、command、callback、loading/error、Header/Hero/Shell、import方向を具体的なownership ruleとして学ぶ。
+次は`M04 — Feature / UI / Layout Boundary`。M03のCategoryを再定義せず、state、controller、command、callback、loading/error、Header/Hero/Shell、import方向を具体的なownership ruleとして学びます。
 
 ## References
 

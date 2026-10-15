@@ -5,9 +5,9 @@ Phase: `TB-09`
 Prerequisites: `M01`, `M02`, `M03`, `M04`, `M05`, `M06`, `M07`  
 Primary inputs: [Frontend Structure Policy](../../architecture/frontend-structure-policy.md), [Product Decision Register](../../product/product-decision-register.md)
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、PanoptesのRails API-only Backendについて次を説明・判断できる。
+このModuleを終えた学習者は、PanoptesのRails API-only Backendについて次の内容を説明し、判断できます。
 
 1. Rails/API-only/MVCの基本と、Panoptesで使われている構造を説明する。
 2. RailsをCanonical Business Decision Ownerとする理由を説明する。
@@ -16,11 +16,19 @@ Primary inputs: [Frontend Structure Policy](../../architecture/frontend-structur
 5. RailsとWorker、UsageとBilling、JobとSnapshotを区別する。
 6. Identity/OrganizationのCURRENTと、Analysis domainのTARGET/DEFERREDを区別する。
 
-本Moduleは既存Railsと承認済みProduct contractを教材化する。Backend architectureの再設計、全Model/Controller監査、Source変更は行わない。
+本Moduleは既存Railsと承認済みProduct contractを教材化します。Backend architectureの再設計、全Model/Controller監査、Source変更は行いません。
+
+## 用語ガイド
+
+- **Business Logic（業務ルール）:** 何を許可し、どの状態へ変更し、どの結果を正式とするかを決める規則。
+- **API-only Rails:** HTML画面の生成を中心にせず、API responseと業務処理を提供するRails構成。
+- **Application Authorization Authority:** 操作を許可するかをApplicationとして最終判断する主体。PanoptesではRailsが担う。
+- **Transaction（トランザクション）:** 関連する複数のDB更新を、まとめて成功または失敗させる仕組み。
+- **Persistence orchestration:** validationやauthorizationを通した業務状態を、どの順序で永続化するか調整すること。
 
 ## 2. Rails / API-only fundamentals
 
-Ruby on Railsはrouting、controller、model/Active Record、validation、migration、transaction、serialization/response等を組み合わせてserver applicationを構築するframeworkである。
+Ruby on Railsは、routing、controller、model/Active Record、validation、migration、transaction、応答形式への変換などを組み合わせて、Server applicationを構築するframeworkです。
 
 ### MVCをAPIとして読む
 
@@ -33,7 +41,7 @@ Ruby on Railsはrouting、controller、model/Active Record、validation、migrat
 | Migration / schema | DB structure、foreign key、index、constraint                | Identity/Organization boundaryのみCURRENT                     |
 | Response mapping   | Domain resultをAPI contractへ変換                           | CURRENTはcontroller hash + shared success/error envelope      |
 
-API-only modeはHTML page renderingを主目的にせず、JSON APIとserver-side business/persistence concernへ集中する。Panoptesの`ApplicationController < ActionController::API`がこのboundaryを示す。
+API-only modeは、HTML画面の描画を主目的とせず、JSON API、Server側の業務処理、永続化に集中する構成です。Panoptesでは、`ApplicationController < ActionController::API`がこの役割を示しています。
 
 ### API-onlyでもRailsがすること
 
@@ -45,7 +53,7 @@ API-only modeはHTML page renderingを主目的にせず、JSON APIとserver-sid
 - JSON response/error contract。
 - Queue/Workerへのbusiness orchestration（Target）。
 
-API-onlyは「薄いproxy」や「DB CRUDだけ」を意味しない。
+API-onlyは「薄いproxy」や「DB CRUDだけ」を意味しません。
 
 ## 3. Panoptes architecture position
 
@@ -61,7 +69,7 @@ Browser
   -> Worker
 ```
 
-Railsはこのflowの**Canonical Business Decision Owner**である。
+Railsはこのflowの**Canonical Business Decision Owner**です。
 
 ```text
 BFF decides:   requestをどう安全にRailsへ届けるか
@@ -69,7 +77,7 @@ Rails decides: operationを許可し、business stateをどう変えるか
 Worker does:   許可されたtechnical workをどう実行するか
 ```
 
-BFF route guardやFrontend validationは早期拒否・UX・transport protectionに役立つが、Rails authorization/business validationを置き換えない。
+BFF route guardやFrontend validationは早期拒否・UX・transport protectionに役立つが、Rails authorization/business validationを置き換えません。
 
 ## 4. Rails responsibility map
 
@@ -96,7 +104,7 @@ BFF route guardやFrontend validationは早期拒否・UX・transport protection
 
 ### Neighboring owners
 
-| Concern                          | Owner                                                            |
+| 確認する観点                     | 管理・決定の責任を持つ主体                                       |
 | -------------------------------- | ---------------------------------------------------------------- |
 | User interaction/presentation    | Frontend                                                         |
 | Cookie/session/safe proxy        | SvelteKit BFF                                                    |
@@ -107,7 +115,7 @@ BFF route guardやFrontend validationは早期拒否・UX・transport protection
 
 ## 5. CURRENT request lifecycle — Organization detail
 
-現Repositoryでend-to-endに確認できる代表readはOrganization detailである。
+現Repositoryでend-to-endに確認できる代表readはOrganization detailです。
 
 ```text
 SvelteKit BFF GET /api/panoptes/v1/organizations/:organization_id
@@ -137,11 +145,11 @@ SvelteKit BFF GET /api/panoptes/v1/organizations/:organization_id
 7. Controllerがauthorized resourceだけをJSON contractへ写像する。
 8. `ApplicationController`がrequest/correlation metadataとprivate no-storeを付ける。
 
-このflowはIdentity/Organization readのCURRENTであり、Project/AnalysisJobのproduction lifecycleが実装済みという証拠ではない。
+このflowはIdentity/Organization readのCURRENTであり、Project/AnalysisJobのproduction lifecycleが実装済みという証拠ではありません。
 
 ## 6. Rails Controller responsibility
 
-Rails ControllerはHTTPとbusiness use caseの入口である。
+Rails ControllerはHTTPとbusiness use caseの入口です。
 
 ### May own
 
@@ -160,7 +168,7 @@ Rails ControllerはHTTPとbusiness use caseの入口である。
 - 再利用すべきauthorization ruleの重複。
 - UI presentation wording/visual state。
 
-CURRENTのOrganizations controllerはqueryとsmall response mappingをaction/private methodで行う。規模が小さいため、この構造だけで不要なservice layerを発明する必要はない。Analysis開始のようにauthorization、usage、idempotency、Job creation、queue publishを跨ぐ場合は、Targetとして明示的use-case/service + transaction boundaryが必要になる。
+CURRENTのOrganizations controllerはqueryとsmall response mappingをaction/private methodで行います。規模が小さいため、この構造だけで不要なservice layerを発明する必要はありません。Analysis開始のようにauthorization、usage、idempotency、Job creation、queue publishを跨ぐ場合は、Targetとして明示的use-case/service + transaction boundaryが必要になります。
 
 ```text
 Small read: Controller + model scope can be sufficient
@@ -169,7 +177,7 @@ Complex write: Controller -> explicit use case/service -> transaction/models
 
 ## 7. Model responsibility
 
-Rails Modelは「DB rowをRuby objectにしただけ」とは限らない。CURRENT modelは次を持つ。
+Rails Modelは「DB rowをRuby objectにしただけ」とは限りません。CURRENT modelは次を持ちます。
 
 - Associations: User→Membership→Organization。
 - Enum vocabulary: status、role。
@@ -177,15 +185,15 @@ Rails Modelは「DB rowをRuby objectにしただけ」とは限らない。CURR
 - Domain constant: `ORGANIZATION_READ_ROLES`。
 - Small domain behavior: `system_admin?`、slug normalization。
 
-一方、Modelへapplication workflowをすべて詰めるのも適切ではない。複数aggregate、external system、queue、usage、auditを跨ぐoperationはuse-case/serviceとtransactionでcoordinateし、Modelはentity invariantとassociationを支える。
+一方、Modelへapplication workflowをすべて詰めるのも適切ではありません。複数aggregate、external system、queue、usage、auditを跨ぐoperationはuse-case/serviceとtransactionでcoordinateし、Modelはentity invariantとassociationを支えます。
 
-PostgreSQL constraintも重要だが、Model/API authorizationの代替ではない。Unique indexやforeign keyはdata integrityを守れても、「このactorがoperationを実行できるか」は判断できない。
+PostgreSQLの制約も重要ですが、ModelやAPIでの認可を代替するものではありません。Unique indexやforeign keyはデータの整合性を守れても、「この実行者がこの操作を行えるか」は判断できません。
 
 ## 8. Authentication and authorization boundary
 
 ### Terms
 
-| Term                    | Question                                 | CURRENT example                               |
+| Term                    | 確認する問い                             | CURRENT example                               |
 | ----------------------- | ---------------------------------------- | --------------------------------------------- |
 | Authentication          | 誰か                                     | Bearer JWT検証、Supabase subject→User mapping |
 | Authorization           | 何をしてよいか                           | Membership role、SystemRole、resource access  |
@@ -195,7 +203,7 @@ PostgreSQL constraintも重要だが、Model/API authorizationの代替ではな
 
 ### Current authorization pattern
 
-`OrganizationAuthorization`は`Current.user.organization_memberships.active`から対象Organization IDを検索する。Browser/BFFが送ったOrganization IDをそのままtrustしない。Read roleが必要な`OrganizationsController#show`ではguestを除くrole setも確認する。
+`OrganizationAuthorization`は`Current.user.organization_memberships.active`から対象Organization IDを検索します。Browser/BFFが送ったOrganization IDをそのままtrustしません。Read roleが必要な`OrganizationsController#show`ではguestを除くrole setも確認します。
 
 ### Target resource chain
 
@@ -207,11 +215,11 @@ Authenticated User
   -> Job-produced Snapshot/Evidence
 ```
 
-Railsはoperationごとにこのchainをresourceから辿り、requested ID、active context、DB ownership、role、current stateを検証する。BFF route guardを通ったことは、このchainの代わりにならない。
+Railsはoperationごとにこのchainをresourceから辿り、requested ID、active context、DB ownership、role、current stateを検証します。BFF route guardを通ったことは、このchainの代わりになりません。
 
 ## 9. Business rule ownership
 
-Business Ruleは、Product/domain上「何が許され、何を意味し、どの結果を成立させるか」を決める規則である。
+Business Ruleは、Productや業務領域において「何を許可し、各状態をどう解釈し、どの結果を正式なものとするか」を決める規則です。
 
 Panoptes examples:
 
@@ -224,7 +232,7 @@ Panoptes examples:
 - Usage entitlementを消費するか。
 - Snapshotをcurrent/Strategy sourceへ昇格できるか。
 
-Frontendで同じruleを表示hintとして計算する場合があっても、canonical decisionはRailsで再評価する。BFFはsession/transport contextを整えるが、plan eligibilityやJob outcomeを決めない。Workerはtechnical factsを返すが、Product outcomeへ確定しない。
+Frontendで同じruleを表示hintとして計算する場合があっても、canonical decisionはRailsで再評価します。BFFはsession/transport contextを整えるが、plan eligibilityやJob outcomeを決めません。Workerはtechnical factsを返すが、Product outcomeへ確定しません。
 
 ## 10. Canonical AnalysisJob state transition
 
@@ -251,7 +259,7 @@ Terminal outcomes:
 - `timed_out`
 - `partially_completed`
 
-これは承認済みbusiness contractであり、CURRENT Rails codeにはAnalysisJob model/endpoint/state machineは存在しない。
+これは承認済みbusiness contractであり、CURRENT Rails codeにはAnalysisJob model/endpoint/state machineは存在しません。
 
 ### Why Rails owns transitions
 
@@ -260,15 +268,15 @@ Terminal outcomes:
 - Worker retry/redeliveryをbusiness transitionの重複にしない。
 - Terminal outcomeをaudit可能に確定できる。
 
-Workerは`crawl completed`、`artifact uploaded`、`analysis failed`等のtechnical factを報告する。RailsがJob identity、attempt、current state、policy、result completenessを照合してbusiness stateをtransitionする。
+Workerは`crawl completed`、`artifact uploaded`、`analysis failed`など、処理上の事実を報告します。RailsはJobの識別子、試行、現在の状態、policy、結果の充足状況を照合し、正式な業務状態を遷移させます。
 
-Terminal Jobを同じidentityで`running`へ戻してreanalysisするのではなく、承認済みPD-04ではnew Job identityとlineageを使う。
+Terminal Jobを同じidentityで`running`へ戻してreanalysisするのではなく、承認済みPD-04ではnew Job identityとlineageを使います。
 
 ## 11. Partial / failed outcome
 
 PD-04の承認済みcontract:
 
-| Outcome               | Meaning                                                                                         | Snapshot baseline                                                     |
+| Outcome               | 意味                                                                                            | Snapshot baseline                                                     |
 | --------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
 | `completed`           | Required processingを完了しvalidated Product Resultが成立                                       | Snapshot作成可。Policyによりcurrent promotion可                       |
 | `partially_completed` | Usable validated Product Resultがあるがrequired processingの一部が未完了でlimitationsを説明可能 | Limited Snapshotは条件付き。自動current/Strategy source promotionなし |
@@ -276,13 +284,13 @@ PD-04の承認済みcontract:
 | `cancelled`           | Cancellation terminal reason                                                                    | 途中artifactとProduct Snapshotを分離                                  |
 | `timed_out`           | Timeout terminal reason                                                                         | 後からsilent partial rewriteしない                                    |
 
-`partially_completed`はObservation/Axis/Score/SnapshotのPARTIALと同義ではなく、Job-level outcomeである。Frontend warningやWorker resultだけで確定せず、Railsがvalidated evidence/completeness policyに基づいてcanonical outcomeを保存するTargetである。
+`partially_completed`はObservation/Axis/Score/SnapshotのPARTIALと同義ではなく、Job-level outcomeです。Frontend warningやWorker resultだけで確定せず、Railsがvalidated evidence/completeness policyに基づいてcanonical outcomeを保存するTargetです。
 
-PD-04は`DECISION_COMPLETE`だがImplementationは`NOT_IMPLEMENTED`。Exact threshold、schema、retention、price等もDeferredである。
+PD-04は`DECISION_COMPLETE`だがImplementationは`NOT_IMPLEMENTED`。Exact threshold、schema、retention、price等もDeferredです。
 
 ## 12. Transaction boundary
 
-Transactionは、複数のpersistent changeを「全部成功するか、全部失敗するか」の一貫したunitへまとめる。
+Transactionは、永続化する複数の変更を、「すべて成功するか、すべて失敗するか」という一つの単位へまとめます。
 
 ### Target Start Analysis transaction example
 
@@ -296,11 +304,11 @@ authorize actor + Organization + Project
   -> commit
 ```
 
-途中でJobだけ作られ、usageだけ消費され、queue messageだけ送られる状態を避ける。External queueへのpublishはDB transactionと完全に同一atomicityを持てないため、outbox等のpatternがTarget候補になるが、exact implementationは未決定である。
+Job作成、Usageの消費、Queue messageの送信のうち、一部だけが完了する状態を避けます。外部Queueへの送信とDB transactionは、一括で成功・失敗させる原子性を完全には共有できません。そのためoutboxなどのpatternが目標構成の候補になりますが、具体的な実装は未決定です。
 
 ### Current boundary
 
-CURRENT schemaはUser、Organization、Membership、SystemRoleに限られる。Foreign key、unique index、check constraintがdata integrityを支える。AnalysisJob/Usage/Snapshot/Auditのmulti-record transaction実装は存在しないため、教材例をCURRENTと表現しない。
+CURRENT schemaはUser、Organization、Membership、SystemRoleに限られます。Foreign key、unique index、check constraintがdata integrityを支えます。AnalysisJob/Usage/Snapshot/Auditのmulti-record transaction実装は存在しないため、教材例をCURRENTと表現しません。
 
 ## 13. Persistence orchestration — Rails vs PostgreSQL
 
@@ -309,13 +317,13 @@ Rails:      何を、誰が、どの条件で、どのtransitionとして保存�
 PostgreSQL: committed durable data、constraint、transactionを保持する
 ```
 
-PostgreSQLはforeign key、unique index、check constraintでinvalid dataを防ぐ。しかし、DB rowが存在するだけでaccess permissionを許可したり、latest rowをcurrent Snapshotと解釈したりしない。
+PostgreSQLはforeign key、unique index、check constraintでinvalid dataを防ぎます。しかし、DB rowが存在するだけでaccess permissionを許可したり、latest rowをcurrent Snapshotと解釈したりしません。
 
-RailsはProduct contractをDB operationへtranslateし、PostgreSQLはその結果をdurableに保持する。Physical schema、index、isolation、migrationはM09で詳しく扱う。
+RailsはProductの契約をDB操作へ落とし込み、PostgreSQLはその結果を再起動後も残る形で保持します。物理schema、index、処理の分離、migrationはM09で詳しく扱います。
 
 ## 14. Rails vs Worker
 
-| Concern                       | Rails                                              | Worker                                                  |
+| 確認する観点                  | Rails                                              | Worker                                                  |
 | ----------------------------- | -------------------------------------------------- | ------------------------------------------------------- |
 | Analysisを開始可能か          | decides                                            | does not decide                                         |
 | Job identity/canonical status | owns                                               | receives scoped work and reports facts                  |
@@ -326,7 +334,7 @@ RailsはProduct contractをDB operationへtranslateし、PostgreSQLはその結�
 | Usage/billing eligibility     | owns business policy                               | must not decide                                         |
 | Retry                         | owns business retry/new Job policy                 | owns bounded technical attempt behavior within contract |
 
-Workerが「LLM callに成功したのでJobをcompletedへ更新」「costが高いのでUserのplanを拒否」と決めると、authorization、usage、state machine、auditがtechnical runtimeへ漏れる。Workerはfacts/artifactsを返し、Railsがbusiness outcomeへ確定する。
+Workerが「LLM callに成功したのでJobをcompletedへ更新」「costが高いのでUserのplanを拒否」と決めると、authorization、usage、state machine、auditがtechnical runtimeへ漏れる。Workerはfacts/artifactsを返し、Railsがbusiness outcomeへ確定します。
 
 ## 15. Job orchestration
 
@@ -342,11 +350,11 @@ TargetでRailsが所有する方向:
 - Snapshot commitとlineage。
 - Usage decisionとaudit event。
 
-Queueはdelivery/attemptを管理するが、Queue messageのack、retry count、visibility timeoutだけでbusiness completionを宣言しない。Retry、idempotency、outbox、dead-letter等はM12で扱う。
+Queueはdelivery/attemptを管理するが、Queue messageのack、retry count、visibility timeoutだけでbusiness completionを宣言しません。Retry、idempotency、outbox、dead-letter等はM13で扱います。
 
 ## 16. Snapshot boundary
 
-SnapshotはAnalysis Resultのimmutable historical representationであり、mutable Project current stateと分ける。
+SnapshotはAnalysis Resultのimmutable historical representationであり、mutable Project current stateと分けます。
 
 ```text
 Project/Target        = mutable context
@@ -362,7 +370,7 @@ Strategy source       = explicitly eligible source
 latest != current != Strategy source != historical Snapshot
 ```
 
-Chronological latestを自動的にcurrentと解釈しない。Partial SnapshotはPD-04に従いautomatic current/Strategy promotionを行わない。Detailed history/lineage/versioningは後続Moduleへ送る。
+Chronological latestを自動的にcurrentと解釈しません。Partial SnapshotはPD-04に従いautomatic current/Strategy promotionを行いません。Detailed history/lineage/versioningは後続Moduleへ送ります。
 
 ## 17. Usage / Billing / Audit boundary
 
@@ -371,17 +379,17 @@ Chronological latestを自動的にcurrentと解釈しない。Partial Snapshot�
 - **Usage decision:** Product entitlement/consumptionをどう数えるか。Rails business policy。
 - **Billing charge:** Stripe等の外部providerで金銭transactionを行うこと。
 
-PD-04はPlan-specific usage policyとusable-result baseline、Usage EntitlementとStripe chargeの分離を承認している。しかしexact unit/price/schema/implementationはDeferred。
+PD-04はPlan-specific usage policyとusable-result baseline、Usage EntitlementとStripe chargeの分離を承認しています。しかしexact unit/price/schema/implementationはDeferred。
 
 ### Audit
 
-CURRENT Railsはrequest ID/correlation IDをresponse metaへ入れ、unhandled errorをsafeにlogする。これはoperational traceであり、business audit ledgerと同義ではない。
+CURRENT Railsはrequest ID/correlation IDをresponse metaへ入れ、unhandled errorをsafeにlogします。これはoperational traceであり、business audit ledgerと同義ではありません。
 
-Analysis開始、authorization-sensitive mutation、Usage decision、Snapshot promotion、terminal outcome等はTargetでactor、Organization、resource、operation、before/after/outcomeを追跡できるaudit-worthy eventである。Business audit persistenceはまだ未実装。
+Analysis開始、authorization-sensitive mutation、Usage decision、Snapshot promotion、terminal outcome等はTargetでactor、Organization、resource、operation、before/after/outcomeを追跡できるaudit-worthy eventです。Business audit persistenceはまだ未実装。
 
 ## 18. Error handling
 
-| Error class                     | Meaning                                 |                Typical HTTP boundary | Current status                  |
+| Error class                     | 意味                                    |                Typical HTTP boundary | Current status                  |
 | ------------------------------- | --------------------------------------- | -----------------------------------: | ------------------------------- |
 | Unauthenticated / invalid token | Actorを確立できない                     |                                  401 | `ApiError` subclassesあり       |
 | Forbidden                       | Actorはいるがoperation不可              |                                  403 | CURRENT                         |
@@ -392,13 +400,13 @@ Analysis開始、authorization-sensitive mutation、Usage decision、Snapshot pr
 | Worker/upstream failure         | Technical dependency failure            | Job outcomeまたは5xxをcontractで区別 | Analysis domain DEFERRED        |
 | Internal error                  | Unhandled server defect                 |                             safe 500 | CURRENT shared handler          |
 
-`ApplicationController`はsuccessを`{ data, meta }`、errorを`{ error: { code, message, details, retryable }, meta }`へ統一し、authenticated responseをprivate/no-storeにする。Unhandled exceptionではclassとrequest IDをserver logへ残し、stack/internal detailをresponseへ出さない。
+`ApplicationController`はsuccessを`{ data, meta }`、errorを`{ error: { code, message, details, retryable }, meta }`へ統一し、authenticated responseをprivate/no-storeにします。Unhandled exceptionではclassとrequest IDをserver logへ残し、stack/internal detailをresponseへ出さない。
 
-Business errorとtechnical errorを混同しない。たとえば「plan上Analysis不可」はbusiness rejection、「Queue providerへ接続不能」はtechnical failure、「Workerが一部結果を返した」はPD-04 policyによりpartial outcome候補である。
+Business errorとtechnical errorを混同しません。たとえば「plan上Analysis不可」はbusiness rejection、「Queue providerへ接続不能」はtechnical failure、「Workerが一部結果を返した」はPD-04 policyによりpartial outcome候補です。
 
 ## 19. CURRENT / TARGET / DEFERRED
 
-| Area             | `CURRENT`                                                                   | `TARGET`                                                 | `DEFERRED`                                     |
+| 領域             | `CURRENT`                                                                   | `TARGET`                                                 | `DEFERRED`                                     |
 | ---------------- | --------------------------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------- |
 | Rails surface    | health、me、organizations、organization detail、membership readの5 endpoint | Organization-scoped business API                         | Project/Job/Snapshot/Strategy/Usage write/read |
 | Authentication   | Supabase JWT verify、User mapping、Current context                          | 全business endpointで一貫適用                            | production operational validation/rotation     |
@@ -409,13 +417,13 @@ Business errorとtechnical errorを混同しない。たとえば「plan上Analy
 | Partial/Snapshot | PD-04 logical contract approved                                             | Rails outcome/Snapshot/promotion owner                   | threshold/schema/implementation                |
 | Usage/Billing    | logical separation approved                                                 | Rails usage decision + billing integration boundary      | unit/price/Stripe implementation               |
 
-Target ArchitectureやProduct Decisionの成立を、Rails code実装済みと読み替えない。
+Target ArchitectureやProduct Decisionの成立を、Rails code実装済みと読み替えません。
 
 ## 20. Representative repository mapping
 
-以下は限定確認した11例であり、全Rails Model/Controller監査ではない。
+以下は限定確認した11例であり、全Rails Model/Controller監査ではありません。
 
-| Source                                                                   | Responsibility                                                    | Business ownership                      | Persistence relation                   | Auth relation                | Status                              |
+| Source                                                                   | 責務                                                              | 業務上の管理責任                        | 永続化との関係                         | 認証・認可との関係           | 状態                                |
 | ------------------------------------------------------------------------ | ----------------------------------------------------------------- | --------------------------------------- | -------------------------------------- | ---------------------------- | ----------------------------------- |
 | `rails/config/routes.rb`                                                 | 5 read endpointのmethod/path mapping                              | ruleを持たないentry                     | none                                   | controllerへ接続             | `CURRENT`                           |
 | `application_controller.rb`                                              | request context、success/error envelope、cache、exception mapping | shared API behavior                     | `RecordInvalid`等をmapping             | Authenticationをinclude      | `CURRENT`                           |
@@ -452,7 +460,7 @@ Target ArchitectureやProduct Decisionの成立を、Rails code実装済みと�
 
 ### 「Rails Controller = 全Business Logic置き場」
 
-ControllerはHTTP/use-case entry。Complex transaction/state machineはservice/use caseへ分離し、Model invariantと協働する。
+ControllerはHTTP/use-case entry。Complex transaction/state machineはservice/use caseへ分離し、Model invariantと協働します。
 
 ### 「BFF = Business Backend」
 
@@ -460,23 +468,23 @@ BFFはsession/transport、Railsはbusiness authority。
 
 ### 「Model = DB rowだけ」
 
-Association、validation、enum、domain vocabulary/invariantを持つ。ただしworkflow全部をModelへ詰めない。
+Association、validation、enum、domain vocabulary/invariantを持ちます。ただしworkflow全部をModelへ詰めない。
 
 ### 「Worker = Business authority」
 
-Workerはtechnical execution/facts。Railsがresultを検証しcanonical outcomeへcommitする。
+Workerはtechnical execution/facts。Railsがresultを検証しcanonical outcomeへcommitします。
 
 ### 「DB constraintだけでAuthorizationできる」
 
-Constraintはdata integrity。Actor/resource/operation policyはRailsが判断する。
+Constraintはdata integrity。Actor/resource/operation policyはRailsが判断します。
 
 ### 「Frontend validation = Business validation」
 
-Frontend validationはUX/early feedback。Railsがuntrusted inputとcurrent stateを再検証する。
+Frontend validationはUX/early feedback。Railsがuntrusted inputとcurrent stateを再検証します。
 
 ### 「Queue status = Business outcome」
 
-Delivery/attemptとJob completed/failed/partialは別。Rails state machineがbusiness outcomeを確定する。
+Delivery/attemptとJob completed/failed/partialは別。Rails state machineがbusiness outcomeを確定します。
 
 ### 「Usage = Billing charge」
 
@@ -501,7 +509,7 @@ Chronological latest、policy-selected current、Strategy source、historical Sn
 
 ### 23.2 Responsibility Exercise
 
-次をFrontend / BFF / Rails / PostgreSQL / Workerへ分類する。
+次をFrontend / BFF / Rails / PostgreSQL / Workerへ分類します。
 
 1. Retry buttonの表示。
 2. Supabase session tokenのRails転送。
@@ -516,7 +524,7 @@ Chronological latest、policy-selected current、Strategy source、historical Sn
 
 ### 23.3 Request Trace — Start Analysis
 
-Target requestを次の要素で順に並べる。
+Target requestを次の要素で順に並べてください。
 
 - Rails route/controller。
 - BFF request forwarding。
@@ -527,11 +535,11 @@ Target requestを次の要素で順に並べる。
 - Canonical response。
 - Frontend Command/Client。
 
-CURRENTでどこまで実装済みかも答える。
+CURRENTでどこまで実装済みかも答えてください。
 
 ### 23.4 Authorization Exercise
 
-User AはOrganization Xのviewer、Project PはOrganization Yに属する。BFF active cookieがXで、request bodyにはYとPが入っている。
+User AはOrganization Xのviewer、Project PはOrganization Yに属します。BFF active cookieがXで、request bodyにはYとPが入っている。
 
 1. BFFは何を確認できるか。
 2. Railsは何をresourceから検証すべきか。
@@ -540,7 +548,7 @@ User AはOrganization Xのviewer、Project PはOrganization Yに属する。BFF 
 
 ### 23.5 State Transition Exercise
 
-次を正当/不正/新Job必要へ分類する。
+次を正当/不正/新Job必要へ分類します。
 
 1. `queued -> preparing`。
 2. `crawling -> capturing`。
@@ -558,11 +566,11 @@ User AはOrganization Xのviewer、Project PはOrganization Yに属する。BFF 
 - Rails Controllerにcrawl、LLM、transaction、serializationを全て直書きする。
 - Project rowが存在するだけでaccessを許可する。
 
-各違反のcorrect owner/refactoring directionを答える。
+各違反のcorrect owner/refactoring directionを答えてください。
 
 ### 23.7 Design Exercise — Snapshot creation
 
-「Analysis resultからSnapshotを作成する」をBFF、Rails、PostgreSQL、Workerへ分割する。Completed/Partial/Failed、lineage、current promotion、Strategy source、auditも考慮する。
+「Analysis resultからSnapshotを作成する」をBFF、Rails、PostgreSQL、Workerへ分割します。Completed/Partial/Failed、lineage、current promotion、Strategy source、auditも考慮します。
 
 ## 24. Answers / Explanation Guide
 
@@ -673,11 +681,11 @@ Completedはpolicy-driven promotion可。PartialはLimited Snapshot conditional�
 M08 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M09`
 
-このstatusは教材artifactの完成を示す。Learner assessment合格、Production Analysis backend、Job/Queue/Worker、Snapshot/Usage schema実装完了を意味しない。
+このstatusは教材artifactの完成を示します。Learner assessment合格、Production Analysis backend、Job/Queue/Worker、Snapshot/Usage schema実装完了を意味しません。
 
 ## 26. Handoff to M09
 
-次は`M09 — PostgreSQL / Source of Truth`。M08のRails persistence orchestrationを前提に、PostgreSQL schema、constraint、transaction、identity、Organization isolation、Job/Snapshot lineage、current pointerをdurable data boundaryとして学ぶ。
+次は`M09 — PostgreSQL / Source of Truth`。M08のRails persistence orchestrationを前提に、PostgreSQL schema、constraint、transaction、identity、Organization isolation、Job/Snapshot lineage、current pointerをdurable data boundaryとして学びます。
 
 ## References
 

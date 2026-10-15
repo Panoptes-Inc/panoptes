@@ -5,9 +5,9 @@ Phase: `TB-08`
 Prerequisites: `M01`, `M02`, `M03`, `M04`, `M05`, `M06`  
 Primary standards: [Frontend Structure Policy](../../architecture/frontend-structure-policy.md), [Frontend Standardization Plan](../../architecture/frontend-standardization-plan.md)
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、PanoptesのSvelteKit BFFについて次を説明・判断できる。
+このModuleを終えた学習者は、PanoptesのSvelteKit BFFについて次の内容を説明し、判断できます。
 
 1. BFFをBusiness Backendと区別する。
 2. Browser、Client、BFF、Railsの責務とtrust boundaryを説明する。
@@ -16,13 +16,21 @@ Primary standards: [Frontend Structure Policy](../../architecture/frontend-struc
 5. Server load、form action、`+server.ts`をuse caseで使い分ける。
 6. 現行read-only BFFと、未実装のproduction business BFFを区別する。
 
-本Moduleは既存BFFを限定確認して教材化する。Endpoint追加、BFF再設計、Security全監査は行わない。
+本Moduleは既存BFFを限定確認して教材化します。Endpoint追加、BFF再設計、Security全監査は行いません。
+
+## 用語ガイド
+
+- **BFF（Backend for Frontend）:** 特定のFrontendに合わせ、認証情報、request、responseを調整してBusiness APIへ橋渡しするServer層。
+- **Trust boundary（信頼境界）:** 入力やidentityをそのまま信用せず、受け取る側が検証し直す区切り。
+- **Proxy:** requestを別のServerへ中継する仕組み。BFFは単純転送だけでなく、安全な変換も担当できる。
+- **Fail closed:** 安全性を確認できないとき、推測で許可せず処理を拒否する方針。
+- **Upstream:** BFFから見たRailsなど、処理を依頼する接続先。
 
 ## 2. BFFとは何か
 
-BFF（Backend for Frontend）は、特定Frontendの利用形態に合わせたserver-side boundaryである。
+BFF（Backend for Frontend）は、特定のFrontendが使いやすい形へ、requestやresponseを調整するServer側の層です。
 
-一般に次を担当できる。
+一般に次を担当できます。
 
 - Browserから使うsame-origin endpoint。
 - Cookie/session等のserver-side credential handling。
@@ -31,14 +39,14 @@ BFF（Backend for Frontend）は、特定Frontendの利用形態に合わせたs
 - 必要な複数backend queryのaggregation。
 - Browserへ返してよいsafe error/headerの制御。
 
-ただし、BFFはBusiness Backendの別名ではない。
+ただし、BFFはBusiness Backendの別名ではありません。
 
 ```text
 BFF   = frontend-specific session / transport boundary
 Rails = business / domain / authorization / persistence authority
 ```
 
-BFF fileがserver上で動くこと、credentialへアクセスできること、Railsを呼べることは、business ruleのSource of Truthになれる根拠ではない。
+BFF fileがserver上で動くこと、credentialへアクセスできること、Railsを呼べることは、business ruleのSource of Truthになれる根拠ではありません。
 
 ## 3. Panoptes Architecture Position
 
@@ -54,7 +62,7 @@ Browser
   -> PostgreSQL / Job system
 ```
 
-Responseは逆方向へ戻る。
+Responseは逆方向へ戻ります。
 
 ```text
 Rails canonical response/error
@@ -64,11 +72,11 @@ Rails canonical response/error
   -> UI props/render
 ```
 
-M01はこの全体地図、M02はSvelteKit server file、M06はCommand/Clientまでを扱った。M07はClientとRailsの間にあるbrowser-facing server boundaryを掘り下げる。
+M01はこの全体地図、M02はSvelteKit server file、M06はCommand/Clientまでを扱った。M07はClientとRailsの間にあるbrowser-facing server boundaryを掘り下げます。
 
 ## 4. Why Panoptes uses a BFF
 
-PanoptesでBFFを置く主な理由は次の通り。
+PanoptesでBFFを置く主な理由は次のとおりです。
 
 1. **Server-only credential boundary** — private environmentやRails base URLをclient bundleへ出さない。
 2. **Cookie/session handling** — Supabase SSR cookie/sessionをserver request lifecycleで解決する。
@@ -77,11 +85,11 @@ PanoptesでBFFを置く主な理由は次の通り。
 5. **Auth context preparation** — verified user context、active Organization contextをrequestへ接続する。
 6. **Safe transport adaptation** — timeout、request/correlation ID、cache policy、安全なerror envelopeを扱う。
 
-BFFを挟むだけでsecurityが自動的に成立するわけではない。Browser inputは依然untrustedであり、BFF routeの実装、header allowlist、redirect validation、Rails側再認可が必要である。
+BFFを挟むだけで安全性が保証されるわけではありません。Browserからの入力は引き続き信頼できないため、BFF routeの適切な実装、転送を許可するheaderの制限、redirect先の検証、Rails側での再認可が必要です。
 
 ## 5. Responsibility map
 
-| Layer              | Owns                                                                                                     | Must not own                                                              | Receives                              | Returns                          |
+| 層（Layer）        | 担当すること                                                                                             | 担当してはいけないこと                                                    | 受け取るもの                          | 返すもの                         |
 | ------------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------- | -------------------------------- |
 | Browser / Frontend | interaction、presentation、Feature/transient state、intent emission                                      | secret、business authorization truth、canonical transition                | user input、safe BFF response         | typed request/intent             |
 | Command            | operation intent、typed input/output                                                                     | raw UI、cookie、business decision                                         | Feature intent                        | Client invocation/result         |
@@ -109,19 +117,19 @@ Browser request + Supabase cookies
   -> route policy / server load / action / BFF handler
 ```
 
-`hooks.server.ts`はrequestごとにSupabase server clientを作り、Supabase `getUser`を通じてUser contextを解決する。Developmentで明示設定された場合だけmock auth adapterを使う。結果は`event.locals.auth`へ置かれ、route policyやserver endpointが利用する。
+`hooks.server.ts`はrequestごとにSupabase server clientを作成し、Supabase `getUser`でユーザー情報を取得・確認します。開発環境で明示的に設定した場合だけmock auth adapterを使います。結果は`event.locals.auth`へ保存され、route policyやServerのendpointが利用します。
 
-Root `+layout.server.ts`は`locals.auth`から次のinitial page contextを返す。
+Root `+layout.server.ts`は`locals.auth`から次のinitial page contextを返します。
 
 - `authenticated`。
 - `userEmail`。
 - `activeOrganizationId`。
 
-これはFrontend表示・Feature inputに使うinitial verified contextであり、全business operationのauthorization証明書ではない。
+これは、初期表示やFeatureへの入力に使う、確認済みの情報です。個々の業務操作をすべて許可する認可の証明ではありません。
 
 ### BFFからRailsへのcredential flow
 
-Current `proxyRailsGet`は次を行う。
+Current `proxyRailsGet`は次を行います。
 
 1. `locals.supabase`と`locals.auth.user`を確認する。
 2. Server-side Supabase sessionからaccess tokenを取得する。
@@ -129,27 +137,27 @@ Current `proxyRailsGet`は次を行う。
 4. Rails requestへ`Authorization: Bearer ...`を付ける。
 5. Railsがtokenとbusiness authorizationを独立検証する。
 
-Client JSへprivate environmentやRails base URLを置かない。Browserが任意Bearer valueを送れる可能性も含め、BFFを通過したことだけをRailsがtrustしてはいけない。
+Client JSへ非公開の環境変数やRailsのbase URLを置きません。また、Browserから任意のBearer値が送られる可能性もあるため、BFFを通過したという理由だけでRailsがrequestを信頼してはいけません。
 
 ### Cookie ownership
 
-Supabase SSR cookieのread/writeはserver cookie adapterが担当する。Active Organization cookieはOrganization selection actionがmembership確認後にHTTP-only、SameSite Lax、root pathで設定する。CookieにIDが入っていてもmembership authorityにはならないため、auth adapter、BFF guard、Railsで再確認する。
+Supabase SSR cookieのread/writeはserver cookie adapterが担当します。Active Organization cookieはOrganization selection actionがmembership確認後にHTTP-only、SameSite Lax、root pathで設定します。CookieにIDが入っていてもmembership authorityにはならないため、auth adapter、BFF guard、Railsで再確認します。
 
 ## 7. Route Guard vs Business Authorization
 
-| Boundary               | Question                                              | Current owner                     | Limit                                                 |
+| Boundary               | 確認する問い                                          | 現行の担当                        | 制限                                                  |
 | ---------------------- | ----------------------------------------------------- | --------------------------------- | ----------------------------------------------------- |
 | Route Guard            | このroute/API surfaceへ入れるか                       | `hooks.server.ts` + route policy  | 個別resource/operationのcanonical許可ではない         |
 | BFF context guard      | Active Organization contextとrequest pathが整合するか | `proxyActiveOrganizationRailsGet` | Rails DB上の最終membership/resource authorityではない |
 | Business Authorization | このUserがこのresource/operationを実行できるか        | Rails                             | Browser/BFF hintだけで省略しない                      |
 
-例: `/app`へ入れたUserが、すべてのProjectを更新できるとは限らない。Route guardはscreen familyへの入口を守るが、Project ID、Organization ownership、role、current business stateはRailsがoperationごとに検証する。
+例: `/app`へ入れたUserが、すべてのProjectを更新できるとは限りません。Route guardはscreen familyへの入口を守るが、Project ID、Organization ownership、role、current business stateはRailsがoperationごとに検証します。
 
-Current API policyは`/api/panoptes/v1`をauthentication requiredにする。一方、Organization detail/membership routeはhandler側でactive Organizationとの一致も確認する。これらを通過しても、RailsはBearer JWTとDB membership/resource relationを再検証する。
+Current API policyは`/api/panoptes/v1`をauthentication requiredにします。一方、Organization detail/membership routeはhandler側でactive Organizationとの一致も確認します。これらを通過しても、RailsはBearer JWTとDB membership/resource relationを再検証します。
 
 ## 8. Organization scope
 
-PanoptesではOrganization scopeがUser sessionとは別に必要である。
+PanoptesではOrganization scopeがUser sessionとは別に必要です。
 
 ### Current selection flow
 
@@ -166,7 +174,7 @@ Browser/BFF active org  = prepared context
 Rails authorization     = canonical access decision
 ```
 
-IDがURL、header、body、cookieに存在することはauthorization evidenceではない。Mismatchを別Organizationの存在確認に利用されにくくするため、Current BFFはrequested IDとactive IDが異なる場合に404を返す。
+URL、header、body、cookieにIDが含まれていても、操作が許可されている証拠にはなりません。IDの不一致から別Organizationの存在を探られにくくするため、現行BFFは要求されたIDとactive IDが異なる場合に404を返します。
 
 ## 9. Request forwarding
 
@@ -188,22 +196,22 @@ BFFが扱うtransport concern:
 
 ### Current forwarding shape
 
-Current BFFはread-onlyで、各`+server.ts`が固定Rails pathまたはencoded Organization IDを使い、`proxyRailsGet`へ明示的に接続する。HelperはBrowserからupstream URLを受け取らず、任意method/headerをそのまま転送しない。
+Current BFFはread-onlyで、各`+server.ts`が固定Rails pathまたはencoded Organization IDを使い、`proxyRailsGet`へ明示的に接続します。HelperはBrowserからupstream URLを受け取らず、任意method/headerをそのまま転送しません。
 
-これはblind generic proxyを避ける構造である。
+これはblind generic proxyを避ける構造です。
 
 ```text
 Good:  GET /api/panoptes/v1/me -> fixed /api/v1/me
 Bad:   GET /api/proxy?url=https://arbitrary.example&headers=...
 ```
 
-Business endpoint追加時も、allowlist/explicit route、input schema、body size、content type、Organization scopeをuse caseごとに定義する。Browser requestを無条件proxyしない。
+Business endpoint追加時も、allowlist/explicit route、input schema、body size、content type、Organization scopeをuse caseごとに定義します。Browser requestを無条件proxyしません。
 
 ## 10. Response adaptation and error handling
 
 ### Current response behavior
 
-`proxyRailsGet`はRails responseについて次を行う。
+`proxyRailsGet`はRails responseについて次を行います。
 
 - Bodyとupstream HTTP statusを保持する。
 - `content-type`をsafeに設定する。
@@ -211,11 +219,11 @@ Business endpoint追加時も、allowlist/explicit route、input schema、body s
 - `x-request-id`、`x-correlation-id`をsafeに返す。
 - Upstream接続/configuration failureをsafe 503へする。
 
-Frontend `canonical-bff-client.ts`はBFF responseの`data` envelopeを検証し、malformed response、timeout、abort、network errorを`PanoptesApiError`へ変換する。
+Frontend `canonical-bff-client.ts`はBFF responseの`data` envelopeを検証し、malformed response、timeout、abort、network errorを`PanoptesApiError`へ変換します。
 
 ### Status meaning
 
-|    Status | Typical meaning                                        | Boundary note                                                      |
+|      状態 | Typical meaning                                        | Boundary note                                                      |
 | --------: | ------------------------------------------------------ | ------------------------------------------------------------------ |
 |       401 | unauthenticated/session invalid                        | BFF/hookが返せる。Railsも独立認証する                              |
 |       403 | authenticatedだがroute/context/operationを許可できない | Final business authorizationはRails                                |
@@ -224,7 +232,7 @@ Frontend `canonical-bff-client.ts`はBFF responseの`data` envelopeを検証し�
 |       422 | validation failure                                     | Input/business validation ownerに従う                              |
 | 5xx / 503 | upstream/backend unavailable                           | Safe detail + retryable metadata。Secret/raw exceptionを漏らさない |
 
-Current helperが自身で生成する主なstatusは401、403、404、503で、Railsから来た他statusはpreserveする。すべてをHTTP 200で包むと、cache、monitoring、Client retry、UI error distinctionが壊れる。
+Current helperが自身で生成する主なstatusは401、403、404、503で、Railsから来た他statusはpreserveします。すべてをHTTP 200で包むと、cache、monitoring、Client retry、UI error distinctionが壊れます。
 
 ### Business meaningを書き換えない
 
@@ -233,20 +241,20 @@ Rails: 403 Forbidden
 BFF:   200 Success + hidden/empty data   # prohibited
 ```
 
-BFFはtransport shapeをFrontend-compatibleにできるが、forbiddenをsuccess、partialをcomplete、conflictをvalidation successへ変えない。
+BFFは、通信上の形式をFrontendで扱いやすく調整できます。ただし、権限不足を成功へ、部分完了を完全な完了へ、競合をvalidation成功へと読み替えません。
 
 ## 11. Redirect boundary
 
-Auth callbackやOrganization selectionでは、login前のdeep linkへ戻す必要がある。ただしquery parameterのURLをそのままredirectするとopen redirectになる。
+Auth callbackやOrganization selectionでは、login前のdeep linkへ戻す必要があります。ただしquery parameterのURLをそのままredirectするとopen redirectになります。
 
-Current `safeReturnTo`は次を要求する。
+Current `safeReturnTo`は次を要求します。
 
 - `/`から始まるlocal path。
 - `//`から始まらない。
 - backslashを含まない。
 - 固定baseに解決したoriginが同一。
 
-不正なら`/app`等のfallbackへ戻す。
+不正なら`/app`等のfallbackへ戻します。
 
 ### Current examples
 
@@ -255,7 +263,7 @@ Current `safeReturnTo`は次を要求する。
 - `/organization/select`: membership確認とcookie設定後、validated `returnTo`へ303 redirect。
 - `/auth/logout`: local session/cookieをclearしloginへ303 redirect。
 
-Redirect後もbusiness operationは再認可する。Login成功とdeep-link復帰は、resource access承認を意味しない。
+Redirect後もbusiness operationは再認可します。Login成功とdeep-link復帰は、resource access承認を意味しません。
 
 ## 12. Server load / form action / `+server.ts`
 
@@ -265,20 +273,20 @@ Redirect後もbusiness operationは再認可する。Login成功とdeep-link復�
 | `+page.server.ts` form action                | Form submission、server validation、cookie設定、redirect | Active Organization selection                          |
 | `+server.ts`                                 | HTTP endpoint、auth callback/logout、same-origin BFF     | `/api/panoptes/v1/*`、`/auth/callback`、`/auth/logout` |
 
-「server codeだから全部`+server.ts`」「page dataだからすべてload」ではない。SSR initial data、HTML form mutation、programmatic HTTP APIというconsumer/lifecycleの違いで選ぶ。
+「server codeだから全部`+server.ts`」「page dataだからすべてload」ではありません。SSR initial data、HTML form mutation、programmatic HTTP APIというconsumer/lifecycleの違いで選びます。
 
-Universal `+page.ts`/`+layout.ts`はbrowserでも動きうるため、secretやserver-only SDKを置かない。
+Universal `+page.ts`/`+layout.ts`はbrowserでも動きうるため、secretやserver-only SDKを置きません。
 
 ## 13. Command vs Client vs BFF vs Rails
 
-| Layer   | Core question                                                         | Example                                       | Must not decide                                  |
-| ------- | --------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------ |
-| Command | User/Featureは何をしたいか                                            | Start Analysis                                | HTTP/cookie、official eligibility                |
-| Client  | FrontendからどうBFFを呼ぶか                                           | same-origin fetch、timeout、schema assertion  | session truth、business transition               |
-| BFF     | Browser requestをどうserver auth context付きでRailsへ安全に接続するか | Cookie/session、Bearer forwarding、safe proxy | Project access、plan eligibility、Job transition |
-| Rails   | Operationを許可し、どうbusiness stateを変えるか                       | authorize、validate、transaction、enqueue     | Browser presentation state                       |
+| 層（Layer） | 中心となる問い                                                        | 例                                            | 決めてはいけないこと                             |
+| ----------- | --------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------ |
+| Command     | User/Featureは何をしたいか                                            | Start Analysis                                | HTTP/cookie、official eligibility                |
+| Client      | FrontendからどうBFFを呼ぶか                                           | same-origin fetch、timeout、schema assertion  | session truth、business transition               |
+| BFF         | Browser requestをどうserver auth context付きでRailsへ安全に接続するか | Cookie/session、Bearer forwarding、safe proxy | Project access、plan eligibility、Job transition |
+| Rails       | Operationを許可し、どうbusiness stateを変えるか                       | authorize、validate、transaction、enqueue     | Browser presentation state                       |
 
-Clientはbrowser/runtimeで使うtransport abstractionでありserver endpointではない。BFFはserver endpointでありFrontend libraryではない。RailsはBFFのupstream Business Backendである。
+Clientは、Browserなどのruntimeから通信処理を利用するためのライブラリです。BFFはServer上でrequestを受けるendpointであり、RailsはBFFの接続先となるBusiness Backendです。
 
 ## 14. BFF security boundary
 
@@ -294,11 +302,11 @@ Clientはbrowser/runtimeで使うtransport abstractionでありserver endpoint�
 - BFFでauth contextを確認してもRailsがauthorizationを再検証する。
 - Request/correlation IDは形式を検証し、なければserver側で生成する。
 
-BFFはattack surfaceを減らすboundaryになりうるが、誤ったproxyや過信によって新しいattack surfaceにもなりうる。Security詳細は後続Moduleで扱う。
+BFFはattack surfaceを減らすboundaryになりうるが、誤ったproxyや過信によって新しいattack surfaceにもなり得ます。Security詳細は後続Moduleで扱います。
 
 ## 15. CURRENT / TARGET / DEFERRED
 
-| Area                     | `CURRENT`                                                                           | `TARGET`                                                              | `DEFERRED`                                          |
+| 領域                     | `CURRENT`                                                                           | `TARGET`                                                              | `DEFERRED`                                          |
 | ------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------- |
 | Auth/session             | Supabase SSR server client、hooks auth resolution、route policy、callback/logout    | Productionでserver-verified auth contextを一貫利用                    | staging/production integration verification         |
 | Organization             | Selection action、active cookie、BFF active-org guard、Rails read authorization     | Resource/operationごとにRailsがscope再検証                            | Project/Job/Snapshot business resource endpoints    |
@@ -306,13 +314,13 @@ BFFはattack surfaceを減らすboundaryになりうるが、誤ったproxyや�
 | Response/error           | Upstream status/body preservation、safe 401/403/404/503、request IDs                | Typed safe contract、business meaning preservation                    | 全business endpoint contract/verification           |
 | Analysis production flow | Canonical business clientは明示的503 unavailable                                    | Command→Client→BFF→Rails→Job system                                   | Production business API/Queue/Worker implementation |
 
-BFF contractが設計済みでも全APIがproduction実装済みとは限らない。Current Organization read flowを、Production Analysis flowの実装証拠として使わない。
+BFF contractが設計済みでも全APIがproduction実装済みとは限りません。Current Organization read flowを、Production Analysis flowの実装証拠として使いません。
 
 ## 16. Representative repository mapping
 
-以下は限定確認した11例であり、全BFF endpoint/security auditではない。
+以下は限定確認した11例であり、全BFF endpoint/security auditではありません。
 
-| Source                                                                      | Responsibility                                                          | Input                        | Output                                   | Auth/session                                                   | Rails relation                          | Status               |
+| Source                                                                      | 責務                                                                    | 入力                         | 出力                                     | 認証・session                                                  | Railsとの関係                           | 状態                 |
 | --------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------- | ---------------------------------------- | -------------------------------------------------------------- | --------------------------------------- | -------------------- |
 | `src/hooks.server.ts`                                                       | request auth解決、route policy、API deny/redirect、private cache        | Browser request/cookies      | `locals` contextまたはHTTP outcome       | Supabase/mock adapter                                          | Rails operation authorizationは行わない | `CURRENT`            |
 | `src/routes/+layout.server.ts`                                              | Initial auth context配布                                                | `locals.auth`                | authenticated/email/active org page data | read-only context                                              | Rails proxyではない                     | `CURRENT`            |
@@ -343,9 +351,9 @@ BFF contractが設計済みでも全APIがproduction実装済みとは限らな�
 6. **Persistent record/transaction/constraintか？**  
    → Rails / PostgreSQL。
 7. **Initial page contextか、form/API endpointか？**  
-   → Server load、form action、`+server.ts`をconsumerに応じて選ぶ。
+   → Server load、form action、`+server.ts`をconsumerに応じて選びます。
 
-例: Active Organization cookieを読むのはBFF/server concern。そのUserがProjectを更新できるか決めるのはRails。Button disabled表示はFrontend presentationである。
+例: Active Organization cookieを読むのはBFF/server concern。そのUserがProjectを更新できるか決めるのはRails。Button disabled表示はFrontend presentationです。
 
 ## 18. Common misunderstandings
 
@@ -355,7 +363,7 @@ BFFはFrontend-specific transport/session boundary、RailsはBusiness Backend。
 
 ### 「BFF = DB access layer」
 
-BFFから直接DBへbusiness writeを行うとRails rule/transaction/authorizationを迂回する。PersistenceはRails経由。
+BFFから直接DBへbusiness writeを行うとRails rule/transaction/authorizationを迂回します。PersistenceはRails経由。
 
 ### 「Route Guard = Business Authorization」
 
@@ -363,11 +371,11 @@ Route familyへ入れることと、個別resource operationを許可される�
 
 ### 「org IDがrequestにある = authorized」
 
-IDはrequested scopeにすぎない。Membership/resource relationをRailsが検証する。
+IDはrequested scopeにすぎません。Membership/resource relationをRailsが検証します。
 
 ### 「BFFを通った = trusted」
 
-BFFもBrowser inputを受ける。Railsはtoken、membership、resource、transitionを再検証する。
+BFFもBrowser inputを受けます。Railsはtoken、membership、resource、transitionを再検証します。
 
 ### 「Client = BFF」
 
@@ -375,22 +383,22 @@ ClientはFrontend library、BFFはserver endpoint。
 
 ### 「BFFがplan eligibilityを決める」
 
-Plan/usage/business stateの正本を持つRailsが決める。BFFは結果を運ぶ。
+Plan/usage/business stateの正本を持つRailsが決めます。BFFは結果を運びます。
 
 ### 「Errorを全部200にする」
 
-HTTP semantics、retry、cache、monitoring、UI distinctionを壊す。Statusとsafe bodyを維持する。
+HTTP semantics、retry、cache、monitoring、UI distinctionを壊す。Statusとsafe bodyを維持します。
 
 ### 「BrowserからRails direct accessを前提にする」
 
-Canonical Browser surfaceはsame-origin BFF。Rails endpoint/token detailをUIへ露出しない。
+Canonical Browser surfaceはsame-origin BFF。Rails endpoint/token detailをUIへ露出しません。
 
 ## 19. Practice
 
 ### 19.1 Knowledge Check
 
 1. BFFとBusiness Backendの違いは何か。
-2. Panoptesがsame-origin BFFを使う理由を三つ挙げよ。
+2. Panoptesがsame-origin BFFを使う理由を三つ挙げてください。
 3. Route guardを通過してもRails authorizationが必要な理由は何か。
 4. Active Organization cookieがmembership proofにならない理由は何か。
 5. ClientとBFFの違いは何か。
@@ -400,7 +408,7 @@ Canonical Browser surfaceはsame-origin BFF。Rails endpoint/token detailをUI�
 
 ### 19.2 Responsibility Exercise
 
-次をClient / BFF / Railsへ分類する。
+次をClient / BFF / Railsへ分類します。
 
 1. Fetch timeoutとresponse schema assertion。
 2. Supabase cookieからserver sessionを解決。
@@ -413,7 +421,7 @@ Canonical Browser surfaceはsame-origin BFF。Rails endpoint/token detailをUI�
 
 ### 19.3 Request Trace
 
-Organization detail readを次の要素で順に並べる。
+Organization detail readを次の要素で順に並べてください。
 
 - Rails JWT/membership authorization。
 - `canonical-bff-client`。
@@ -454,18 +462,18 @@ return fetch(target!, { headers: request.headers });
 // BFFがorgを確認した前提でresource authorizationを省略
 ```
 
-各例のriskと修正ownerを答える。
+各例のriskと修正ownerを答えてください。
 
 ### 19.5 Design Exercise — Start Analysis API
 
-「Analysis開始API」を次へ分割する。
+「Analysis開始API」を次へ分割します。
 
 - Command。
 - Client。
 - BFF。
 - Rails。
 
-Session、Organization scope、idempotency、validation、error、Job creationを含める。CURRENT/DEFERREDも明記する。
+Session、Organization scope、idempotency、validation、error、Job creationを含めます。CURRENT/DEFERREDも明記します。
 
 ## 20. Answers / Explanation Guide
 
@@ -538,7 +546,7 @@ CURRENT: auth/session and Organization read proxy patterns
 DEFERRED: production Project/AnalysisJob POST endpoint and Job system
 ```
 
-BFF側のformat/body-size validationはtransport protectionであり、Rails canonical validationを置き換えない。
+BFF側のformat/body-size validationはtransport protectionであり、Rails canonical validationを置き換えません。
 
 ## 21. Completion Criteria
 
@@ -558,11 +566,11 @@ BFF側のformat/body-size validationはtransport protectionであり、Rails can
 M07 Authoring DoD: `10 / 10 PASS`  
 Module status: `COMPLETE / READY_FOR_M08`
 
-このstatusは教材artifactの完成を示す。Learner assessment合格、全BFF endpoint監査、Production Analysis API、Security review完了を意味しない。
+このstatusは教材artifactの完成を示します。Learner assessment合格、全BFF endpoint監査、Production Analysis API、Security review完了を意味しません。
 
 ## 22. Handoff to M08
 
-次は`M08 — Rails Business Backend`。M07で確定したBFF/Rails境界を前提に、Railsがbusiness authorization、domain rule、transaction、canonical state transition、persistence orchestrationを所有する理由と現行/Target実装を学ぶ。
+次は`M08 — Rails Business Backend`。M07で確定したBFF/Rails境界を前提に、Railsがbusiness authorization、domain rule、transaction、canonical state transition、persistence orchestrationを所有する理由と現行/Target実装を学びます。
 
 ## References
 

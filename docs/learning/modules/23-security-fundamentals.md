@@ -5,9 +5,9 @@ Phase: `TB-24`
 Difficulty: `INTERMEDIATE`  
 Prerequisites: `M01`–`M22`（direct curriculum dependencies: `M07`–`M15`, `M22`）
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. SecurityをLogin機能ではなくCIA（Confidentiality、Integrity、Availability）を守るArchitecture/Process/Controlとして説明する。
 2. PanoptesのAsset、Threat、Trust Boundaryを特定する。
@@ -18,11 +18,19 @@ Prerequisites: `M01`–`M22`（direct curriculum dependencies: `M07`–`M15`, `M
 7. Logging、Audit、Lineage、Dependency/Supply Chainを区別する。
 8. CURRENT control、TARGET Architecture、DEFERRED hardeningを混同しない。
 
-本教材はDefensive Securityの基礎であり、penetration test、exploit手順、Production hardeningを行うものではない。
+本教材はDefensive Securityの基礎であり、penetration test、exploit手順、Production hardeningを行うものではありません。
+
+## 用語ガイド
+
+- **Asset:** 攻撃や事故から守る対象。data、secret、account、service availabilityなどを含む。
+- **Threat:** Assetを損なう可能性がある攻撃、誤操作、障害。
+- **Trust boundary:** dataやrequestを受け取る側が、入力を再検証すべき境界。
+- **Defense in Depth（多層防御）:** 一つの防御が破られても、別の防御で被害を止める設計。
+- **Least privilege（最小権限）:** Userやserviceへ、必要な操作に限った最小限の権限だけを与える原則。
 
 ## 2. Security fundamentals
 
-Securityは、次の性質を守るためのcontrolの組合せである。
+Securityは、次の性質を守るためのcontrolの組合せです。
 
 | Property        | Meaning in Panoptes                                                        |
 | --------------- | -------------------------------------------------------------------------- |
@@ -53,11 +61,11 @@ Panoptesで守る代表Asset:
 - Billing-related data and Usage records
 - Security/Business Audit trail
 
-AssetごとにConfidentiality、Integrity、Availabilityの重要度、owner、retention、authorized consumersが異なる。Exact data classification/retentionは承認済み範囲だけを使い、教材で新設しない。
+保護対象ごとに、機密性・完全性・可用性の重要度、管理責任、保持期間、利用を許可する主体が異なります。具体的なデータ分類や保持期間は、承認済みの範囲だけを使い、教材では新設しません。
 
 ## 4. Threat model
 
-ThreatはAssetへ悪影響を与え得る事象である。
+ThreatはAssetへ悪影響を与え得る事象です。
 
 - unauthorized access
 - cross-tenant data leakage
@@ -72,7 +80,7 @@ ThreatはAssetへ悪影響を与え得る事象である。
 - dependency/supply-chain compromise
 - sensitive logging
 
-Riskは「Threatがある」だけでなく、Asset、entry point、Trust Boundary、existing control、impact、likelihood、detection/recoveryから評価する。
+Riskは「Threatがある」だけでなく、Asset、entry point、Trust Boundary、existing control、impact、likelihood、detection/recoveryから評価します。
 
 ## 5. Trust Boundary map
 
@@ -94,11 +102,11 @@ flowchart LR
     W --> R
 ```
 
-Boundaryを越えたDataは、上流で一度検証済みでも、受け取るownerが自分のcontractに対して再検証する。
+境界を越えて受け取るDataは、上流で検証済みでも、そのLayerの担当者が自分の契約に照らして再検証します。
 
 ## 6. Never trust the Browser
 
-Browserから届く値はUser-controlled inputである。
+Browserから届く値はUser-controlled inputです。
 
 - `organization_id`
 - `project_id`
@@ -108,7 +116,7 @@ Browserから届く値はUser-controlled inputである。
 - redirect destination
 - hidden/disabled UI state
 
-FrontendはUX validationとpresentationを担当できるが、Canonical Business TruthやAuthorization Proofにはならない。
+FrontendはUX validationとpresentationを担当できるが、Canonical Business TruthやAuthorization Proofにはなりません。
 
 ```text
 button hidden != permission enforced
@@ -116,11 +124,11 @@ client role     != canonical role
 selected org    != authorization proof
 ```
 
-RailsがIdentity、Membership、Resource ownership、Operation、Resource stateを再検証する。
+RailsがIdentity、Membership、Resource ownership、Operation、Resource stateを再検証します。
 
 ## 7. Defense in Depth
 
-一つのcontrolだけへ依存しない。
+一つのcontrolだけへ依存しません。
 
 ```mermaid
 flowchart LR
@@ -140,11 +148,11 @@ flowchart LR
 - Rails: independent token verification、Business Authorization/Rule。
 - DB: relation、constraint、transaction、durable integrity。
 
-一層のbugやbypassが即cross-tenant leakへならないようにする。
+一つのLayerにbugや検証の迂回があっても、それだけで別Organizationへの情報漏えいにつながらないようにします。
 
 ## 8. Authentication
 
-Authenticationは「誰か」を確認する。
+Authenticationは「誰か」を確認します。
 
 CURRENT direction:
 
@@ -153,11 +161,11 @@ CURRENT direction:
 3. BFFがaccess tokenをRailsへBearerとして転送する。
 4. RailsがJWTを独立検証し、Canonical Userへmappingする。
 
-Rails JWT verifierはtoken size、approved algorithm、`kid` shape、signature、issuer、audience、expiration、not-before、required claims、subject shapeを検証する。BFFでSessionを確認したからRails検証を省略してよいわけではない。
+RailsのJWT verifierは、tokenのsize、承認済みのalgorithm、`kid`の形式、署名、発行者、利用先、有効期限、利用開始時刻、必須claim、subjectの形式を検証します。BFFでSessionを確認していても、Railsでの検証を省略してよいわけではありません。
 
 ## 9. Authorization
 
-Authorizationは「そのUserが、そのResourceへ、そのOperationを実行してよいか」を判断する。
+Authorizationは「そのUserが、そのResourceへ、そのOperationを実行してよいか」を判断します。
 
 RailsがApplication Authorization Authorityとして確認するもの:
 
@@ -172,11 +180,11 @@ RailsがApplication Authorization Authorityとして確認するもの:
 authenticated != authorized
 ```
 
-Login済みでも、他OrganizationのProjectやSnapshotへアクセスできるわけではない。
+Login済みでも、他OrganizationのProjectやSnapshotへアクセスできるわけではありません。
 
 ## 10. Multi-tenant isolation
 
-OrganizationはTenant Boundaryである。Organization AのUserがOrganization BのProject、AnalysisJob、Snapshot、Evidenceへアクセスできないことを各layerで支える。
+OrganizationはTenant Boundaryです。Organization AのUserがOrganization BのProject、AnalysisJob、Snapshot、Evidenceへアクセスできないことを各layerで支えます。
 
 必要なcontrol:
 
@@ -189,7 +197,7 @@ OrganizationはTenant Boundaryである。Organization AのUserがOrganization B
 
 ### Resource-derived authorization
 
-URLやcookieのOrganization IDだけを信用しない。
+URLやcookieのOrganization IDだけを信用しません。
 
 ```text
 requested resource
@@ -198,7 +206,7 @@ requested resource
 -> permitted operation
 ```
 
-Rails CURRENTのOrganization concernは`params[:organization_id]`に対し、active Membershipとactive Organizationをjoin/scoped queryで照合する。将来のnested resourceもresource ownershipからOrganizationを解決する。
+Rails CURRENTのOrganization concernは`params[:organization_id]`に対し、active Membershipとactive Organizationをjoin/scoped queryで照合します。将来のnested resourceもresource ownershipからOrganizationを解決します。
 
 ## 11. Session and cookie security
 
@@ -211,15 +219,15 @@ Session/Cookieで考える基本:
 - logout/revocation: local stateだけでなくprovider/session lifecycleを扱う。
 - server-side handling: tokenをclient bundleへ埋め込まない。
 
-Exact attributesはCURRENT implementation/configを優先し、未確認値を「設定済み」と断定しない。
+Exact attributesはCURRENT implementation/configを優先し、未確認値を「設定済み」と断定しません。
 
 ### CSRF
 
-Cookie-based authenticationではCross-Site Request Forgeryを考慮する。SameSite、Origin/Referer validation、architectureに応じたCSRF token等が候補になる。本教材では未決定controlを新しい正式Policyにしない。
+Cookie-based authenticationではCross-Site Request Forgeryを考慮します。SameSite、Origin/Referer validation、architectureに応じたCSRF token等が候補になります。本教材では未決定controlを新しい正式Policyにしません。
 
 ## 12. XSS and output handling
 
-Cross-Site Scriptingはuntrusted inputを実行可能contentとしてBrowserへ注入するriskである。
+Cross-Site Scriptingはuntrusted inputを実行可能contentとしてBrowserへ注入するriskです。
 
 Panoptesで注意するもの:
 
@@ -230,23 +238,23 @@ Panoptesで注意するもの:
 - dynamic URL/attribute
 - raw HTML rendering
 
-Svelteのdefault escapingは重要なcontrolだが、FrameworkだけでXSSが完全解決するわけではない。Raw HTML、unsafe URL、third-party script、DOM API、sanitization boundaryを個別に確認する。
+Svelteのdefault escapingは重要なcontrolだが、FrameworkだけでXSSが完全解決するわけではありません。Raw HTML、unsafe URL、third-party script、DOM API、sanitization boundaryを個別に確認します。
 
 ## 13. Input validation by boundary
 
-| Layer      | Validation responsibility                                                       |
-| ---------- | ------------------------------------------------------------------------------- |
-| Frontend   | UX、required/format、immediate feedback。Security enforcementではない           |
-| BFF        | method/path/context、Session presence、transport shape、explicit proxy boundary |
-| Rails      | schema/application validation、Authorization、Business Rule、state transition   |
-| PostgreSQL | type、FK、unique/check、transaction等のdurable integrity                        |
-| Worker     | URL/content/size/type/timeout、artifact/result shape、technical provenance      |
+| 層（Layer） | 検証する責務                                                                    |
+| ----------- | ------------------------------------------------------------------------------- |
+| Frontend    | UX、required/format、immediate feedback。Security enforcementではない           |
+| BFF         | method/path/context、Session presence、transport shape、explicit proxy boundary |
+| Rails       | schema/application validation、Authorization、Business Rule、state transition   |
+| PostgreSQL  | type、FK、unique/check、transaction等のdurable integrity                        |
+| Worker      | URL/content/size/type/timeout、artifact/result shape、technical provenance      |
 
-一度validateした値も、別Trust Boundaryでは受信側contractへ再検証する。
+一度validateした値も、別Trust Boundaryでは受信側contractへ再検証します。
 
 ## 14. API security
 
-M11と接続し、APIでは次を確認する。
+M11と接続し、APIでは次を確認します。
 
 - Authentication
 - per-resource Authorization
@@ -258,19 +266,19 @@ M11と接続し、APIでは次を確認する。
 - timeout/rate/resource limit concept
 - no blind generic proxy
 
-BFFはtransport boundaryであり、Rails Business Authorizationを代替しない。
+BFFはtransport boundaryであり、Rails Business Authorizationを代替しません。
 
 ### Mass assignment / over-posting
 
-Client payloadを無条件にModelへ適用しない。Operationごとに許可fieldsを限定し、server-owned fields、Organization、role、status、billing/value等をClient入力から上書きさせない。
+Clientから受け取った値を、無条件にModelへ適用しません。操作ごとに受け付けるfieldを限定し、Serverが管理するfield、Organization、role、status、billing/valueなどをClient入力から上書きさせません。
 
 ### ID enumeration / direct object access
 
-Resource IDを知っていることはpermission proofではない。Deep-link/API requestごとにRailsがUser、Membership、owning Organization、operationを照合する。
+Resource IDを知っていることはpermission proofではありません。Deep-link/API requestごとにRailsがUser、Membership、owning Organization、operationを照合します。
 
 ### Error security
 
-User-safe errorとinternal diagnosticsを分離する。Stack trace、DB detail、Secret、raw provider response、tokenをresponseへ出さない。BFF CURRENT clientはupstream failureをsafe messageとrequest IDへmappingする。
+User-safe errorとinternal diagnosticsを分離します。Stack trace、DB detail、Secret、raw provider response、tokenをresponseへ出さない。BFF CURRENT clientはupstream failureをsafe messageとrequest IDへmappingします。
 
 ## 15. Secret management
 
@@ -283,9 +291,9 @@ Secret例:
 - Storage credentials
 - webhook secrets
 
-SecretをClient bundle、public environment variable、repository、logへ含めない。Server-only runtimeとapproved Secret Storeを使う。
+SecretをClient bundle、public environment variable、repository、logへ含めません。Server-only runtimeとapproved Secret Storeを使います。
 
-Environment variableも名前やbuild exposureを誤るとFrontendへ出る。Server-only/privateとpublic/client-exposedを区別し、toolingの規則を優先する。Exact Cloud Secret solutionはInfrastructure Moduleへhandoffする。
+Environment variableも名前やbuild exposureを誤るとFrontendへ出る。Server-only/privateとpublic/client-exposedを区別し、toolingの規則を優先します。Exact Cloud Secret solutionはInfrastructure Moduleへhandoffします。
 
 ## 16. Least privilege
 
@@ -302,14 +310,14 @@ Permissionを役割、resource、operation、environment、期間で狭める。
 
 ## 17. PostgreSQL and durable integrity
 
-PostgreSQLはpersistent data、relation、constraint、transactionを担う。Application Authorization AuthorityはRailsであり、Foreign KeyだけではAuthorizationにならない。
+PostgreSQLはpersistent data、relation、constraint、transactionを担います。Application Authorization AuthorityはRailsであり、Foreign KeyだけではAuthorizationになりません。
 
 ```text
 FK proves relation integrity
 FK does not prove requester permission
 ```
 
-DB account/schema privilegeもDefense in Depthの一部だが、Exact DB role architectureは未決定なら本教材で新設しない。
+DB account/schema privilegeもDefense in Depthの一部だが、Exact DB role architectureは未決定なら本教材で新設しません。
 
 ## 18. Data protection and minimization
 
@@ -326,13 +334,13 @@ encryption != authorization
 TLS        != access control
 ```
 
-暗号化されていても、不正Userへ正規APIがDataを返せば漏えいする。
+Dataを暗号化していても、権限のないユーザーへ正規APIが返してしまえば、情報漏えいは起きます。
 
-必要のないSensitive Dataを収集・保存しない。External Web Evidenceではwhat/why/retention/accessを明確にする。Exact retention policyは未決定なら作らない。
+必要のないSensitive Dataを収集・保存しません。External Web Evidenceではwhat/why/retention/accessを明確にします。Exact retention policyは未決定なら作りません。
 
 ## 19. Evidence and Artifact security
 
-HTML、Screenshot、DOM、LLM output等は外部由来Dataであり、harmlessとは限らない。
+HTML、Screenshot、DOM、LLM output等は外部由来Dataであり、harmlessとは限りません。
 
 Artifactで考えるもの:
 
@@ -344,11 +352,11 @@ Artifactで考えるもの:
 - retention/deletion policy
 - response headers and rendering boundary
 
-固定public URLへ無条件公開しない。Exact Object Storage designはTARGET/DEFERREDとして扱う。
+固定public URLへ無条件公開しません。Exact Object Storage designはTARGET/DEFERREDとして扱います。
 
 ## 20. Worker / External Web boundary
 
-WorkerはUntrusted External Webへ接触する強いTrust Boundaryである。
+WorkerはUntrusted External Webへ接触する強いTrust Boundaryです。
 
 代表risk:
 
@@ -368,7 +376,7 @@ Fetched content != trusted instruction
 
 ## 21. SSRF fundamentals
 
-Worker/fetcherがURLへアクセスする場合、Server-Side Request Forgeryを考慮する。
+Worker/fetcherがURLへアクセスする場合、Server-Side Request Forgeryを考慮します。
 
 Defensive concerns:
 
@@ -380,7 +388,7 @@ Defensive concerns:
 - response size/time limits
 - network egress policy
 
-具体的bypass techniqueやexploit手順は扱わない。URL validationだけでなくredirect後destinationとnetwork policyも重要である。
+具体的bypass techniqueやexploit手順は扱いません。URL validationだけでなくredirect後destinationとnetwork policyも重要です。
 
 ## 22. Worker and Chromium isolation
 
@@ -394,11 +402,11 @@ Defense candidates:
 - browser sandbox
 - cleanup and artifact boundary
 
-Chromiumではuntrusted JavaScript、browser process、sandbox、resource limits、cleanupを考える。`--no-sandbox`を安易なProduction defaultにしない。Exact runtime command/topologyはInfrastructure/Security implementationへdeferする。
+Chromiumではuntrusted JavaScript、browser process、sandbox、resource limits、cleanupを考えます。`--no-sandbox`を安易なProduction defaultにしません。Exact runtime command/topologyはInfrastructure/Security implementationへdeferします。
 
 ## 23. External LLM boundary
 
-External LLMへ送る前に次を確認する。
+External LLMへ送る前に次を確認します。
 
 - what data is sent
 - Organization/tenant context
@@ -411,38 +419,38 @@ External LLMへ送る前に次を確認する。
 
 ### Prompt injection
 
-External Web contentはUntrusted Dataであり、ページ内instructionをSystem/Application instructionとして信用しない。Model outputもcandidate/derived Observationであり、Business Truthとして無検証採用しない。
+外部Webの内容は信頼できないDataとして扱い、page内の指示をSystem/Applicationの命令として実行しません。Modelの出力も、候補や導出されたObservationとして扱い、検証なしで業務上の正しい事実として採用しません。
 
 ## 24. Queue security and integrity
 
-Queue messageにもJob identity、Organization/context、attempt/sequence、integrity、authorized producer/consumerの論点がある。
+Queue messageにもJob identity、Organization/context、attempt/sequence、integrity、authorized producer/consumerの論点があります。
 
 ```text
 Queue delivery != trusted Business Truth
 Worker event   != canonical state transition
 ```
 
-RailsがJob、attempt、current state、Organization、allowed transition、Result shapeを再検証する。
+RailsがJob、attempt、current state、Organization、allowed transition、Result shapeを再検証します。
 
-Retry/duplicate deliveryへのIdempotencyはReliabilityだけでなくIntegrityも守る。Double Usage、duplicate Snapshot、duplicate mutationを防ぐ。
+Retry/duplicate deliveryへのIdempotencyはReliabilityだけでなくIntegrityも守る。Double Usage、duplicate Snapshot、duplicate mutationを防ぎます。
 
 ## 25. Logging, Audit, and Lineage
 
-| Concept | Question                       | Examples                                           |
+| 概念    | 確認する問い                   | 例                                                 |
 | ------- | ------------------------------ | -------------------------------------------------- |
 | Logging | Systemがどう動いたか           | request ID、error class、latency、technical event  |
 | Audit   | 誰が何をいつどの対象へ行ったか | role change、important mutation、privileged action |
 | Lineage | 何から何が作られたか           | Evidence→Observation→Result→Snapshot               |
 
-Logへpassword、raw credential、access token、unnecessary personal/sensitive dataを出さない。Rails CURRENTではauthorization、cookie、password系、email、secret、token、JWT、key、OTP、SSN、card security code等をparameter filtering対象としている。
+Logへpassword、raw credential、access token、unnecessary personal/sensitive dataを出さない。Rails CURRENTではauthorization、cookie、password系、email、secret、token、JWT、key、OTP、SSN、card security code等をparameter filtering対象としています。
 
 Debug usefulnessとsensitive leakage preventionを両立し、User-safe errorとinternal diagnosticsをcorrelation ID等で結ぶ。
 
-Exact Audit event catalogは未決定なら作らない。
+Exact Audit event catalogは未決定なら作りません。
 
 ## 26. Dependency / Supply Chain
 
-Panoptesはnpm package、Ruby gem、Python package、browser binary等へ依存する。
+Panoptesはnpm package、Ruby gem、Python package、browser binary等へ依存します。
 
 - trusted registry/source
 - lockfile/version pinning
@@ -452,17 +460,17 @@ Panoptesはnpm package、Ruby gem、Python package、browser binary等へ依存�
 - CI permissions/secrets
 - browser/runtime update
 
-Security updateは重要だが、無検証Production deployもしない。
+Security updateは重要だが、無検証Production deployもしません。
 
 ```text
 update -> test/compatibility review -> staged deploy -> monitor
 ```
 
-具体的scanner/CI導入はM24 Testing / CI/CDへhandoffする。
+具体的scanner/CI導入はM24 Testing / CI/CDへhandoffします。
 
 ## 27. Rate and resource abuse
 
-API/Worker/External serviceはresource costを持つ。
+API/Worker/External serviceはresource costを持ちます。
 
 - request rate limits
 - concurrent AnalysisJob limits
@@ -472,11 +480,11 @@ API/Worker/External serviceはresource costを持つ。
 - retry budget
 - provider quota/cost control
 
-Exact quotaはBilling/Infrastructure/Product policyと接続して決める。本教材で数値を発明しない。
+Exact quotaはBilling/Infrastructure/Product policyと接続して決めます。本教材で数値を発明しません。
 
 ## 28. Fail closed vs fail open
 
-Security-sensitive prerequisiteを確認できない場合、Fail Closedが適切な場面がある。
+安全な処理に必要な前提を確認できない場合は、推測で許可せず拒否するFail Closedが適切な場面があります。
 
 例:
 
@@ -484,17 +492,17 @@ Security-sensitive prerequisiteを確認できない場合、Fail Closedが適�
 - Active Membershipを確認できない → Organization resourceを返さない。
 - Business API未実装 → mock successへsilent fallbackしない。
 
-ただしAvailability、recovery、User-safe explanationとのtradeoffがある。全failureを同じ403へするのではなく、401/403/404/503等のcontractを安全に使い分ける。
+ただしAvailability、recovery、User-safe explanationとのtradeoffがあります。全failureを同じ403へするのではなく、401/403/404/503等のcontractを安全に使い分けます。
 
 ## 29. Security UX and Accessibility
 
-Session expiration、Permission Denied、Reauthentication、Destructive Confirmation等をGeneric Errorへ潰さない。Userが何が起き、何をできるかを理解できるようにする。
+Session expiration、Permission Denied、Reauthentication、Destructive Confirmation等をGeneric Errorへ潰しません。Userが何が起き、何をできるかを理解できるようにします。
 
-Security UIもM22のAccessibility Contractへ従う。Keyboard/Screen Reader UserもAuth challenge、Error、Session expired、Forbidden stateを理解・操作できなければならない。
+Security UIもM22のAccessibility Contractへ従います。Keyboard/Screen Reader UserもAuth challenge、Error、Session expired、Forbidden stateを理解・操作できなければなりません。
 
 ## 30. Threat scenario: cross-tenant Project request
 
-Scenario: Organization AのUserが、Organization B所有のProject IDをrequestする。
+Scenario: Organization AのUserが、Organization B所有のProject IDをrequestします。
 
 ```text
 Browser request with project_id
@@ -516,20 +524,20 @@ Browser request with project_id
 
 ## 31. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope                                                                                                                                                                                                                                                                                                 |
+| 分類           | Confirmed scope                                                                                                                                                                                                                                                                                                 |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | CURRENT        | Supabase server session context、SvelteKit route/BFF guard、safe return path policy、explicit BFF endpoints、Bearer forwarding、Rails JWT independent verification、User mapping、active Organization Membership/Role scope、safe BFF error、OpenAPI Bearer scheme、Rails sensitive parameter filteringがある。 |
 | CURRENT caveat | CURRENT endpoints/controlは限定範囲で、Production AnalysisJob/Worker/Artifact/Queue全体のSecurity implementationやformal reviewを証明しない。BFF route guardはRails resource authorizationの代替ではない。                                                                                                      |
 | TARGET         | Resource-derived authorization、Production Worker isolation/egress/resource limits、private Artifact access、Queue producer/consumer/integrity、central Secret management、redacted structured logging、Security Audit、rate/abuse control。                                                                    |
 | DEFERRED       | SSO/Passkey、full threat modeling、penetration test、formal security review、Infrastructure-specific hardening、full retention/data classification、Production Worker/Queue/Artifact controls、dependency scanner policy。                                                                                      |
 
-Security Moduleの完成はProduction Security Readinessを意味しない。
+Security Moduleの完成はProduction Security Readinessを意味しません。
 
 ## 32. Representative repository mapping
 
 Repo-wide Security auditではなく、12 representative sourcesを限定確認した。
 
-| Source                                                                          | Trust boundary / Asset               | Confirmed control                                                                        | Owner / Status                             |
+| Source                                                                          | 信頼境界・保護対象                   | 確認済みの対策                                                                           | 担当・状態                                 |
 | ------------------------------------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------ |
 | `src/hooks.server.ts`                                                           | Browser→SvelteKit、Session/route     | auth context、route policy、401/403、private no-store                                    | BFF CURRENT                                |
 | `src/lib/server/auth/policy.ts`                                                 | Route/Organization/System role       | public/protected policy、active-membership、fail-closed decision                         | BFF CURRENT                                |
@@ -581,21 +589,21 @@ Repo-wide Security auditではなく、12 representative sourcesを限定確認�
 
 ### 0. Code Reading
 
-代表mappingから`src/hooks.server.ts`、Rails Authentication concern、Organization Authorization concern、JWT verifier、parameter filterを辿り、「どのTrust Boundaryで、何を検証し、次のLayerへ何を渡すか」を表にせよ。
+代表mappingから`src/hooks.server.ts`、Rails Authentication concern、Organization Authorization concern、JWT verifier、parameter filterを辿り、「どのTrust Boundaryで、何を検証し、次のLayerへ何を渡すか」を表にしてください。
 
 ### A. Knowledge check
 
-1. Confidentiality、Integrity、AvailabilityをPanoptes例で説明せよ。
-2. SecurityがLogin機能だけではない理由を説明せよ。
-3. Validationを各Boundaryで繰り返す理由を説明せよ。
+1. Confidentiality、Integrity、AvailabilityをPanoptes例で説明してください。
+2. SecurityがLogin機能だけではない理由を説明してください。
+3. Validationを各Boundaryで繰り返す理由を説明してください。
 
 ### B. Trust Boundary exercise
 
-Browser→BFF→Rails→DB→Queue→Worker→External Web/LLMで、各Boundaryのuntrusted input、owner、validationを列挙せよ。
+Browser→BFF→Rails→DB→Queue→Worker→External Web/LLMで、各Boundaryのuntrusted input、owner、validationを列挙してください。
 
 ### C. Authentication vs Authorization
 
-次を分類せよ。
+次を分類してください。
 
 1. JWT signature/issuer/audienceを検証する。
 2. UserがProjectを更新できるか判定する。
@@ -604,19 +612,19 @@ Browser→BFF→Rails→DB→Queue→Worker→External Web/LLMで、各Boundary�
 
 ### D. Tenant isolation
 
-Organization AのUserがOrganization BのSnapshot IDをrequestした。Browser、BFF、Rails、DBの役割を説明せよ。
+Organization AのUserがOrganization BのSnapshot IDをrequestした。Browser、BFF、Rails、DBの役割を説明してください。
 
 ### E. Validation exercise
 
-Email format、API request shape、Project ownership、Foreign Key、External URL/response sizeをFrontend/BFF/Rails/DB/Workerへ分類せよ。
+Email format、API request shape、Project ownership、Foreign Key、External URL/response sizeをFrontend/BFF/Rails/DB/Workerへ分類してください。
 
 ### F. Secret exercise
 
-Access token、LLM API key、public site URL、Database password、request IDのうち、Client/public env/logへ出してはいけないものと理由を述べよ。
+Access token、LLM API key、public site URL、Database password、request IDのうち、Client/public env/logへ出してはいけないものと理由を述べてください。
 
 ### G. Worker security exercise
 
-External URL collection時のSSRF、redirect、resource limit、Browser isolation、Artifact access、Prompt Injection boundaryを説明せよ。
+External URL collection時のSSRF、redirect、resource limit、Browser isolation、Artifact access、Prompt Injection boundaryを説明してください。
 
 ### H. Violation detection
 
@@ -633,21 +641,21 @@ External URL collection時のSSRF、redirect、resource limit、Browser isolatio
 
 ### I. Architecture explanation
 
-「なぜPanoptesではSecurityを一箇所で守らずDefense in Depthで設計するのか」を、boundary、owner、failure containment、auditabilityの観点から説明せよ。
+「なぜPanoptesではSecurityを一箇所で守らずDefense in Depthで設計するのか」を、boundary、owner、failure containment、auditabilityの観点から説明してください。
 
 ## 36. Answers / explanation guide
 
 ### 0. Code Reading
 
-`hooks.server.ts`はFrontend server boundaryでSession/route policyを扱い、Rails Authentication concernとJWT verifierはBusiness API boundaryでtoken/identityを再検証する。Organization Authorization concernはresourceとMembership/Roleを結び、parameter filterはdiagnostic logへのcredential/sensitive value露出を抑える。いずれも単独でSecurity全体の正本になるのではなく、自Layerのcontrolを担当する。
+`hooks.server.ts`はFrontend server boundaryでSession/route policyを扱い、Rails Authentication concernとJWT verifierはBusiness API boundaryでtoken/identityを再検証します。Organization Authorization concernはresourceとMembership/Roleを結び、parameter filterはdiagnostic logへのcredential/sensitive value露出を抑える。いずれも単独でSecurity全体の正本になるのではなく、自Layerのcontrolを担当します。
 
 ### A. Knowledge check
 
-ConfidentialityはTenant data/Secretを守ること、IntegrityはJob/Snapshot/Membershipを正しく保つこと、AvailabilityはAPI/Workerをabuseやfailureから利用可能にすること。Loginはidentity確認に過ぎず、Authorization、validation、isolation、data/operation controlsが別途必要。Boundaryごとにownerとassumptionが変わり、上流controlのbug/bypassを封じるため再検証する。
+ConfidentialityはTenant data/Secretを守ること、IntegrityはJob/Snapshot/Membershipを正しく保つこと、AvailabilityはAPI/Workerをabuseやfailureから利用可能にすること。Loginはidentity確認に過ぎず、Authorization、validation、isolation、data/operation controlsが別途必要。Boundaryごとにownerとassumptionが変わり、上流controlのbug/bypassを封じるため再検証します。
 
 ### B. Trust Boundary exercise
 
-Browser inputはBFFがSession/transportを、RailsがJWT/Business authを、DBがintegrityを、Queue/RailsがJob identity/transitionを、WorkerがURL/content/resourceを、External LLM boundaryがdata minimization/output provenanceを確認する。
+Browser inputはBFFがSession/transportを、RailsがJWT/Business authを、DBがintegrityを、Queue/RailsがJob identity/transitionを、WorkerがURL/content/resourceを、External LLM boundaryがdata minimization/output provenanceを確認します。
 
 ### C. Authentication vs Authorization
 
@@ -655,27 +663,27 @@ Browser inputはBFFがSession/transportを、RailsがJWT/Business authを、DB�
 
 ### D. Tenant isolation
 
-Browser IDはuntrusted。BFFはSession/contextを確認してexplicit requestを送る。RailsはJWTを再検証し、Snapshotからowning Organizationを導出してMembership/Roleを確認する。DB relationはownership linkを保証するが、Authorization decisionはRailsが行う。不一致はsafe denyする。
+Browser IDはuntrusted。BFFはSession/contextを確認してexplicit requestを送る。RailsはJWTを再検証し、Snapshotからowning Organizationを導出してMembership/Roleを確認します。DB relationはownership linkを保証するが、Authorization decisionはRailsが行います。不一致はsafe denyします。
 
 ### E. Validation exercise
 
-Email formatはFrontend UX + Rails canonical validation、request shapeはBFF/Rails、Project ownershipはRails、FKはDB、External URL/redirect/content sizeはWorkerで検証する。
+Email formatはFrontend UX + Rails canonical validation、request shapeはBFF/Rails、Project ownershipはRails、FKはDB、External URL/redirect/content sizeはWorkerで検証します。
 
 ### F. Secret exercise
 
-Access token、LLM API key、Database passwordはClient/public env/logへ出さない。Public site URLとrequest IDは通常Secretではないが、context/PII policyを確認する。
+Access token、LLM API key、Database passwordはClient/public env/logへ出さない。Public site URLとrequest IDは通常Secretではないが、context/PII policyを確認します。
 
 ### G. Worker security exercise
 
-Destination/redirectを検証しprivate networkを防ぎ、timeout/size/CPU/memoryを制限し、Browserを隔離・cleanupする。ArtifactはTenant-scoped private accessとlineageを持たせる。External contentをLLM instructionとして信用せず、送信Dataとprovider policyを制限する。
+Destination/redirectを検証しprivate networkを防ぎ、timeout/size/CPU/memoryを制限し、Browserを隔離・cleanupします。ArtifactはTenant-scoped private accessとlineageを持たせる。External contentをLLM instructionとして信用せず、送信Dataとprovider policyを制限します。
 
 ### H. Violation detection
 
-順にClient trust、UI-only auth、selected context誤用、single-layer enforcement、Secret exposure、credential leakage、SSRF/resource abuse、Artifact leakage、Queue trust/state integrity violation、Supply Chain/compatibility riskである。
+順にClient trust、UI-only auth、selected context誤用、single-layer enforcement、Secret exposure、credential leakage、SSRF/resource abuse、Artifact leakage、Queue trust/state integrity violation、Supply Chain/compatibility riskです。
 
 ### I. Architecture explanation
 
-各boundaryではfailure modeとownerが異なる。Browser/BFF/Rails/DB/Workerそれぞれが自分のcontractを検証すれば、一層のbugやbypassを次の層で封じ、cross-tenant leakやtamperingのimpactを限定できる。複数controlとcorrelation/auditにより、preventionだけでなくdetection、investigation、recoveryも可能になる。
+各boundaryではfailure modeとownerが異なります。Browser/BFF/Rails/DB/Workerそれぞれが自分のcontractを検証すれば、一層のbugやbypassを次の層で封じ、cross-tenant leakやtamperingのimpactを限定できます。複数controlとcorrelation/auditにより、preventionだけでなくdetection、investigation、recoveryも可能になります。
 
 ## 37. Completion criteria
 
@@ -692,13 +700,13 @@ Destination/redirectを検証しprivate networkを防ぎ、timeout/size/CPU/memo
 |   9 | Repository mapping + two diagrams included      | `PASS` |
 |  10 | Exercises + answers included                    | `PASS` |
 
-M23 authoring result: `10 / 10 PASS`。教材完成はProduction Security Readiness、formal threat model、penetration test、Infrastructure/Worker hardeningの完成を意味しない。
+M23 authoring result: `10 / 10 PASS`。教材完成はProduction Security Readiness、formal threat model、penetration test、Infrastructure/Worker hardeningの完成を意味しません。
 
 ## 38. M24 handoff
 
 Recommended next phase: `TB-25 — Module 24: Testing / CI/CD`。
 
-M24ではunit/contract/integration/E2E/visual/accessibility/security-oriented test、quality gate、CI/CD、deployment verificationを扱う。Pipeline実装やDependency scanner導入は教材作成と分離する。
+M24ではunit/contract/integration/E2E/visual/accessibility/security-oriented test、quality gate、CI/CD、deployment verificationを扱います。Pipeline実装やDependency scanner導入は教材作成と分離します。
 
 ## References
 

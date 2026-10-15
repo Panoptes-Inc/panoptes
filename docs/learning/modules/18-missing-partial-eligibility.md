@@ -5,9 +5,9 @@ Phase: `TB-19`
 Difficulty: `ADVANCED`  
 Prerequisites: `M01`–`M17`
 
-## 1. Learning goals
+## 1. 学習目標（Learning goals）
 
-このModuleを終えたLearnerは、次を説明・判断できる。
+このModuleを終えた学習者は、次の内容を説明し、判断できます。
 
 1. Missing、N/A、Unknown、Partial、Valid Zeroを区別する。
 2. Completeness、Eligibility、Score State、Score valueを別の概念として扱う。
@@ -16,7 +16,16 @@ Prerequisites: `M01`–`M17`
 5. Limited Snapshot、comparison、Strategy、API/UIで不完全さを隠さない。
 6. 未決定のthreshold、required set、fallback、fusion parameterを発明せず判断する。
 
-本教材はPD-02D Treatment Model Bを説明する。新しいProduct Contractを決定するものではない。
+本教材はPD-02D Treatment Model Bを説明します。新しいProduct Contractを決定するものではありません。
+
+## 用語ガイド
+
+- **Missing:** 本来得られる可能性がある値を取得できず、値が存在しない状態。
+- **N/A（Not Applicable）:** その対象には評価項目自体が適用されない状態。
+- **Unknown:** Evidence不足などにより、現時点では値を判断できない状態。
+- **Partial:** 利用可能な検証済み結果はあるが、必要な処理やcoverageの一部が不足している状態。
+- **Valid Zero:** 正常に観測・計算した結果が`0`である状態。Missingとは異なる。
+- **Eligibility:** その結果をSnapshotや後続処理へ使用できるかという利用可否条件。
 
 ## 2. なぜMissing処理が重要か
 
@@ -28,11 +37,11 @@ measurement completeness != score
 score value             != eligibility
 ```
 
-Missing treatmentは表示上の都合ではなくmeasurement semanticsである。UIが`0`、`—`、空欄のどれを描くかより前に、何が観測され、適用可能で、計算可能だったかを保持しなければならない。
+Missingの扱いは、何を測定できたかという意味に関わります。UIを`0`、`—`、空欄のどれにするかを決める前に、何を観測でき、その項目が適用され、正式に計算できたかを保持しなければなりません。
 
 ## 3. Canonical state set
 
-PD-02Dが接続する主要な状態集合は次のとおりである。
+PD-02Dが接続する主要な状態集合は次のとおりです。
 
 | Dimension    | Approved values                                                 | Answers                            |
 | ------------ | --------------------------------------------------------------- | ---------------------------------- |
@@ -41,11 +50,11 @@ PD-02Dが接続する主要な状態集合は次のとおりである。
 | Score State  | `CALCULATED / NON_CALCULATED`                                   | 数値結果が正式に計算されたか       |
 | Score value  | valid number or absent                                          | 計算結果はいくつか                 |
 
-この直交性がTreatment Model Bの中心である。`PARTIAL + CALCULATED`も、`PRESENT + NON_CALCULATED`もcontract次第で成立し得る。
+これらを独立した観点として扱うことが、Treatment Model Bの中心です。契約によっては、`PARTIAL + CALCULATED`も`PRESENT + NON_CALCULATED`も成立し得ます。
 
 ## 4. Missing
 
-`MISSING`は、required scopeで必要なEvidenceまたはObservationが存在しない、あるいは取得できなかった状態である。
+`MISSING`は、required scopeで必要なEvidenceまたはObservationが存在しない、あるいは取得できなかった状態です。
 
 例:
 
@@ -53,7 +62,7 @@ PD-02Dが接続する主要な状態集合は次のとおりである。
 - 対象sectionの取得に失敗した。
 - required visual evidenceが欠落した。
 
-ただし「CTAが存在しないことを正常に観測した」はMissingではなく、Observationが`PRESENT`で値が0になり得る。
+ただし「CTAが存在しないことを正常に観測した」はMissingではなく、Observationが`PRESENT`で値が0になり得ます。
 
 ```text
 MISSING != negative evidence
@@ -61,11 +70,11 @@ MISSING != score 0
 MISSING != automatic penalty
 ```
 
-Product absenceをsemanticにnegativeへ写像できるのは、明示されたSubmetric/Profile ruleがある場合だけである。generic missing penaltyは採用しない。
+Product absenceをsemanticにnegativeへ写像できるのは、明示されたSubmetric/Profile ruleがある場合だけです。generic missing penaltyは採用しません。
 
 ## 5. N/A (`NOT_APPLICABLE`)
 
-N/Aは、そのmeasurementが対象に適用されない状態である。失敗でも、negativeでも、neutralでもない。
+N/Aは、そのmeasurementが対象に適用されない状態です。失敗でも、negativeでも、neutralでもありません。
 
 例:
 
@@ -73,11 +82,11 @@ N/Aは、そのmeasurementが対象に適用されない状態である。失敗
 - 対象に存在しないcomponent type専用のObservation。
 - Contract上、そのsite classでは評価対象外のSubmetric。
 
-N/Aはeligible expected denominatorから除外する。0やneutral valueへ置換しない。適用可否はData Dictionary/Profile Contractから決まり、UIの都合で決めない。
+N/Aは、計算対象として期待される適格な項目の集合（eligible expected set）の母数から除外します。0や中立値へ置き換えません。適用できるかどうかはData Dictionary/Profileの契約で決まり、UIの都合では決めません。
 
 ## 6. Unknown
 
-`UNKNOWN`はEvidenceが存在しても、意味を確定できない状態である。
+`UNKNOWN`はEvidenceが存在しても、意味を確定できない状態です。
 
 例:
 
@@ -92,11 +101,11 @@ UNKNOWN != negative
 UNKNOWN != false
 ```
 
-required inputがUnknownなら`NON_CALCULATED`候補になるが、exact ruleはFormula Profileに従う。
+required inputがUnknownなら`NON_CALCULATED`候補になるが、exact ruleはFormula Profileに従います。
 
 ## 7. Partial
 
-`PARTIAL`は、必要なinputやcoverageの一部だけが有効な状態である。
+`PARTIAL`は、必要なinputやcoverageの一部だけが有効な状態です。
 
 例:
 
@@ -105,7 +114,7 @@ required inputがUnknownなら`NON_CALCULATED`候補になるが、exact ruleは
 - 複数Submetricの一部だけがeligible/calculatedである。
 - screenshotの一部領域だけ評価可能である。
 
-PartialはMissingやFullと同じではない。PD-02Dでは`PARTIAL + reason + coverage + lineage`で表し、直接numeric penaltyを加えない。
+PartialはMissingともFullとも異なります。PD-02Dでは`PARTIAL + reason + coverage + lineage`として、不足の理由、観測範囲、由来を一緒に保持します。Partialであることを理由に、直接scoreを減点しません。
 
 Profileのrequired条件を満たせば、限定されたscoreを次のように持てる。
 
@@ -116,11 +125,11 @@ value        = valid number
 limitations  = explicit
 ```
 
-この結果をFull Scoreと無標識で同じ表示にしてはならない。
+この結果をFull Scoreと無標識で同じ表示にしてはなりません。
 
 ## 8. Valid Zero
 
-Valid Zeroはmeasurementが正常に成立し、その結果が数値0だった状態である。
+Valid Zeroはmeasurementが正常に成立し、その結果が数値0だった状態です。
 
 例:
 
@@ -133,36 +142,36 @@ completeness = PRESENT
 value        = 0
 ```
 
-Valid ZeroはEvidence-backed resultである。Missingを便宜的に0へ変換したものとは、API、persistence、UIのすべてで区別する。
+Valid Zeroは、Evidenceに裏付けられた結果です。Missingを便宜的に0へ変換した値とは、API、永続化、UIのすべてで区別します。
 
 ## 9. State comparison
 
-| State      | Evidence exists   | Applicable  | Determinate         | Full coverage       | Numeric 0 allowed?       |
-| ---------- | ----------------- | ----------- | ------------------- | ------------------- | ------------------------ |
-| Missing    | no / insufficient | usually yes | no                  | no                  | no substitute            |
-| N/A        | irrelevant        | no          | yes: not applicable | not counted         | no substitute            |
-| Unknown    | yes or partial    | yes         | no                  | varies              | no substitute            |
-| Partial    | some              | yes         | partly              | no                  | only if contract permits |
-| Valid Zero | yes               | yes         | yes                 | contract-sufficient | yes, actual value        |
+| State      | Evidenceの有無    | 適用できるか | 判断できるか        | 必要な範囲がそろっているか | 数値0を持てるか          |
+| ---------- | ----------------- | ------------ | ------------------- | -------------------------- | ------------------------ |
+| Missing    | no / insufficient | usually yes  | no                  | no                         | no substitute            |
+| N/A        | irrelevant        | no           | yes: not applicable | not counted                | no substitute            |
+| Unknown    | yes or partial    | yes          | no                  | varies                     | no substitute            |
+| Partial    | some              | yes          | partly              | no                         | only if contract permits |
+| Valid Zero | yes               | yes          | yes                 | contract-sufficient        | yes, actual value        |
 
-この表は判定補助である。Exact field semanticsとrequired scopeは承認済みContract/Profileを優先する。
+この表は判定補助です。Exact field semanticsとrequired scopeは承認済みContract/Profileを優先します。
 
 ## 10. Completeness
 
-Completenessは、必要なEvidence/Observation/Inputがどれだけ揃ったかを表す。Product qualityそのものではない。
+Completenessは、必要なEvidence/Observation/Inputがどれだけ揃ったかを表します。Product qualityそのものではありません。
 
 ```text
 high score != high completeness
 low score  != low completeness
 ```
 
-低いscoreでも完全に観測できる。高そうな一部結果が得られてもcoverageがPartialならcompletenessはPartialである。
+低いscoreでも完全に観測できます。高そうな一部結果が得られてもcoverageがPartialならcompletenessはPartialです。
 
-CompletenessはObservation、Submetric、Axis、Layer、Analysis Resultの各levelに存在し得る。上位状態は単純な最悪値コピーや平均で決めない。required/eligible/calculated counts、coverage、Profile ruleを使い、exact aggregationは既存Contractが定める範囲に限る。
+Completenessは、Observation、Submetric、Axis、Layer、Analysis Resultの各段階に存在する可能性があります。上位の状態は、下位の最悪値をそのまま使ったり、単純平均したりして決めません。必要な項目数、適格な項目数、計算済みの項目数、coverage、Profileの規則を使い、具体的な集計方法は既存契約が定める範囲に限ります。
 
 ## 11. Eligibility
 
-Eligibilityは「このSubmetric/Axis/Layer/Overall Resultを、Contract上正式に計算してよいか」という判断である。
+Eligibilityは「このSubmetric/Axis/Layer/Overall Resultを、Contract上正式に計算してよいか」という判断です。
 
 判断材料:
 
@@ -177,26 +186,26 @@ ELIGIBILITY != SCORE
 ELIGIBILITY != COMPLETENESS
 ```
 
-`ELIGIBLE`は高得点を意味しない。`INELIGIBLE`は0点を意味しない。`UNDETERMINED`は判定材料やrule resolutionが不足している状態である。
+`ELIGIBLE`は高得点を意味しません。`INELIGIBLE`は0点を意味しません。`UNDETERMINED`は判定材料やrule resolutionが不足している状態です。
 
 ### Eligible with Partial
 
-Profileがlimited calculationを許しrequired conditionを満たす場合は、`CALCULATED + PARTIAL`を組み合わせられる。ただしreason、coverage、limitationsを保持しFullと区別する。
+Profileがlimited calculationを許しrequired conditionを満たす場合は、`CALCULATED + PARTIAL`を組み合わせられる。ただしreason、coverage、limitationsを保持しFullと区別します。
 
 ### Ineligible
 
-required evidence不足等で正式計算できない場合は`NON_CALCULATED`とし、valueを持たせない。0、neutral、last-known valueで穴埋めしない。
+必要なEvidenceの不足などで正式に計算できない場合は、`NON_CALCULATED`とし、値を持たせません。0、中立値、過去に取得できた値で穴埋めしません。
 
 ## 12. Score State and numeric value
 
-| Case                       | Score State      | Value  | Interpretation                     |
+| Case                       | Score State      | 値     | Interpretation                     |
 | -------------------------- | ---------------- | ------ | ---------------------------------- |
 | 正常計算して0              | `CALCULATED`     | `0`    | valid zero                         |
 | PartialだがProfile上計算可 | `CALCULATED`     | number | limited result + limitations       |
 | required input不足         | `NON_CALCULATED` | absent | missing/ineligible reason required |
 | applicableか未判定         | `NON_CALCULATED` | absent | undetermined reason required       |
 
-`null`、missing field、0、status enumを同じ意味にしない。Physical JSON/OpenAPIはdeferredだが、logical distinctionは承認済みである。
+`null`、missing field、0、status enumを同じ意味にしません。Physical JSON/OpenAPIはdeferredだが、logical distinctionは承認済みです。
 
 ## 13. Formula interaction
 
@@ -207,29 +216,29 @@ required evidence不足等で正式計算できない場合は`NON_CALCULATED`�
 - Valid Zeroはeligible calculated contributorになり得る。
 - meaningful absenceのnegative mappingはexplicit Profile ruleに限る。
 
-Treatment Model Bでは、applicableなeligible expected setをcoverage母数とし、Profileが許すcalculated contributorsをnumeric aggregationへ使うHybrid Denominatorを採る。Observed-only denominatorで欠損を隠さない。
+Treatment Model Bでは、coverageの母数には、適用可能で計算対象として期待される適格な項目の集合を使います。一方、数値の集計にはProfileが許可する計算済みの寄与項目を使います。この使い分けがHybrid Denominatorです。観測できた項目だけを母数にして、欠損を隠しません。
 
 ## 14. Axis, Layer, and late fusion
 
-AxisごとにFull、Partial、Non-calculatedが混在し得る。6 Axisすべてが同一coverageである必要はない。Axis stateとAnalysis Result全体のstateを分離する。
+AxisごとにFull、Partial、Non-calculatedが混在する可能性があります。6 Axisすべてが同一coverageである必要はありません。Axis stateとAnalysis Result全体のstateを分離します。
 
-Internal/Visualの両Layerがeligible/calculatedならapproved Fusion Profileでlate fusionする。片Layerが無効な場合に、残ったLayerへ勝手にweightを再配分しない。one-layer Overall、weight redistribution、available Layer fallbackは明示Profileと新しいformulaVersionなしには生成しない。Exact fusion parameterはDEFERREDである。
+Internal/Visualの両Layerがeligible/calculatedならapproved Fusion Profileでlate fusionします。片Layerが無効な場合に、残ったLayerへ勝手にweightを再配分しません。one-layer Overall、weight redistribution、available Layer fallbackは明示Profileと新しいformulaVersionなしには生成しません。Exact fusion parameterはDEFERREDです。
 
 ## 15. AnalysisJob vs Axis/Score state
 
-`AnalysisJob outcome = partially_completed`と`Axis completeness = PARTIAL`は別概念である。
+`AnalysisJob outcome = partially_completed`と`Axis completeness = PARTIAL`は別概念です。
 
-| Concept               | Level                | Meaning                                                          | Owner                            |
+| 概念                  | 扱う単位             | 意味                                                             | 管理・決定の責任を持つ主体       |
 | --------------------- | -------------------- | ---------------------------------------------------------------- | -------------------------------- |
 | `partially_completed` | Job/Product outcome  | usable validated Resultはあるがrequired processingの一部が未完了 | Rails                            |
 | Axis `PARTIAL`        | Measurement coverage | そのAxisのinput/coverageが一部のみ有効                           | Formula/Profile evaluation       |
 | `CALCULATED`          | Score result         | score valueが正式に計算された                                    | Formula result, Rails validation |
 
-Completed Jobでも全Axisが必ずFullとは限らず、Partial Jobでもusableな一部AxisがFullの場合はあり得る。Job outcomeから各Axis stateを推測しない。
+Completed Jobでも全Axisが必ずFullとは限らず、Partial Jobでもusableな一部AxisがFullの場合はあり得ます。Job outcomeから各Axis stateを推測しません。
 
 ## 16. Snapshot boundary
 
-PD-04では`partially_completed`からLimited Snapshotを条件付きで作成できる。
+PD-04では`partially_completed`からLimited Snapshotを条件付きで作成できます。
 
 - automatic current promotionはしない。
 - v1 Strategyは`EVIDENCE_ONLY`。
@@ -237,23 +246,23 @@ PD-04では`partially_completed`からLimited Snapshotを条件付きで作成�
 - limitations、completeness、formula version、lineageを保持する。
 - Snapshot内のPartial/Unknown/MissingをFullへ書き換えない。
 
-Job outcomeが`completed`でもcurrent promotionはpolicy-drivenであり自動同一視しない。
+Job outcomeが`completed`でもcurrent promotionはpolicy-drivenであり自動同一視しません。
 
 ## 17. Comparison and Strategy boundary
 
-Full coverageのCompetitor AとPartial coverageのCompetitor Bをscoreだけでrankingすると、Bの欠損を性能差と誤解する危険がある。比較前にAxis/Formula version compatibility、completeness/coverage、Eligibility/Score State、Layer availability、limitations、lineageを確認する。
+Full coverageのCompetitor AとPartial coverageのCompetitor Bをscoreだけでrankingすると、Bの欠損を性能差と誤解する危険があります。比較前にAxis/Formula version compatibility、completeness/coverage、Eligibility/Score State、Layer availability、limitations、lineageを確認します。
 
-Missing/PartialなScoreから確定的Strategyを生成しない。Partial Snapshot v1は`EVIDENCE_ONLY`であり、Strategy layerはuncertaintyと制限を認識する。
+Missing/PartialなScoreから確定的Strategyを生成しません。Partial Snapshot v1は`EVIDENCE_ONLY`であり、Strategy layerはuncertaintyと制限を認識します。
 
 ## 18. Provenance and reasons
 
-Missing/Partial判定自体もlineage対象である。fetch failure、screenshot absence、unsupported parser、unknown classification、required scope未取得などの理由をJob、Artifact、Observation、Profile、Versionへtraceできる必要がある。ここで例示したreasonは新しいcanonical enumを制定するものではない。
+Missing/Partial判定自体もlineage対象です。fetch failure、screenshot absence、unsupported parser、unknown classification、required scope未取得などの理由をJob、Artifact、Observation、Profile、Versionへtraceできる必要があります。ここで例示したreasonは新しいcanonical enumを制定するものではありません。
 
 ## 19. API, persistence, and UI
 
-Logical Resultは必要に応じてidentity/level、Score State/value、Completeness/reason、Eligibility/rule reference、counts、coverage/quality/limitations、input lineage、formulaVersion/Profile、calculatedAtを保持する。
+Logical Resultは必要に応じてidentity/level、Score State/value、Completeness/reason、Eligibility/rule reference、counts、coverage/quality/limitations、input lineage、formulaVersion/Profile、calculatedAtを保持します。
 
-Frontendは`undefined -> 0`や`null -> neutral`を行わない。UIではMissing、Partial、Unknown、N/A、Valid Zeroを意味の違いが分かる形で表示し、色だけに依存しない。Exact copyとphysical schemaは既存UI/API Contractを優先し、本Moduleでは決めない。
+Frontendは`undefined -> 0`や`null -> neutral`を行いません。UIではMissing、Partial、Unknown、N/A、Valid Zeroを意味の違いが分かる形で表示し、色だけに依存しません。Exact copyとphysical schemaは既存UI/API Contractを優先し、本Moduleでは決めません。
 
 ## 20. Measurement state flow
 
@@ -288,30 +297,30 @@ flowchart TD
 
 ## 22. Worked example
 
-| Submetric | Observation                       | State                 | Treatment                |
+| Submetric | Observation                       | State                 | 扱い方                   |
 | --------- | --------------------------------- | --------------------- | ------------------------ |
 | A         | required scopeを正常走査しcount=0 | `PRESENT`, valid zero | eligible contributor候補 |
 | B         | required screenshotが取得不能     | `MISSING`             | 0へ変換しない            |
 | C         | DOM evidenceから正常計算          | `PRESENT`, available  | eligible contributor候補 |
 
-AとCだけを単純平均しBを隠すとobserved-only denominatorになりcoverageを過大表示する。Versioned ProfileがBをrequired/optional/conditionalのどれと定義するか確認し、Eligibilityを判定する。Bがrequiredなら`NON_CALCULATED`候補、conditionalでlimited calculation可なら`CALCULATED + PARTIAL`候補である。Exact thresholdや数値はこの情報だけでは決められない。
+AとCだけを単純平均しBを隠すとobserved-only denominatorになりcoverageを過大表示します。Versioned ProfileがBをrequired/optional/conditionalのどれと定義するか確認し、Eligibilityを判定します。Bがrequiredなら`NON_CALCULATED`候補、conditionalでlimited calculation可なら`CALCULATED + PARTIAL`候補です。Exact thresholdや数値はこの情報だけでは決められません。
 
 ## 23. CURRENT / TARGET / DEFERRED
 
-| Classification | Confirmed scope                                                                                                                                                                        |
+| 分類           | Confirmed scope                                                                                                                                                                        |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | CURRENT        | Frontendにscore types、radar/chart projection、fixture/mock、一部fallbackがある。Product docsにPD-02D Treatment Model Bとlogical state contractがある。                                |
 | CURRENT caveat | Canonical stateのfull API propagation、Rails persistence、Worker calculationは実装確認できない。現行fallbackにはmissing→0やsynthetic valueがあり、Product contractの実装証拠ではない。 |
 | TARGET         | Workerがtyped inputとtechnical reasonsを出力し、versioned Profileでcalculationし、RailsがEligibility/Resultをvalidate・persistし、BFF/API/UIがstateとlimitationsを欠落なく伝える。     |
 | DEFERRED       | exact threshold、required set、minimum Observation count、fusion fallback、calibration parameter、physical JSON/DB/OpenAPI、Production implementation、exact UI copy。                 |
 
-Decision CompleteはImplementation CompleteやProduction Readyを意味しない。
+Decision CompleteはImplementation CompleteやProduction Readyを意味しません。
 
 ## 24. Representative repository mapping
 
-以下は限定確認した12例であり、repo-wide score監査ではない。
+以下は限定確認した12例であり、repo-wide score監査ではありません。
 
-| Source                                                                              | State meaning / layer         | CURRENT / TARGET                      | Eligibility relation                      |
+| Source                                                                              | 状態の意味・層                | CURRENT / TARGET                      | 利用・計算可否との関係                    |
 | ----------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------- | ----------------------------------------- |
 | [Score / Axis Data Dictionary](../../product/score-axis-data-dictionary.md) PD-02D  | Canonical states              | Approved contract                     | Primary logical contract                  |
 | [Product Decision Register](../../product/product-decision-register.md) PD-02D      | Approval/status               | `DECISION_COMPLETE`                   | Model B approved                          |
@@ -357,9 +366,9 @@ Decision CompleteはImplementation CompleteやProduction Readyを意味しない
 
 ### A. Knowledge check
 
-1. Completeness、Eligibility、Score State、Score valueの違いを説明せよ。
+1. Completeness、Eligibility、Score State、Score valueの違いを説明してください。
 2. なぜMissingを0にしてはいけないか。
-3. `PARTIAL + CALCULATED`が成立する条件を説明せよ。
+3. `PARTIAL + CALCULATED`が成立する条件を説明してください。
 
 ### B. Classification
 
@@ -369,27 +378,27 @@ Decision CompleteはImplementation CompleteやProduction Readyを意味しない
 4. 10 required pagesのうち6 pagesだけ取得成功。
 5. 全required pagesを正常走査しCTA count=0。
 
-Missing / N/A / Unknown / Partial / Valid Zeroへ分類せよ。
+Missing / N/A / Unknown / Partial / Valid Zeroへ分類してください。
 
 ### C. Zero vs Missing
 
-`value=0, scoreState=CALCULATED`と`value absent, scoreState=NON_CALCULATED`の違いを説明せよ。
+`value=0, scoreState=CALCULATED`と`value absent, scoreState=NON_CALCULATED`の違いを説明してください。
 
 ### D. Eligibility exercise
 
-Internal inputはPRESENT、Visual inputはMISSINGである。Axis/Overall scoreを出せるか。未決定thresholdやfallbackを発明せず答えよ。
+Internal inputはPRESENT、Visual inputはMISSINGです。Axis/Overall scoreを出せるか。未決定thresholdやfallbackを発明せず答えてください。
 
 ### E. Axis vs Job Partial
 
-`AnalysisJob=partially_completed`、Axis A=PRESENT、Axis B=PARTIAL、Axis C=NON_CALCULATEDというcaseを説明せよ。
+`AnalysisJob=partially_completed`、Axis A=PRESENT、Axis B=PARTIAL、Axis C=NON_CALCULATEDというcaseを説明してください。
 
 ### F. Comparison exercise
 
-Full coverageのCompetitor Aが72、Partial coverageのCompetitor Bが78である。Bを上位と結論する前に何を確認するか。
+Full coverageのCompetitor Aが72、Partial coverageのCompetitor Bが78です。Bを上位と結論する前に何を確認するか。
 
 ### G. API exercise
 
-Valid Zero、Missing、N/Aを区別するlogical情報を、Exact JSON schemaを作らず答えよ。
+Valid Zero、Missing、N/Aを区別するlogical情報を、Exact JSON schemaを作らず答えてください。
 
 ### H. Violation detection
 
@@ -403,13 +412,13 @@ Valid Zero、Missing、N/Aを区別するlogical情報を、Exact JSON schemaを
 
 ### I. Architecture explanation
 
-「なぜMissingを0として扱ってはいけないのか」をmeasurement semantics、comparison、Strategy、history/lineageの観点から説明せよ。
+「なぜMissingを0として扱ってはいけないのか」をmeasurement semantics、comparison、Strategy、history/lineageの観点から説明してください。
 
 ## 28. Answers / explanation guide
 
 ### A. Knowledge check
 
-Completenessはinput充足、Eligibilityは計算可否、Score Stateは計算成立、valueは結果数値である。Missingの0化はabsence/failureをnegative qualityに変え、比較とStrategyを歪める。`PARTIAL + CALCULATED`はVersioned Profileがlimited calculationを許しrequired条件を満たし、reason/coverage/limitationsを保持する場合に成立する。
+Completenessはinput充足、Eligibilityは計算可否、Score Stateは計算成立、valueは結果数値です。Missingの0化はabsence/failureをnegative qualityに変え、比較とStrategyを歪める。`PARTIAL + CALCULATED`はVersioned Profileがlimited calculationを許しrequired条件を満たし、reason/coverage/limitationsを保持する場合に成立します。
 
 ### B. Classification
 
@@ -417,31 +426,31 @@ Completenessはinput充足、Eligibilityは計算可否、Score Stateは計算�
 
 ### C. Zero vs Missing
 
-前者はEvidence-backedな正式結果で数値0を保存・表示できる。後者は値を持たず、Completeness/Eligibility/reasonを伝える。
+前者はEvidence-backedな正式結果で数値0を保存・表示できます。後者は値を持たず、Completeness/Eligibility/reasonを伝える。
 
 ### D. Eligibility exercise
 
-ProfileのEvidence Roleとrequired conditionが必要で、情報だけでは確定できない。Visual requiredならAxisは`NON_CALCULATED`候補、conditionalでlimited calculation可なら`CALCULATED + PARTIAL`候補。Overallのone-layer fallbackやweight再配分は明示Profile/new formulaVersionなしに行わない。
+ProfileのEvidence Roleとrequired conditionが必要で、情報だけでは確定できません。Visual requiredならAxisは`NON_CALCULATED`候補、conditionalでlimited calculation可なら`CALCULATED + PARTIAL`候補。Overallのone-layer fallbackやweight再配分は明示Profile/new formulaVersionなしに行いません。
 
 ### E. Axis vs Job Partial
 
-Jobの`partially_completed`はusable validated Product Resultとlimitationsを持つterminal outcome。各Axis stateはmeasurement coverage/calculationを表し、互いに同値ではない。Railsは両方を保持しLimited Snapshot可否を別contractで判断する。
+Jobの`partially_completed`はusable validated Product Resultとlimitationsを持つterminal outcome。各Axis stateはmeasurement coverage/calculationを表し、互いに同値ではありません。Railsは両方を保持しLimited Snapshot可否を別contractで判断します。
 
 ### F. Comparison exercise
 
-Formula/Axis version compatibility、Completeness、Eligibility、Layer availability、coverage、limitations、lineageを確認する。Bの78がlimited calculationなら数値だけでrankingしない。
+Formula/Axis version compatibility、Completeness、Eligibility、Layer availability、coverage、limitations、lineageを確認します。Bの78がlimited calculationなら数値だけでrankingしません。
 
 ### G. API exercise
 
-Score State/value、Completeness/reason、Eligibility/rule reference、coverage/limitations、formulaVersion/Profile、lineageが必要。Exact field name/schemaはOpenAPI phaseへ残す。
+Score State/value、Completeness/reason、Eligibility/rule reference、coverage/limitations、formulaVersion/Profile、lineageが必要です。Exact field name/schemaはOpenAPI phaseへ残します。
 
 ### H. Violation detection
 
-順に、availability/value混同、limitation隠蔽、applicability/quality混同、Job/Axis state混同、missingのperformance化、uncertainty/negative混同、end-to-end contract破壊である。
+順に、availability/value混同、limitation隠蔽、applicability/quality混同、Job/Axis state混同、missingのperformance化、uncertainty/negative混同、end-to-end contract破壊です。
 
 ### I. Architecture explanation
 
-Missingは「低品質」ではなく「必要なmeasurementが成立していない」を示す。0へ変換すると取得失敗を最低評価と誤認し、比較、ranking、Strategyを歪める。さらにSnapshotから当時のcoverageとfailure reasonを再現できずhistorical meaningが失われる。value、state、reason、coverage、lineageを分離して保存・伝達する必要がある。
+Missingは「低品質」ではなく「必要なmeasurementが成立していない」を示します。0へ変換すると取得失敗を最低評価と誤認し、比較、ranking、Strategyを歪める。さらにSnapshotから当時のcoverageとfailure reasonを再現できずhistorical meaningが失われる。value、state、reason、coverage、lineageを分離して保存・伝達する必要があります。
 
 ## 29. Completion criteria
 
@@ -458,10 +467,10 @@ Missingは「低品質」ではなく「必要なmeasurementが成立してい�
 |   9 | Repository mapping + two diagrams included | `PASS` |
 |  10 | Exercises + answers included               | `PASS` |
 
-M18 authoring result: `10 / 10 PASS`。教材完成はExact Threshold、Required Set、Calibration、physical schema、Production implementationの完成を意味しない。
+M18 authoring result: `10 / 10 PASS`。教材完成はExact Threshold、Required Set、Calibration、physical schema、Production implementationの完成を意味しません。
 
 ## 30. M19 handoff
 
 Recommended next phase: `TB-20 — Module 19: Design Token`。
 
-M19ではFS-05の承認済みDesign Token Foundationを教材化し、raw/semantic token、Source of Truth、application boundary、exception/migrationを扱う。`tokens.css`実装やTailwind接続は教材作成と混同しない。
+M19ではFS-05の承認済みDesign Token Foundationを教材化し、raw/semantic token、Source of Truth、application boundary、exception/migrationを扱います。`tokens.css`実装やTailwind接続は教材作成と混同しません。
